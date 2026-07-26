@@ -8,6 +8,7 @@ import { checkContinuity } from './continuity.js';
 import type { Finding } from './errors.js';
 import type { LoadedYaml } from './loader.js';
 import { checkNarration, type NarrationCacheProbe } from './narration-validate.js';
+import { checkPacing } from './pacing.js';
 import type { MfsObjectDef } from './parts.js';
 import type { MfsDocument } from './schema.js';
 import { checkStructure, type CheckResult } from './validate.js';
@@ -148,6 +149,7 @@ export function check(text: string, file: string, options: CheckOptions = {}): C
     ...checkReferences(doc, t1.loaded, file),
     ...checkConflicts(doc, t1.loaded, file, options.verbClaims),
     ...checkContinuity(doc, t1.loaded, file),
+    ...checkPacing(doc, t1.loaded, file),
     ...checkNarration(doc, t1.loaded, file, options.cacheProbe),
   ];
   return { ...t1, doc, findings };

@@ -16,6 +16,7 @@ export * from './loader.js';
 export * from './conflicts.js';
 export * from './continuity.js';
 export * from './errors.js';
+export * from './pacing.js';
 export * from './validate.js';
 export * from './references.js';
 export * from './compile.js';

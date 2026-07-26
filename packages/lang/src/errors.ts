@@ -37,6 +37,10 @@ export const MF_CODES = {
   MF3003: 'Ambiguous anchor phrase',
   MF3004: 'Anchor occurrence out of range',
   MF3005: 'Voice cache missing or stale',
+  MF3006: 'Dead air',
+  MF3007: 'Sync collision',
+  MF3008: 'Card overlap',
+  MF3009: 'Card timing off',
   MF4001: 'Library problem',
 } as const;
 
