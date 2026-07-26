@@ -8,3 +8,4 @@ export * from './easing.js';
 export * from './scene.js';
 export * from './svg.js';
 export * from './timeline.js';
+export * from './goldens.js';

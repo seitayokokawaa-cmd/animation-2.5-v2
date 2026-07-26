@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test"
+    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
+    "goldens:update": "MF_UPDATE_GOLDENS=1 vitest run"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
