@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Obviously",
+      "start": 0,
+      "end": 0.3
+    }
+  ]
+}

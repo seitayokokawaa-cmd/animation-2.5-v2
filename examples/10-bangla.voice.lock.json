@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "segments": {
+    "intro/0": {
+      "hash": "abc8113ea7a34e2753350cb5b26d4744e2c76a43c68f256435dff7ec6d4063ea",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.12,
+      "text": "Dhaka runs on rickshaws. Half a million of them, each one hand-painted like a tiny rolling art gallery.\n"
+    },
+    "intro/1": {
+      "hash": "a35f3913e399b93370fc56824d5f17dfc084d4a4c4a30c8d186f6980043a737b",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 4.72,
+      "text": "Ask any driver — the paint job matters more than the brakes."
+    },
+    "intro/line/0": {
+      "hash": "8f88a051cb28077e46cb6e85c3dcc02c8265c549c14076d6c69ef142d0d42f91",
+      "engine": "mock",
+      "voice": "bright",
+      "rate": 1.05,
+      "pitch": 5,
+      "durationSeconds": 0.3047708333333333,
+      "text": "Obviously."
+    }
+  }
+}

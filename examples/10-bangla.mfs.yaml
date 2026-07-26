@@ -1,0 +1,94 @@
+# examples/10-bangla — the M11 exit film: English narration with Bengali
+# subtitles (M11.2's `subtitle:` overrides + the noto-bengali font), a
+# Bengali title card, and a lower-third. Mock TTS keeps it offline.
+#
+# Bengali VO (the recorded path): no TTS adapter speaks Bengali yet, so a
+# Bengali-narrated film records its lines as WAV/MP3 files and declares
+#   voices:
+#     narrator: { engine: recorded, voice: bangla-narrator }
+# `mf voice sync` then ingests `assets/voice/recorded/bangla-narrator/<key>.wav`
+# per segment, runs the energy aligner for word timings, and everything
+# downstream (anchors, subtitles, mixing) works unchanged.
+#
+#   pnpm mf voice sync examples/10-bangla.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/10-bangla.mfs.yaml -o out/10-bangla.mp4
+motionforge: 2
+meta:
+  title: ঢাকা — The Rickshaw Capital
+  resolution: 1280x720
+  fps: 30
+  seed: 101
+  style: explainer-paper
+  subtitles: { font: noto-bengali, size: 0.36 }
+
+voices:
+  narrator: { engine: mock, voice: warm }
+  driver: { engine: mock, voice: bright, pitch: 5, rate: 1.05 }
+
+cast:
+  driver:
+    template: potato-biped
+    size: 0.85
+    palette: { outfit: '#2e7d5b', 'outfit-dark': '#1f5740' }
+    costume: [peasant-tunic]
+    expression: happy
+
+scenes:
+  - id: intro
+    stage: { preset: street }
+    music: { mood: jaunty, gain: 85 }
+    transition: { kind: iris, duration: 0.8 }
+    place:
+      - { ref: driver, as: driver, at: [-2.2, -2.6] }
+    narration:
+      - voice: narrator
+        text: >
+          Dhaka runs on rickshaws. Half a million of them, each one
+          hand-painted like a tiny rolling art gallery.
+        subtitle: >
+          ঢাকা চলে রিকশায়। পাঁচ লাখ রিকশা, প্রতিটি হাতে আঁকা ছোট্ট
+          চলমান চিত্রশালার মতো।
+        sync:
+          - {
+              on: 'runs on rickshaws',
+              do:
+                {
+                  card:
+                    {
+                      style: title,
+                      text: 'ঢাকা',
+                      subtext: 'the rickshaw capital',
+                      font: noto-bengali,
+                      at: [0, 1.6],
+                      duration: 2.2,
+                    },
+                },
+            }
+          - { on: 'runs on rickshaws', do: { sfx: ding } }
+          - { on: 'Half a million', do: { gesture: { target: driver, kind: point } } }
+          - {
+              on: 'rolling art gallery',
+              do: { camera: { zoom-punch: driver, punch: 1.5, duration: 0.8 } },
+            }
+        pause: 0.4
+      - voice: narrator
+        text: Ask any driver — the paint job matters more than the brakes.
+        subtitle: যেকোনো চালককে জিজ্ঞেস করুন — ব্রেকের চেয়ে রঙের কাজ বেশি জরুরি।
+        sync:
+          - {
+              on: 'Ask any driver',
+              do:
+                {
+                  card:
+                    {
+                      style: lower-third,
+                      text: 'রিকশাচালক',
+                      subtext: 'Paint Enthusiast',
+                      font: noto-bengali,
+                      duration: 2.4,
+                    },
+                },
+            }
+          - { on: 'paint job', do: { react: { target: driver, kind: hearts, duration: 1.8 } } }
+    lines:
+      - { after: 'than the brakes', speaker: driver, say: Obviously., react: hearts }

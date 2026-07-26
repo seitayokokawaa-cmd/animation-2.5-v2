@@ -192,7 +192,7 @@ export function buildCardNodes(
       // Big floating title with an accent underline (M11.2).
       const row = textRow(`${id}-t`, card.text ?? '', card.font, size, theme.text, 0, 0);
       const sub = card.subtext
-        ? textRow(`${id}-s`, card.subtext, card.font, size * 0.42, theme.accent, 0, -size * 1.05)
+        ? textRow(`${id}-s`, card.subtext, card.font, size * 0.42, theme.text, 0, -size * 1.05)
         : undefined;
       children.push(
         plate(`${id}-p`, row.width + size * 1.6, size * (sub ? 2.6 : 1.9), {
