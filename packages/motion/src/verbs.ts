@@ -137,6 +137,18 @@ const defs: VerbDef[] = [
     },
   },
   {
+    name: 'squash-stretch',
+    summary: 'Volume-preserving squash/stretch beats on any node (M4.4).',
+    defaultDurationSeconds: 0.6,
+    sample(t, effect) {
+      const amount = p(effect, 'amount', 0.25);
+      const beats = Math.max(1, Math.round(p(effect, 'beats', 1)));
+      const fade = Math.sin(Math.PI * t);
+      const sx = 1 + amount * Math.sin(2 * Math.PI * beats * t) * fade;
+      return { scale: vec2(sx, 1 / sx) };
+    },
+  },
+  {
     name: 'bounce-bob',
     summary: 'Hop bob layered on a linear slide — the bounce-to gait (M4.2).',
     defaultDurationSeconds: 1,

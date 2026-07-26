@@ -166,6 +166,14 @@ const verbFields = {
     .strict()
     .optional(),
   steam: z.object(effectBase).strict().optional(),
+  'squash-stretch': z
+    .object({
+      ...effectBase,
+      amount: z.number().finite().positive().optional(),
+      beats: z.number().int().positive().optional(),
+    })
+    .strict()
+    .optional(),
   'bounce-to': z
     .object({
       target: nameSchema,
@@ -219,6 +227,7 @@ export const VERB_NAMES = [
   'speedlines',
   'sweat',
   'steam',
+  'squash-stretch',
   'bounce-to',
   'move',
   'rotate',

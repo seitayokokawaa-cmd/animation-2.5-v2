@@ -288,6 +288,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       speedlines: 0.6,
       sweat: 0.9,
       steam: 1,
+      'squash-stretch': 0.6,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */
@@ -407,6 +408,8 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         simpleFx('sweat', verb.sweat, startTick, ['count']);
       } else if (verb.steam) {
         simpleFx('steam', verb.steam, startTick, []);
+      } else if (verb['squash-stretch']) {
+        simpleFx('squash-stretch', verb['squash-stretch'], startTick, ['amount', 'beats']);
       } else if (verb['pop-in']) {
         const { target, duration, to } = verb['pop-in'];
         pushEffect(target, 'pop-in', startTick, duration ?? EFFECT_DEFAULT_SECONDS['pop-in']!, {

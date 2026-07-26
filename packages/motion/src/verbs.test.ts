@@ -83,3 +83,23 @@ describe('emphasis verb registry (M4.1)', () => {
     expect(peak).toBeCloseTo(0.5, 1);
   });
 });
+
+describe('squash-stretch (M4.4)', () => {
+  it('preserves area (sx * sy = 1) and returns to rest', () => {
+    const e: FilmEffect = {
+      target: 'x',
+      verb: 'squash-stretch',
+      startTick: 0,
+      durationTicks: 60,
+      params: { amount: 0.3, beats: 2 },
+      seed: 'sq/t/0',
+    };
+    for (const tick of [5, 15, 30, 45, 55]) {
+      const pose = sampleEffect(e, tick, 7);
+      expect(pose.scale!.x * pose.scale!.y).toBeCloseTo(1, 9);
+    }
+    expect(sampleEffect(e, 0, 7).scale!.x).toBeCloseTo(1, 6);
+    const mid = sampleEffect(e, 8, 7).scale!.x;
+    expect(Math.abs(mid - 1)).toBeGreaterThan(0.05);
+  });
+});
