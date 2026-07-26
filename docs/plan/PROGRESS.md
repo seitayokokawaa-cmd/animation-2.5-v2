@@ -30,7 +30,7 @@ Legend: ☐ pending · ☑ done
 | M1.1 | Vec2/Transform/Color, world units, tick clock + seconds↔ticks | ☑    |
 | M1.2 | PCG32 + named streams; lint bans Math.random/Date.now         | ☑    |
 | M1.3 | Easing library + curve sampling                               | ☑    |
-| M1.4 | Scene graph + painter sort (depth band, layer, screen-y)      | ☐    |
+| M1.4 | Scene graph + painter sort (depth band, layer, screen-y)      | ☑    |
 | M1.5 | SVG emitter: fixed precision, sorted attrs, deduped defs      | ☐    |
 | M1.6 | Timeline core: tracks, clips, events, tick scheduler          | ☐    |
 | M1.7 | Determinism harness + golden infra (svg snapshot, png phash)  | ☐    |
