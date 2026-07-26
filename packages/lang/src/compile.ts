@@ -22,6 +22,7 @@ import {
   type Fill,
   type Film,
   type FilmCaption,
+  type FilmEffect,
   type FilmInstance,
   type FilmNarrationSegment,
   type FilmScene,
@@ -253,6 +254,36 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
     const cameraPosClips: Clip<Vec2>[] = [];
     const cameraZoomClips: Clip<number>[] = [];
     const captions: FilmCaption[] = [];
+    const effects: FilmEffect[] = [];
+    let effectCounter = 0;
+
+    /** Emphasis/FX verbs → registry effects with per-effect noise seeds. */
+    const pushEffect = (
+      target: string,
+      verbName: string,
+      startTick: Tick,
+      durationSeconds: number,
+      params: Record<string, number>,
+    ): void => {
+      effects.push({
+        target,
+        verb: verbName,
+        startTick,
+        durationTicks: secondsToTicks(durationSeconds),
+        params,
+        seed: `${verbName}/${scene.id}/${effectCounter++}`,
+      });
+    };
+
+    /** Defaults mirror the motion verb registry (drift-checked by M12.5). */
+    const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
+      'pop-in': 0.4,
+      'pop-out': 0.3,
+      'spin-in': 0.5,
+      slam: 0.45,
+      wiggle: 0.8,
+      pulse: 0.5,
+    };
 
     const baseOf = (target: string) => scene.place.find((p) => p.as === target)!;
     const lastPos = new Map<string, Vec2>();
@@ -321,6 +352,49 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
           });
           lastCameraZoom = zoom;
         }
+      } else if (verb['pop-in']) {
+        const { target, duration, to } = verb['pop-in'];
+        pushEffect(target, 'pop-in', startTick, duration ?? EFFECT_DEFAULT_SECONDS['pop-in']!, {
+          ...(to !== undefined ? { to } : {}),
+        });
+      } else if (verb['pop-out']) {
+        const { target, duration } = verb['pop-out'];
+        pushEffect(
+          target,
+          'pop-out',
+          startTick,
+          duration ?? EFFECT_DEFAULT_SECONDS['pop-out']!,
+          {},
+        );
+      } else if (verb['spin-in']) {
+        const { target, duration, turns } = verb['spin-in'];
+        pushEffect(target, 'spin-in', startTick, duration ?? EFFECT_DEFAULT_SECONDS['spin-in']!, {
+          ...(turns !== undefined ? { turns } : {}),
+        });
+      } else if (verb.slam) {
+        const { target, duration, height, shake } = verb.slam;
+        const seconds = duration ?? EFFECT_DEFAULT_SECONDS.slam!;
+        pushEffect(target, 'slam', startTick, seconds, {
+          ...(height !== undefined ? { height } : {}),
+        });
+        const intensity = shake ?? 0.3;
+        if (intensity > 0) {
+          // Shake starts at impact (60% into the slam).
+          pushEffect('camera', 'shake', startTick + secondsToTicks(seconds * 0.6), 0.4, {
+            intensity,
+          });
+        }
+      } else if (verb.wiggle) {
+        const { target, duration, amplitude, speed } = verb.wiggle;
+        pushEffect(target, 'wiggle', startTick, duration ?? EFFECT_DEFAULT_SECONDS.wiggle!, {
+          ...(amplitude !== undefined ? { amplitude } : {}),
+          ...(speed !== undefined ? { speed } : {}),
+        });
+      } else if (verb.pulse) {
+        const { target, duration, to } = verb.pulse;
+        pushEffect(target, 'pulse', startTick, duration ?? EFFECT_DEFAULT_SECONDS.pulse!, {
+          ...(to !== undefined ? { to } : {}),
+        });
       } else if (verb.caption) {
         const c = verb.caption;
         captions.push({
@@ -353,6 +427,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       startTick: filmTick,
       durationTicks,
       narration,
+      effects,
       instances,
       timeline: createTimeline(tracks, [], durationTicks),
       captions,

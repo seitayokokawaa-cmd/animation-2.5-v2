@@ -103,6 +103,9 @@ importers:
       '@motionforge/core':
         specifier: workspace:*
         version: link:../core
+      '@motionforge/motion':
+        specifier: workspace:*
+        version: link:../motion
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2

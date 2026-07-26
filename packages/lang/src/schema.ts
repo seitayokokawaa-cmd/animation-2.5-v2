@@ -111,8 +111,44 @@ const tweenBase = {
   easing: easingSchema.optional(),
 };
 
+const effectBase = {
+  target: nameSchema,
+  /** Seconds; defaults match the motion verb registry (asserted by M12.5). */
+  duration: secondsSchema.optional(),
+};
+
 /** The verb payload fields, shared by timed actions and narration sync. */
 const verbFields = {
+  'pop-in': z
+    .object({ ...effectBase, to: z.number().finite().positive().optional() })
+    .strict()
+    .optional(),
+  'pop-out': z.object(effectBase).strict().optional(),
+  'spin-in': z
+    .object({ ...effectBase, turns: z.number().finite().optional() })
+    .strict()
+    .optional(),
+  slam: z
+    .object({
+      ...effectBase,
+      height: z.number().finite().positive().optional(),
+      /** Camera-shake intensity in world units; 0 disables. */
+      shake: z.number().finite().nonnegative().optional(),
+    })
+    .strict()
+    .optional(),
+  wiggle: z
+    .object({
+      ...effectBase,
+      amplitude: z.number().finite().nonnegative().optional(),
+      speed: z.number().finite().positive().optional(),
+    })
+    .strict()
+    .optional(),
+  pulse: z
+    .object({ ...effectBase, to: z.number().finite().positive().optional() })
+    .strict()
+    .optional(),
   move: z
     .object({ ...tweenBase, to: vec2Schema })
     .strict()
@@ -148,13 +184,25 @@ const verbFields = {
     .optional(),
 };
 
-const VERB_NAMES = ['move', 'rotate', 'scale', 'caption', 'camera'];
+export const VERB_NAMES = [
+  'move',
+  'rotate',
+  'scale',
+  'caption',
+  'camera',
+  'pop-in',
+  'pop-out',
+  'spin-in',
+  'slam',
+  'wiggle',
+  'pulse',
+];
 
 const oneVerb = (value: Record<string, unknown>): boolean =>
   VERB_NAMES.filter((v) => value[v] !== undefined).length === 1;
 
 const ONE_VERB_MESSAGE = {
-  message: 'Exactly one verb is required: move, rotate, scale, caption, or camera',
+  message: `Exactly one verb is required: ${VERB_NAMES.join(', ')}`,
 };
 
 /** A verb without timing — narration sync supplies the time via the anchor. */

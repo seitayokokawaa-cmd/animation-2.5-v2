@@ -46,12 +46,31 @@ export interface FilmNarrationSegment {
   readonly durationTicks: Tick;
 }
 
+/**
+ * A motion-graphics verb applied to an instance (or `camera`) for a tick
+ * window. Sampled by the verb registry (in `motion`) at render time —
+ * pure per tick, seeded via `seed` (ADR-0008).
+ */
+export interface FilmEffect {
+  /** Instance id, or `camera`. */
+  readonly target: string;
+  /** Registry verb name, e.g. `pop-in`, `wiggle`, `shake`. */
+  readonly verb: string;
+  /** Scene-local. */
+  readonly startTick: Tick;
+  readonly durationTicks: Tick;
+  readonly params: Readonly<Record<string, number>>;
+  /** Noise stream name, unique per effect. */
+  readonly seed: string;
+}
+
 export interface FilmScene {
   readonly id: string;
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;
   readonly narration: readonly FilmNarrationSegment[];
+  readonly effects: readonly FilmEffect[];
   readonly instances: readonly FilmInstance[];
   /**
    * Scene-local tracks: `<instance>/pos` (Vec2), `<instance>/rot` (radians),

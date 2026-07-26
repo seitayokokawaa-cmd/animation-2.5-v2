@@ -8,6 +8,7 @@ export * from './easing.js';
 export * from './scene.js';
 export * from './svg.js';
 export * from './timeline.js';
+export * from './pose.js';
 export * from './goldens.js';
 export * from './film.js';
 export * from './words.js';

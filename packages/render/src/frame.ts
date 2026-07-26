@@ -8,6 +8,7 @@
  */
 
 import {
+  combinePoses,
   compose,
   emitSvg,
   flattenScene,
@@ -21,10 +22,12 @@ import {
   vec2,
   type Film,
   type FilmScene,
+  type Pose,
   type SceneNode,
   type Tick,
   type Vec2,
 } from '@motionforge/core';
+import { sampleEffect } from '@motionforge/motion';
 
 import { shapeText } from './text.js';
 
@@ -58,6 +61,16 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
   const scene = sceneAtTick(film, tick);
   const localTick = Math.min(tick - scene.startTick, scene.durationTicks);
 
+  /** Combined verb pose for a target at this instant (ADR-0008). */
+  const poseFor = (target: string): Pose =>
+    combinePoses(
+      scene.effects
+        .filter((e) => e.target === target)
+        .map((e) => sampleEffect(e, localTick, film.seed)),
+    );
+
+  const cameraPose = poseFor('camera');
+  const cameraShift = cameraPose.translate ?? vec2(0, 0);
   const cameraPos = sample<Vec2>(scene.timeline, 'camera/pos', localTick);
   const zoom = sample<number>(scene.timeline, 'camera/zoom', localTick);
 
@@ -65,7 +78,10 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
   // screen = center + (world - camera) * unit, y flipped.
   const screenTransform = compose(
     translation(film.width / 2, film.height / 2),
-    compose(scaling(unit, -unit), translation(-cameraPos.x, -cameraPos.y)),
+    compose(
+      scaling(unit, -unit),
+      translation(-cameraPos.x - cameraShift.x, -cameraPos.y - cameraShift.y),
+    ),
   );
 
   const root: SceneNode = {
@@ -76,11 +92,19 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
         const pos = sample<Vec2>(scene.timeline, `${inst.id}/pos`, localTick);
         const rot = sample<number>(scene.timeline, `${inst.id}/rot`, localTick);
         const scale = sample<number>(scene.timeline, `${inst.id}/scale`, localTick);
+        const pose = poseFor(inst.id);
+        const shift = pose.translate ?? vec2(0, 0);
+        const poseScale = pose.scale ?? vec2(1, 1);
         return {
           id: inst.id,
           depth: inst.depth,
           layer: inst.layer,
-          transform: trs(pos, rot, vec2(scale, scale)),
+          opacity: pose.opacity ?? 1,
+          transform: trs(
+            vec2(pos.x + shift.x, pos.y + shift.y),
+            rot + (pose.rotate ?? 0),
+            vec2(scale * poseScale.x, scale * poseScale.y),
+          ),
           shape: inst.shape,
           fill: inst.fill,
           stroke: inst.stroke,
