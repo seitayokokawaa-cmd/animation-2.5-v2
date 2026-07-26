@@ -35,7 +35,6 @@ import {
 
 import {
   degToRad as degToRadCore,
-  instantiateObject,
   type Color,
   type ObjectSpec,
   type PartSpec,
@@ -254,13 +253,16 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         for (const [name, hex] of Object.entries(p.with ?? {})) overrides[name] = parseColor(hex);
         return {
           id: p.as,
-          parts: instantiateObject(toObjectSpec(objectDef), {
-            idPrefix: p.as,
-            layerBase: (p.layer ?? 0) * 1000,
-            params: overrides,
-            flip: p.flip,
-            tint: p.tint ? parseColor(p.tint) : undefined,
-          }),
+          object: {
+            spec: toObjectSpec(objectDef),
+            options: {
+              idPrefix: p.as,
+              layerBase: (p.layer ?? 0) * 1000,
+              params: overrides,
+              flip: p.flip,
+              tint: p.tint ? parseColor(p.tint) : undefined,
+            },
+          },
           depth: p.depth ?? 0.5,
           layer: (p.layer ?? 0) * 1000,
         };
@@ -358,6 +360,10 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       sweat: 0.9,
       steam: 1,
       'squash-stretch': 0.6,
+      hinge: 0.6,
+      oscillate: 2,
+      piston: 2,
+      roll: 1,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */
@@ -477,6 +483,28 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         simpleFx('sweat', verb.sweat, startTick, ['count']);
       } else if (verb.steam) {
         simpleFx('steam', verb.steam, startTick, []);
+      } else if (verb.hinge) {
+        const { target, to, from, duration } = verb.hinge;
+        pushEffect(target, 'hinge', startTick, duration ?? EFFECT_DEFAULT_SECONDS.hinge!, {
+          to: degToRad(to),
+          ...(from !== undefined ? { from: degToRad(from) } : {}),
+        });
+      } else if (verb.oscillate) {
+        const { target, amplitude, cycles, duration } = verb.oscillate;
+        pushEffect(target, 'oscillate', startTick, duration ?? EFFECT_DEFAULT_SECONDS.oscillate!, {
+          ...(amplitude !== undefined ? { amplitude: degToRad(amplitude) } : {}),
+          ...(cycles !== undefined ? { cycles } : {}),
+        });
+      } else if (verb.piston) {
+        const { target, axis, amplitude, cycles, duration } = verb.piston;
+        pushEffect(target, 'piston', startTick, duration ?? EFFECT_DEFAULT_SECONDS.piston!, {
+          axis: axis === 'y' ? 1 : 0,
+          ...(amplitude !== undefined ? { amplitude } : {}),
+          ...(cycles !== undefined ? { cycles } : {}),
+        });
+      } else if (verb.roll) {
+        const { target, radius, duration } = verb.roll;
+        pushEffect(target, 'roll', startTick, duration ?? EFFECT_DEFAULT_SECONDS.roll!, { radius });
       } else if (verb['squash-stretch']) {
         simpleFx('squash-stretch', verb['squash-stretch'], startTick, ['amount', 'beats']);
       } else if (verb['pop-in']) {
@@ -579,6 +607,21 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         createTrack<number>(`${p.as}/rot`, degToRad(p.rotate ?? 0), rotClips.get(p.as) ?? [], lerp),
         createTrack<number>(`${p.as}/scale`, p.scale ?? 1, scaleClips.get(p.as) ?? [], lerp),
       );
+      // Cumulative path length in world units — drives roll (ω = v/r).
+      let travelled = 0;
+      const travelClips: Clip<number>[] = [];
+      for (const clip of [...(posClips.get(p.as) ?? [])].sort((a, b) => a.start - b.start)) {
+        const length = Math.hypot(clip.to.x - clip.from.x, clip.to.y - clip.from.y);
+        travelClips.push({
+          start: clip.start,
+          duration: clip.duration,
+          from: travelled,
+          to: travelled + length,
+          easing: clip.easing,
+        });
+        travelled += length;
+      }
+      tracks.push(createTrack<number>(`${p.as}/travel`, 0, travelClips, lerp));
     }
     tracks.push(
       createTrack<Vec2>('camera/pos', vec2(0, 0), cameraPosClips, lerpVec2),

@@ -118,6 +118,11 @@ const tweenBase = {
   easing: easingSchema.optional(),
 };
 
+/** `instance.part` — articulation verbs target parts inside objects. */
+const partTargetSchema = z.string().regex(/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/, {
+  message: 'Articulation targets are instance.part, e.g. cart-1.wheel',
+});
+
 const effectBase = {
   target: nameSchema,
   /** Seconds; defaults match the motion verb registry (asserted by M12.5). */
@@ -173,6 +178,45 @@ const verbFields = {
     .strict()
     .optional(),
   steam: z.object(effectBase).strict().optional(),
+  hinge: z
+    .object({
+      target: partTargetSchema,
+      /** Degrees. */
+      to: z.number().finite(),
+      from: z.number().finite().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  oscillate: z
+    .object({
+      target: partTargetSchema,
+      /** Degrees. */
+      amplitude: z.number().finite().positive().optional(),
+      cycles: z.number().finite().positive().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  piston: z
+    .object({
+      target: partTargetSchema,
+      axis: z.enum(['x', 'y']).optional(),
+      amplitude: z.number().finite().positive().optional(),
+      cycles: z.number().finite().positive().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  roll: z
+    .object({
+      target: partTargetSchema,
+      /** Wheel radius in world units. */
+      radius: z.number().finite().positive(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   'squash-stretch': z
     .object({
       ...effectBase,
@@ -263,6 +307,10 @@ export const VERB_NAMES = [
   'sweat',
   'steam',
   'squash-stretch',
+  'hinge',
+  'oscillate',
+  'piston',
+  'roll',
   'bounce-to',
   'move',
   'rotate',

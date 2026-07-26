@@ -1,3 +1,4 @@
+import { sample } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
 import { compile } from './compile.js';
@@ -67,5 +68,53 @@ describe('effect compilation (M4.1/M4.2)', () => {
     const clips = film.scenes[0]!.timeline.tracks.get('b/pos')!.clips;
     expect(clips[1]!.from).toEqual({ x: 2, y: 0 });
     expect(clips[1]!.to).toEqual({ x: 2, y: 3 });
+  });
+});
+
+describe('articulation compilation (M5.3)', () => {
+  const artDoc = mfsSchema.parse({
+    motionforge: 2,
+    meta: { title: 'T', resolution: '640x360', fps: 30 },
+    objects: {
+      cart: {
+        parts: [
+          { id: 'body', shape: { kind: 'rect', width: 2, height: 0.5 }, fill: '#804020' },
+          {
+            id: 'wheel',
+            at: [0.7, -0.3],
+            pivot: [0, 0],
+            shape: { kind: 'circle', r: 0.35 },
+            fill: '#404040',
+          },
+        ],
+      },
+    },
+    scenes: [
+      {
+        id: 's',
+        duration: 4,
+        place: [{ ref: 'cart', as: 'c', at: [-4, 0] }],
+        actions: [
+          { at: 0, move: { target: 'c', to: [4, 0], duration: 3 } },
+          { at: 0, roll: { target: 'c.wheel', radius: 0.35, duration: 3 } },
+          { at: 1, hinge: { target: 'c.body', to: 15, duration: 0.5 } },
+          { at: 2, oscillate: { target: 'c.body', amplitude: 10, cycles: 3, duration: 1 } },
+        ],
+      },
+    ],
+  });
+  const film = compile(artDoc);
+  const scene = film.scenes[0]!;
+
+  it('emits part-targeted effects with radians', () => {
+    const hinge = scene.effects.find((e) => e.verb === 'hinge')!;
+    expect(hinge.target).toBe('c.body');
+    expect(hinge.params.to).toBeCloseTo((15 * Math.PI) / 180, 9);
+  });
+
+  it('builds a cumulative eased travel track for roll', () => {
+    expect(sample<number>(scene.timeline, 'c/travel', 0)).toBe(0);
+    expect(sample<number>(scene.timeline, 'c/travel', 180)).toBeCloseTo(4, 6); // halfway of 8 units
+    expect(sample<number>(scene.timeline, 'c/travel', 360)).toBeCloseTo(8, 6);
   });
 });

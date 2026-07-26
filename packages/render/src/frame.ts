@@ -10,6 +10,7 @@
 import {
   combinePoses,
   compose,
+  instantiateObject,
   emitSvg,
   flattenScene,
   formatColor,
@@ -112,9 +113,34 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             vec2(scale * poseScale.x, scale * poseScale.y),
           ),
         };
-        return inst.parts
-          ? { ...base, children: [inst.parts] }
-          : { ...base, shape: inst.shape, fill: inst.fill, stroke: inst.stroke };
+        if (!inst.object) {
+          return { ...base, shape: inst.shape, fill: inst.fill, stroke: inst.stroke };
+        }
+        // Part poses: articulation effects targeting `instance.part`. The
+        // roll verb reads the instance's cumulative travel track (ω = v/r).
+        const partPoses = new Map<string, Pose>();
+        for (const effect of scene.effects) {
+          const dot = effect.target.indexOf('.');
+          if (dot < 0 || effect.target.slice(0, dot) !== inst.id) continue;
+          const partId = effect.target.slice(dot + 1);
+          const fed =
+            effect.verb === 'roll'
+              ? {
+                  ...effect,
+                  params: {
+                    ...effect.params,
+                    travel: sample<number>(scene.timeline, `${inst.id}/travel`, localTick),
+                  },
+                }
+              : effect;
+          const partPose = sampleEffect(fed, localTick, film.seed);
+          const existing = partPoses.get(partId);
+          partPoses.set(partId, existing ? combinePoses([existing, partPose]) : partPose);
+        }
+        return {
+          ...base,
+          children: [instantiateObject(inst.object.spec, inst.object.options, partPoses)],
+        };
       }),
       // Cartoon FX geometry, anchored at the target's current position.
       ...scene.effects.flatMap((effect, ei): SceneNode[] => {

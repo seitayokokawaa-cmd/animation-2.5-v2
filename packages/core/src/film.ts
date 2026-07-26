@@ -8,7 +8,8 @@
 
 import type { Color } from './color.js';
 import type { Vec2 } from './math.js';
-import type { Fill, SceneNode, Shape, Stroke } from './scene.js';
+import type { InstantiateOptions, ObjectSpec } from './parts.js';
+import type { Fill, Shape, Stroke } from './scene.js';
 import type { Tick } from './time.js';
 import type { Timeline } from './timeline.js';
 
@@ -18,8 +19,12 @@ export interface FilmInstance {
   readonly shape?: Shape;
   readonly fill?: Fill;
   readonly stroke?: Stroke;
-  /** Object instances: the instantiated part tree (M5.2). */
-  readonly parts?: SceneNode;
+  /** Object instances: spec + placement options, instantiated per frame
+   * so articulation poses can flow into parts (M5.2/M5.3). */
+  readonly object?: {
+    readonly spec: ObjectSpec;
+    readonly options: InstantiateOptions;
+  };
   readonly depth: number;
   readonly layer: number;
 }

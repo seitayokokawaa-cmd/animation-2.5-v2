@@ -34,6 +34,8 @@ export interface VerbDef {
   readonly hideAfter?: boolean;
   /** Hide the target from effect start onward (explode). */
   readonly hideTargetFromStart?: boolean;
+  /** Keep the t=1 pose after the effect ends (hinge holds its angle). */
+  readonly holdAfter?: boolean;
   readonly sample: (t: number, effect: FilmEffect, filmSeed: number) => Pose;
   /** Extra geometry in target-local world units (cartoon FX). */
   readonly emit?: (t: number, effect: FilmEffect, filmSeed: number) => SceneNode[];
@@ -137,6 +139,49 @@ const defs: VerbDef[] = [
     },
   },
   {
+    name: 'hinge',
+    summary: 'Rotate a part about its pivot to a target angle and hold (M5.3).',
+    defaultDurationSeconds: 0.6,
+    holdAfter: true,
+    sample(t, effect) {
+      const from = p(effect, 'from', 0);
+      const to = p(effect, 'to', Math.PI / 2);
+      return { rotate: from + (to - from) * ease('cubicInOut', t) };
+    },
+  },
+  {
+    name: 'oscillate',
+    summary: 'Continuous angular swing about the pivot (pendulums, levers).',
+    defaultDurationSeconds: 2,
+    sample(t, effect) {
+      const amplitude = p(effect, 'amplitude', 0.4);
+      const cycles = p(effect, 'cycles', 2);
+      return { rotate: amplitude * Math.sin(2 * Math.PI * cycles * t) };
+    },
+  },
+  {
+    name: 'piston',
+    summary: 'Linear reciprocation along an axis (pumps, pistons).',
+    defaultDurationSeconds: 2,
+    sample(t, effect) {
+      const amplitude = p(effect, 'amplitude', 0.3);
+      const cycles = p(effect, 'cycles', 2);
+      const axis = p(effect, 'axis', 0); // 0 = x, 1 = y
+      const d = amplitude * Math.sin(2 * Math.PI * cycles * t);
+      return { translate: axis === 0 ? vec2(d, 0) : vec2(0, d) };
+    },
+  },
+  {
+    name: 'roll',
+    summary: 'Wheel rotation from distance travelled (ω = v/r) — the frame builder feeds travel.',
+    defaultDurationSeconds: 1,
+    sample(t, effect) {
+      // `travel` is injected by the frame builder from the travel track.
+      const radius = Math.max(0.01, p(effect, 'radius', 0.35));
+      return { rotate: -p(effect, 'travel', 0) / radius };
+    },
+  },
+  {
     name: 'squash-stretch',
     summary: 'Volume-preserving squash/stretch beats on any node (M4.4).',
     defaultDurationSeconds: 0.6,
@@ -187,6 +232,7 @@ export function sampleEffect(effect: FilmEffect, localTick: number, filmSeed: nu
   }
   if (def.hideTargetFromStart) return { opacity: 0 };
   if (localTick >= end) {
+    if (def.holdAfter) return def.sample(1, effect, filmSeed);
     return def.hideAfter ? { opacity: 0 } : {};
   }
   const t = effect.durationTicks === 0 ? 1 : (localTick - effect.startTick) / effect.durationTicks;

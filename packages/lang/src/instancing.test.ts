@@ -94,7 +94,9 @@ describe('object instancing (M5.2)', () => {
     );
     const inst = film.scenes[0]!.instances[0]!;
     expect(inst.shape).toBeUndefined();
-    expect(inst.parts).toBeDefined();
-    expect(flat(inst.parts!).find((n) => n.id === 'c1/body')!.fill!.color!.b).toBe(255);
+    expect(inst.object).toBeDefined();
+    const tree = instantiateObject(inst.object!.spec, inst.object!.options);
+    expect(flat(tree).find((n) => n.id === 'c1/body')!.fill!.color!.b).toBe(255);
+    expect(tree.transform!.a).toBe(-1); // flip carried through options
   });
 });

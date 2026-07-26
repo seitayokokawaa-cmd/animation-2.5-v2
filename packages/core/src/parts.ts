@@ -9,6 +9,7 @@
 
 import { rgba, type Color } from './color.js';
 import { compose, rotation, scaling, translation, vec2, type Vec2 } from './math.js';
+import type { Pose } from './pose.js';
 import type { Fill, SceneNode, Shape, Stroke } from './scene.js';
 
 export interface PartSpec {
@@ -64,7 +65,11 @@ export function partTransform(
   );
 }
 
-export function instantiateObject(spec: ObjectSpec, options: InstantiateOptions): SceneNode {
+export function instantiateObject(
+  spec: ObjectSpec,
+  options: InstantiateOptions,
+  partPoses?: ReadonlyMap<string, Pose>,
+): SceneNode {
   const params = { ...spec.params, ...options.params };
   const tint = options.tint;
   let order = 0;
@@ -84,14 +89,17 @@ export function instantiateObject(spec: ObjectSpec, options: InstantiateOptions)
 
   const build = (part: PartSpec): SceneNode => {
     const layer = (options.layerBase ?? 0) + (part.z ?? order++);
+    const pose = partPoses?.get(part.id);
+    const at = part.at ?? vec2(0, 0);
     return {
       id: `${options.idPrefix}/${part.id}`,
       layer,
+      opacity: pose?.opacity,
       transform: partTransform(
-        part.at ?? vec2(0, 0),
+        vec2(at.x + (pose?.translate?.x ?? 0), at.y + (pose?.translate?.y ?? 0)),
         part.pivot ?? vec2(0, 0),
-        part.rotate ?? 0,
-        part.scale ?? 1,
+        (part.rotate ?? 0) + (pose?.rotate ?? 0),
+        (part.scale ?? 1) * (pose?.scale?.x ?? 1),
       ),
       shape: part.shape,
       fill: resolveFill(part.fill, part.id),
