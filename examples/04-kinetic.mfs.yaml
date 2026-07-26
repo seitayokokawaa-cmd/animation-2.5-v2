@@ -1,0 +1,97 @@
+# examples/04-kinetic — the M4 exit reel: every narrated phrase triggers a
+# motion-graphics verb, FX burst, or card, in the explainer-paper style.
+#
+#   pnpm mf voice sync examples/04-kinetic.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/04-kinetic.mfs.yaml -o out/04-kinetic.mp4
+motionforge: 2
+meta:
+  title: The Kinetic Reel
+  resolution: 640x360
+  fps: 30
+  seed: 21
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+
+shapes:
+  hero: { kind: rect, width: 1.8, height: 1.1, rx: 0.14, fill: '#d94f30' }
+  buddy: { kind: circle, r: 0.7, fill: '#3c6fb5' }
+  bomb: { kind: circle, r: 0.55, fill: '#3a3226' }
+
+scenes:
+  - id: entrances
+    place:
+      - { ref: hero, as: hero, at: [-2.6, -1.4], depth: 0.4 }
+      - { ref: buddy, as: buddy, at: [2.6, -1.4], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          Watch closely. Things pop in. Things spin in. Dates slam onto the
+          screen like they mean it.
+        sync:
+          - { on: 'pop in', do: { pop-in: { target: hero } } }
+          - { on: 'spin in', do: { spin-in: { target: buddy, turns: 2 } } }
+          - {
+              on: 'slam onto',
+              do: { card: { style: date, text: '1914', duration: 3.4, at: [0, 1.6] } },
+            }
+
+  - id: energy
+    place:
+      - { ref: hero, as: hero, at: [-3, -1.4], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          Characters bounce everywhere with boundless enthusiasm. They pulse
+          with pride. They wiggle with worry. They sweat under pressure.
+        sync:
+          - { on: 'bounce everywhere', do: { bounce-to: { target: hero, to: [3, -1.4], hops: 4 } } }
+          - { on: 'pulse with pride', do: { pulse: { target: hero, to: 1.35 } } }
+          - { on: 'wiggle with worry', do: { wiggle: { target: hero } } }
+          - { on: 'sweat under pressure', do: { sweat: { target: hero, count: 4 } } }
+
+  - id: lists
+    place:
+      - { ref: buddy, as: buddy, at: [3.2, -1.6], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          Comedy lists appear one demand at a time, which historians agree is
+          the funniest possible cadence. Labels name the guilty.
+        sync:
+          - {
+              on: 'one demand at a time',
+              do:
+                {
+                  card:
+                    {
+                      style: list,
+                      items: ['surrender the port', 'return the goats', 'apologize loudly'],
+                      at: [-2.2, 0.6],
+                      duration: 4.5,
+                    },
+                },
+            }
+          - {
+              on: 'name the guilty',
+              do: { card: { style: label, text: 'The Guilty', at: [3.2, -2.9], duration: 2.6 } },
+            }
+
+  - id: finale
+    place:
+      - { ref: bomb, as: bomb, at: [0, -1.2], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          And when tensions finally boil over, with steam and squash and
+          stretch, everything simply explodes. Impact guaranteed. The end.
+        sync:
+          - { on: 'steam', do: { steam: { target: bomb } } }
+          - { on: 'squash and', do: { squash-stretch: { target: bomb, amount: 0.3, beats: 2 } } }
+          - { on: 'simply explodes', do: { explode: { target: bomb, radius: 2 } } }
+          - { on: 'Impact guaranteed', do: { impact-stars: { target: bomb, count: 6 } } }
+          - {
+              on: 'The end',
+              do: { card: { style: chapter, text: 'fin', duration: 2, at: [0, 0.4] } },
+            }

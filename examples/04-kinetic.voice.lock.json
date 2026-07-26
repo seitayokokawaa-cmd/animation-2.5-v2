@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "segments": {
+    "energy/0": {
+      "hash": "c48b2118c4a820d47b69ad2bfc4e8c36dd5405f8a364405dfdad5d4a3024d532",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.12,
+      "text": "Characters bounce everywhere with boundless enthusiasm. They pulse with pride. They wiggle with worry. They sweat under pressure.\n"
+    },
+    "entrances/0": {
+      "hash": "036a71747cf2df5cf92b1119a7f27ada628b96497724214167253642f84978cf",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.72,
+      "text": "Watch closely. Things pop in. Things spin in. Dates slam onto the screen like they mean it.\n"
+    },
+    "finale/0": {
+      "hash": "be4fead4ede56eb955e69ed9c94da5addd7b0a9bca9f78c829e6d404133aaa8e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.52,
+      "text": "And when tensions finally boil over, with steam and squash and stretch, everything simply explodes. Impact guaranteed. The end.\n"
+    },
+    "lists/0": {
+      "hash": "6bc45b25df027dfccc6edf3452bd0f7b22d608a8c4a24a5805a6ddf22af0b12e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.92,
+      "text": "Comedy lists appear one demand at a time, which historians agree is the funniest possible cadence. Labels name the guilty.\n"
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Comedy",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "lists",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "appear",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "one",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "demand",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "at",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "a",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "time",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "which",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "historians",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "agree",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "is",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "the",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "funniest",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "possible",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "cadence",
+      "start": 6,
+      "end": 6.32
+    },
+    {
+      "word": "Labels",
+      "start": 6.4,
+      "end": 6.72
+    },
+    {
+      "word": "name",
+      "start": 6.8,
+      "end": 7.12
+    },
+    {
+      "word": "the",
+      "start": 7.2,
+      "end": 7.5200000000000005
+    },
+    {
+      "word": "guilty",
+      "start": 7.6000000000000005,
+      "end": 7.92
+    }
+  ]
+}

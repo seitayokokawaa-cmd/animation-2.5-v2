@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Watch",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "closely",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "Things",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "pop",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "in",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "Things",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "spin",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "in",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "Dates",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "slam",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "onto",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "the",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "screen",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "like",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "they",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "mean",
+      "start": 6,
+      "end": 6.32
+    },
+    {
+      "word": "it",
+      "start": 6.4,
+      "end": 6.72
+    }
+  ]
+}
