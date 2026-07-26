@@ -9,6 +9,9 @@ import { once } from 'node:events';
 
 import ffmpegPath from 'ffmpeg-static';
 
+/** The pinned ffmpeg binary (storyboard tiling reuses it, M13.4). */
+export const FFMPEG_PATH = ffmpegPath;
+
 export interface EncodeOptions {
   readonly fps: number;
   readonly outPath: string;

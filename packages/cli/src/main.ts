@@ -3,7 +3,9 @@
  * Run via `pnpm mf <command> ...` (tsx).
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -33,12 +35,14 @@ import {
   WORLD_VIEW,
   type GeoCollection,
 } from '@motionforge/maps';
-import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
+import { buildFrameSvg, FFMPEG_PATH, renderFilm, resvgRasterizer } from '@motionforge/render';
 
 import {
   anthropicAdapter,
   authorFilm,
+  critiqueStoryboard,
   MockLlmAdapter,
+  storyboardShots,
   type AuthorTools,
   type LlmAdapter,
 } from '@motionforge/agent';
@@ -66,6 +70,7 @@ Usage:
   mf timing <film.mfs.yaml>
   mf spec [-o docs/SPEC.md]
   mf author "<topic>" [-o out/film.mp4] [--research] [--mock transcript.json]
+  mf storyboard <film.mfs.yaml> [-o out/board.png] [--review] [--mock transcript.json]
 
 Exit codes: 0 = clean (warnings allowed), 1 = error findings, 2 = usage/IO failure.
 `;
@@ -250,6 +255,7 @@ async function main(): Promise<void> {
       at: { type: 'string' },
       'cache-dir': { type: 'string', default: 'assets/voice' },
       research: { type: 'boolean', default: false },
+      review: { type: 'boolean', default: false },
       mock: { type: 'string' },
     },
   });
@@ -411,6 +417,69 @@ async function main(): Promise<void> {
         writeFileSync(out, resvgRasterizer.toPng(svg));
       }
       process.stderr.write(`wrote ${out}\n`);
+      return;
+    }
+    case 'storyboard': {
+      // Contact sheet (M13.4): two frames per scene, tiled with ffmpeg;
+      // --review runs the vision-critique pass over the sheet.
+      const doc = loadChecked(file, values.json, values['cache-dir']);
+      const { film } = compileWithMarkers(
+        doc,
+        voiceDataFor(file, values['cache-dir']),
+        mapsDataFor(doc),
+      );
+      const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.board.png';
+      const shots = storyboardShots(film);
+      const dir = mkdtempSync(join(tmpdir(), 'mf-board-'));
+      try {
+        shots.forEach((shot, i) => {
+          const png = resvgRasterizer.toPng(buildFrameSvg(film, shot.tick));
+          writeFileSync(join(dir, `f${String(i).padStart(2, '0')}.png`), png);
+        });
+        const cols = Math.min(4, shots.length);
+        const rows = Math.ceil(shots.length / cols);
+        // Pad the last row with black so duplicates don't read as panels.
+        const blank = resvgRasterizer.toPng(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="${film.width}" height="${film.height}"><rect width="${film.width}" height="${film.height}" fill="#111"/></svg>`,
+        );
+        for (let i = shots.length; i < cols * rows; i++) {
+          writeFileSync(join(dir, `f${String(i).padStart(2, '0')}.png`), blank);
+        }
+        mkdirSync(dirname(out), { recursive: true });
+        execFileSync(FFMPEG_PATH as unknown as string, [
+          '-y',
+          '-v',
+          'error',
+          '-framerate',
+          '1',
+          '-i',
+          join(dir, 'f%02d.png'),
+          '-frames:v',
+          '1',
+          '-filter_complex',
+          `tile=${cols}x${rows}`,
+          '-update',
+          '1',
+          out,
+        ]);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+      process.stderr.write(`storyboard: ${shots.length} panel(s) → ${out}\n`);
+      if (values.review) {
+        const adapter: LlmAdapter = values.mock
+          ? new MockLlmAdapter(JSON.parse(readFileSync(values.mock, 'utf8')) as string[])
+          : anthropicAdapter();
+        const critique = await critiqueStoryboard(adapter, readFileSync(out), {
+          title: film.title,
+          styleGuide: readFileSync(join('docs', 'style-guide.md'), 'utf8'),
+          shots,
+        });
+        const critiquePath = out.replace(/\.png$/, '') + '.critique.md';
+        writeFileSync(critiquePath, critique);
+        process.stdout.write(critique + '\n');
+        process.stderr.write(`critique → ${critiquePath}\n`);
+      }
       return;
     }
     case 'timing': {
