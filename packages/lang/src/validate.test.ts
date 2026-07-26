@@ -67,12 +67,22 @@ describe('printers', () => {
     expect(printPretty([])).toBe('No problems found.');
   });
 
-  it('json output is stable machine format', () => {
-    const parsed = JSON.parse(printJson(findings)) as {
+  it('json output is the stable machine envelope (M12.6)', () => {
+    const parsed = JSON.parse(printJson(findings, 'x.mfs.yaml')) as {
+      ok: boolean;
+      file: string;
+      summary: { errors: number; warnings: number };
       findings: { code: string; title: string; line: number; col: number }[];
     };
+    expect(parsed.ok).toBe(false);
+    expect(parsed.file).toBe('x.mfs.yaml');
+    expect(parsed.summary).toEqual({ errors: 1, warnings: 0 });
     expect(parsed.findings[0]!.code).toBe('MF1002');
     expect(parsed.findings[0]!.title).toBe('Schema violation');
     expect(parsed.findings[0]!.line).toBe(2);
+    // A clean check still yields a parseable envelope.
+    const clean = JSON.parse(printJson([])) as { ok: boolean; summary: object };
+    expect(clean.ok).toBe(true);
+    expect(clean.summary).toEqual({ errors: 0, warnings: 0 });
   });
 });

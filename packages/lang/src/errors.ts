@@ -61,10 +61,19 @@ export function printPretty(findings: readonly Finding[]): string {
   return `${blocks.join('\n')}\n${errors} error(s), ${warnings} warning(s)`;
 }
 
-/** Stable machine format for `--json` (LLM fix loops parse this). */
-export function printJson(findings: readonly Finding[]): string {
+/**
+ * Stable machine format for `--json` (M12.6 — LLM fix loops parse this).
+ * The envelope: `ok` (no errors; warnings allowed), `summary` counts, and
+ * the findings. Exit codes pair with it: 0 = ok, 1 = errors, 2 = the
+ * command itself failed (bad usage, unreadable file).
+ */
+export function printJson(findings: readonly Finding[], file?: string): string {
+  const errors = findings.filter((f) => f.severity === 'error').length;
   return JSON.stringify(
     {
+      ok: errors === 0,
+      ...(file !== undefined ? { file } : {}),
+      summary: { errors, warnings: findings.length - errors },
       findings: findings.map((f) => ({
         code: f.code,
         title: MF_CODES[f.code],

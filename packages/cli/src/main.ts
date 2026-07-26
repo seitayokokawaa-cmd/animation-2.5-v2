@@ -57,6 +57,8 @@ Usage:
   mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
   mf timing <film.mfs.yaml>
   mf spec [-o docs/SPEC.md]
+
+Exit codes: 0 = clean (warnings allowed), 1 = error findings, 2 = usage/IO failure.
 `;
 
 /** The film's lock file sits beside it: film.mfs.yaml → film.voice.lock.json */
@@ -119,9 +121,10 @@ function voiceDataFor(file: string, cacheDir: string): VoiceData {
   };
 }
 
+/** Usage/IO failure — exit 2 so fix loops can tell it from findings (1). */
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
-  process.exit(1);
+  process.exit(2);
 }
 
 /** Compile every `maps:` entry once from vendored geodata (M7.2). */
@@ -188,7 +191,7 @@ function registryClaims(): VerbClaims {
   return claims;
 }
 
-function loadChecked(file: string, json: boolean, cacheDir?: string) {
+function loadChecked(file: string, json: boolean, cacheDir?: string, alwaysPrint = false) {
   let text: string;
   try {
     text = readFileSync(file, 'utf8');
@@ -208,12 +211,14 @@ function loadChecked(file: string, json: boolean, cacheDir?: string) {
   });
   if (libraries && libraries.findings.length > 0) {
     process.stdout.write(
-      (json ? printJson(libraries.findings) : printPretty(libraries.findings)) + '\n',
+      (json ? printJson(libraries.findings, file) : printPretty(libraries.findings)) + '\n',
     );
     process.exit(1);
   }
-  if (result.findings.length > 0) {
-    process.stdout.write((json ? printJson(result.findings) : printPretty(result.findings)) + '\n');
+  if (result.findings.length > 0 || (alwaysPrint && json)) {
+    process.stdout.write(
+      (json ? printJson(result.findings, file) : printPretty(result.findings)) + '\n',
+    );
   }
   if (hasErrors(result.findings) || !result.doc) process.exit(1);
   return result.doc;
@@ -271,7 +276,10 @@ async function main(): Promise<void> {
       return;
     }
     case 'check': {
-      const doc = loadChecked(file, values.json, values['cache-dir']);
+      // Exit codes (M12.6): 0 = no errors (warnings allowed), 1 = errors
+      // or an uncompilable document, 2 = usage/IO failure. `--json` always
+      // prints the machine envelope, clean or not.
+      const doc = loadChecked(file, values.json, values['cache-dir'], true);
       if (!values.json) process.stdout.write(`OK: ${doc.meta.title}\n`);
       return;
     }

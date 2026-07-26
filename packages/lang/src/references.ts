@@ -110,17 +110,28 @@ export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: stri
     });
 
     scene.actions.forEach((action, ai) => {
-      const verb = action.move ?? action.rotate ?? action.scale;
-      const verbName = action.move ? 'move' : action.rotate ? 'rotate' : 'scale';
-      if (verb && !placed.has(verb.target)) {
-        findings.push({
-          code: 'MF2002',
-          severity: 'error',
-          file,
-          pos: loaded.locate(['scenes', si, 'actions', ai, verbName, 'target']),
-          message: `Scene "${scene.id}" ${verbName} targets "${verb.target}", which is not placed in this scene`,
-          hint: `Place it first or fix the name.${suggest(verb.target, placed)}`,
-        });
+      // Every target-bearing verb payload — moves, effects, gestures,
+      // slapstick, chases — must aim at a placed instance.
+      for (const [verbName, payload] of Object.entries(action)) {
+        if (verbName === 'at' || payload === null || typeof payload !== 'object') continue;
+        const p = payload as { target?: unknown; targets?: unknown };
+        const targets = [
+          ...(typeof p.target === 'string' ? [p.target] : []),
+          ...(Array.isArray(p.targets)
+            ? p.targets.filter((t): t is string => typeof t === 'string')
+            : []),
+        ];
+        for (const target of targets) {
+          if (placed.has(target)) continue;
+          findings.push({
+            code: 'MF2002',
+            severity: 'error',
+            file,
+            pos: loaded.locate(['scenes', si, 'actions', ai, verbName]),
+            message: `Scene "${scene.id}" ${verbName} targets "${target}", which is not placed in this scene`,
+            hint: `Place it first or fix the name.${suggest(target, placed)}`,
+          });
+        }
       }
     });
   });
