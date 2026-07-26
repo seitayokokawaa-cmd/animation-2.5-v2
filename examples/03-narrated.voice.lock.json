@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "segments": {
+    "finale/0": {
+      "hash": "df234e69e65be8c49f3545e5688046cd9d1cb94d61cdc558593104405e9edb33",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 11.52,
+      "text": "In the end they compromised. The rectangle kept its corners, the circle kept its curves, and the crown landed on whoever rendered deterministically. Which, here, is everyone. The end.\n"
+    },
+    "hook/0": {
+      "hash": "7ef00b43a8c42d31ecb748d89d58d954cd1b7394ae8acab030ba423dd0e394bb",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.92,
+      "text": "This is a rectangle. For years it sat quietly in the corner of the screen, doing absolutely nothing of note.\n"
+    },
+    "hook/1": {
+      "hash": "41ce389e3e8686d2dbe60c4715f7842e31f7145e5e051a8486b0ebd7a95e244b",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 3.12,
+      "text": "But one day it decided it wanted more."
+    },
+    "rise/0": {
+      "hash": "545e394b05e141407f5a29ede83bdf000af899f181137c735ff6934c8faceffd",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.72,
+      "text": "It learned to move. It learned to grow. It even learned to spin, which frankly alarmed everyone.\n"
+    },
+    "rivalry/0": {
+      "hash": "975dd9d5bb755cb1a305c231bc24a0dfa907745b764660b044a1e6d2eec8a864",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.32,
+      "text": "Then a circle arrived. Smooth. Confident. Zero corners. The rectangle was not thrilled about this development.\n"
+    }
+  }
+}

@@ -1,0 +1,141 @@
+# examples/03-narrated — the M3 exit film: a fully narrated ~45 s piece
+# where every visual is anchored to a spoken phrase. Uses the offline mock
+# TTS engine so CI renders it with zero network; the frozen voice cache in
+# assets/voice/ plus 03-narrated.voice.lock.json make the render
+# byte-deterministic (ADR-0006).
+#
+#   pnpm mf voice sync examples/03-narrated.mfs.yaml   # only if narration changed
+#   pnpm mf timing examples/03-narrated.mfs.yaml       # where every word lands
+#   pnpm mf render examples/03-narrated.mfs.yaml -o out/03-narrated.mp4
+motionforge: 2
+meta:
+  title: The Rectangle That Wanted More
+  resolution: 640x360
+  fps: 30
+  seed: 11
+  background: '#22262e'
+
+voices:
+  narrator: { engine: mock, voice: warm }
+
+shapes:
+  hero: { kind: rect, width: 2, height: 1.2, rx: 0.15, fill: '#d94f30' }
+  rival: { kind: circle, r: 0.8, fill: '#3c6fb5', stroke: { color: '#ffffff', width: 0.06 } }
+  crown:
+    kind: polygon
+    points:
+      [[-0.7, 0], [-0.45, 0.5], [-0.2, 0.1], [0, 0.6], [0.2, 0.1], [0.45, 0.5], [0.7, 0], [0, -0.2]]
+    fill: '#ffd9a0'
+  ground: { kind: rect, width: 24, height: 2.4, fill: '#2e3440' }
+
+scenes:
+  - id: hook
+    place:
+      - { ref: ground, as: floor, at: [0, -4], depth: 0.9 }
+      - { ref: hero, as: rect, at: [-7, -2.2], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          This is a rectangle. For years it sat quietly in the corner of the
+          screen, doing absolutely nothing of note.
+        sync:
+          - {
+              on: 'This is a rectangle',
+              do: { move: { target: rect, to: [0, -2.2], duration: 1.1, easing: cubicOut } },
+            }
+          - {
+              on: 'sat quietly',
+              do: { caption: { text: 'the rectangle', size: 0.55, at: [0, -3.9], duration: 2.5 } },
+            }
+          - {
+              on: 'absolutely nothing',
+              do: { rotate: { target: rect, to: -6, duration: 0.8, easing: sineInOut } },
+            }
+      - voice: narrator
+        text: But one day it decided it wanted more.
+        sync:
+          - { on: 'wanted more', do: { camera: { zoom: 1.35, duration: 0.9, easing: cubicInOut } } }
+
+  - id: rise
+    place:
+      - { ref: ground, as: floor, at: [0, -4], depth: 0.9 }
+      - { ref: hero, as: rect, at: [0, -2.2], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          It learned to move. It learned to grow. It even learned to spin,
+          which frankly alarmed everyone.
+        sync:
+          - {
+              on: 'learned to move',
+              do: { move: { target: rect, to: [2.5, -2.2], duration: 1, easing: backOut } },
+            }
+          - {
+              on: 'learned to grow',
+              do: { scale: { target: rect, to: 1.8, duration: 1, easing: backOut } },
+            }
+          - {
+              on: 'learned to spin',
+              do: { rotate: { target: rect, to: 360, duration: 1.4, easing: cubicInOut } },
+            }
+          - {
+              on: 'alarmed everyone',
+              do: { caption: { text: 'everyone: alarmed', size: 0.5, at: [0, -3.9], duration: 2 } },
+            }
+
+  - id: rivalry
+    place:
+      - { ref: ground, as: floor, at: [0, -4], depth: 0.9 }
+      - { ref: hero, as: rect, at: [-2.5, -2.2], depth: 0.4 }
+      - { ref: rival, as: circle, at: [8, -2.2], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          Then a circle arrived. Smooth. Confident. Zero corners. The
+          rectangle was not thrilled about this development.
+        sync:
+          - {
+              on: 'a circle arrived',
+              do: { move: { target: circle, to: [2.5, -2.2], duration: 1, easing: cubicOut } },
+            }
+          - {
+              on: 'Zero corners',
+              do: { caption: { text: '0 corners?!', size: 0.55, at: [2.5, -0.8], duration: 1.6 } },
+            }
+          - {
+              on: 'not thrilled',
+              do: { rotate: { target: rect, to: -14, duration: 0.6, easing: sineInOut } },
+            }
+          - {
+              on: 'this development',
+              do: { camera: { to: [0, -1.5], zoom: 1.2, duration: 1, easing: sineInOut } },
+            }
+
+  - id: finale
+    place:
+      - { ref: ground, as: floor, at: [0, -4], depth: 0.9 }
+      - { ref: hero, as: rect, at: [0, -2.2], depth: 0.4 }
+      - { ref: crown, as: crown, at: [0, 3.8], depth: 0.3 }
+    narration:
+      - voice: narrator
+        text: >
+          In the end they compromised. The rectangle kept its corners, the
+          circle kept its curves, and the crown landed on whoever rendered
+          deterministically. Which, here, is everyone. The end.
+        sync:
+          - {
+              on: 'they compromised',
+              do: { caption: { text: 'a truce', size: 0.6, at: [0, -3.9], duration: 2 } },
+            }
+          - {
+              on: 'the crown landed',
+              do: { move: { target: crown, to: [0, -0.9], duration: 0.9, easing: bounceOut } },
+            }
+          - {
+              on: 'rendered deterministically',
+              do: { camera: { zoom: 1.3, duration: 1.2, easing: sineInOut } },
+            }
+          - {
+              on: { phrase: 'The end', nth: 2 },
+              do: { caption: { text: 'fin', size: 1.0, at: [0, 1.8], duration: 1.5 } },
+            }

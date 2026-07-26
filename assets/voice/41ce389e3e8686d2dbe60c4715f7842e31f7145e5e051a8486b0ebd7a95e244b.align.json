@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "But",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "one",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "day",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "it",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "decided",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "it",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "wanted",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "more",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    }
+  ]
+}

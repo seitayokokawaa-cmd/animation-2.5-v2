@@ -25,6 +25,7 @@ jobs:
         run: |
           mkdir -p out
           pnpm mf render examples/01-shapes.mfs.yaml -o out/01-shapes.mp4
+          pnpm mf render examples/03-narrated.mfs.yaml -o out/03-narrated.mp4
 
       - name: Upload rendered films
         uses: actions/upload-artifact@v4
