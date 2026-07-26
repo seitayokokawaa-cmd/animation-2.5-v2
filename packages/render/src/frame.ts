@@ -40,6 +40,8 @@ import {
   faceNodes,
   HEAD_ANCHOR_Z,
   idlePose,
+  REACTION_KINDS,
+  reactionFace,
   sampleEffect,
 } from '@motionforge/motion';
 
@@ -188,11 +190,34 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             { idPrefix: `${inst.id}/costume`, layerBase: inst.layer },
           );
           const template = dressed.template;
+          // Active reaction (M6.7) takes the face over for its window.
+          const reaction = scene.effects.find(
+            (e) =>
+              e.verb === 'react' &&
+              e.target === inst.id &&
+              localTick >= e.startTick &&
+              localTick < e.startTick + e.durationTicks,
+          );
+          let expression = FACE_EXPRESSIONS[inst.character.expression] ?? FACE_EXPRESSIONS.neutral!;
+          let look = vec2(0.35, -0.08);
+          let mouthOpen: number | undefined;
+          if (reaction) {
+            const rt =
+              reaction.durationTicks === 0
+                ? 1
+                : (localTick - reaction.startTick) / reaction.durationTicks;
+            const kind = REACTION_KINDS[reaction.params.kind ?? 0] ?? 'deadpan';
+            const over = reactionFace(kind, rt);
+            expression = over.expression;
+            look = over.look ?? look;
+            mouthOpen = over.mouthOpen;
+          }
           const face = faceNodes(
             {
-              expression: FACE_EXPRESSIONS[inst.character.expression] ?? FACE_EXPRESSIONS.neutral!,
+              expression,
               eyesOpen: blinkOpenness(scene.startTick + localTick, film.seed, inst.id),
-              look: vec2(0.35, -0.08),
+              look,
+              mouthOpen,
             },
             {
               idPrefix: `${inst.id}/face`,
@@ -248,6 +273,7 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
         };
       }),
       // Cartoon FX geometry, anchored at the target's current position.
+      // Characters anchor FX near the head (their position is the feet).
       ...scene.effects.flatMap((effect, ei): SceneNode[] => {
         const emitted = emitEffectNodes(effect, localTick, film.seed);
         if (emitted.length === 0) return [];
@@ -255,12 +281,13 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
         const anchor = inst
           ? sample<Vec2>(scene.timeline, `${inst.id}/pos`, localTick)
           : vec2(0, 0);
+        const lift = inst?.character ? 1.1 * inst.character.size : 0;
         return [
           {
             id: `fx-${ei}`,
             depth: inst?.depth ?? 0.2,
-            layer: (inst?.layer ?? 0) + 1,
-            transform: withParallax(inst?.depth ?? 0.2, translation(anchor.x, anchor.y)),
+            layer: (inst?.layer ?? 0) + 30,
+            transform: withParallax(inst?.depth ?? 0.2, translation(anchor.x, anchor.y + lift)),
             children: emitted,
           },
         ];

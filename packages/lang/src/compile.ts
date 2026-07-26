@@ -42,7 +42,7 @@ import {
 
 import { findPhrase, type MfsAnchor } from './narration.js';
 import type { MfsObjectDef, MfsPart } from './parts.js';
-import type { MfsDocument, MfsShapeDef, verbSchema } from './schema.js';
+import { REACTION_CHOICES, type MfsDocument, type MfsShapeDef, type verbSchema } from './schema.js';
 import type { z } from 'zod';
 
 export { sceneAtTick };
@@ -397,6 +397,8 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       oscillate: 2,
       piston: 2,
       roll: 1,
+      hearts: 1.2,
+      react: 1.4,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */
@@ -516,6 +518,18 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         simpleFx('sweat', verb.sweat, startTick, ['count']);
       } else if (verb.steam) {
         simpleFx('steam', verb.steam, startTick, []);
+      } else if (verb.hearts) {
+        simpleFx('hearts', verb.hearts, startTick, ['count']);
+      } else if (verb.react) {
+        const { target, kind, duration } = verb.react;
+        const seconds = duration ?? EFFECT_DEFAULT_SECONDS.react!;
+        pushEffect(target, 'react', startTick, seconds, {
+          kind: REACTION_CHOICES.indexOf(kind),
+        });
+        // Emitter reactions bring their particles along.
+        if (kind === 'sweat') pushEffect(target, 'sweat', startTick, seconds, {});
+        if (kind === 'anger-steam') pushEffect(target, 'steam', startTick, seconds, {});
+        if (kind === 'hearts') pushEffect(target, 'hearts', startTick, seconds, {});
       } else if (verb.hinge) {
         const { target, to, from, duration } = verb.hinge;
         pushEffect(target, 'hinge', startTick, duration ?? EFFECT_DEFAULT_SECONDS.hinge!, {

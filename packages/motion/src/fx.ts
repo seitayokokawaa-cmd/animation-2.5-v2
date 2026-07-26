@@ -27,6 +27,7 @@ const DEBRIS = parseColor('#8a6a3f');
 const STAR = parseColor('#ffd9a0');
 const SWEAT = parseColor('#9fd0f0');
 const STEAM = parseColor('#cfcfcf');
+const HEART = parseColor('#e2596b');
 
 /** Deterministic per-particle unit direction. */
 const direction = (seed: number, stream: string, i: number): { x: number; y: number } => {
@@ -171,6 +172,52 @@ export const FX_DEFS: VerbDef[] = [
           shape: { kind: 'ellipse', rx: 0.09, ry: 0.13 },
           fill: { color: SWEAT },
           opacity: Math.max(0, 1 - phase),
+        });
+      }
+      return nodes;
+    },
+  },
+  {
+    name: 'hearts',
+    summary: 'Little hearts floating up — smitten (M6.7 reactions).',
+    defaultDurationSeconds: 1.2,
+    sample: () => ({}),
+    emit(t, effect, filmSeed) {
+      const count = Math.max(1, Math.round(p(effect, 'count', 4)));
+      const nodes: SceneNode[] = [];
+      for (let i = 0; i < count; i++) {
+        const phase = (t + i / count) % 1;
+        const sway = hashNoiseSigned(filmSeed, effect.seed, i) * 0.5;
+        const s = 0.14 + hashNoise(filmSeed, `${effect.seed}/s`, i) * 0.08;
+        nodes.push({
+          id: `${effect.seed}/heart${i}`,
+          transform: translation(
+            sway + Math.sin(phase * Math.PI * 3 + i) * 0.15,
+            0.7 + phase * 1.6,
+          ),
+          opacity: Math.max(0, 0.95 - phase),
+          children: [
+            {
+              id: `${effect.seed}/heart${i}/l`,
+              shape: { kind: 'circle', r: s * 0.62 },
+              transform: translation(-s * 0.42, s * 0.3),
+              fill: { color: HEART },
+            },
+            {
+              id: `${effect.seed}/heart${i}/r`,
+              shape: { kind: 'circle', r: s * 0.62 },
+              transform: translation(s * 0.42, s * 0.3),
+              fill: { color: HEART },
+            },
+            {
+              id: `${effect.seed}/heart${i}/v`,
+              shape: {
+                kind: 'polygon',
+                points: [vec2(-s, 0.16 * s), vec2(s, 0.16 * s), vec2(0, -s * 1.2)],
+              },
+              fill: { color: HEART },
+            },
+          ],
         });
       }
       return nodes;

@@ -208,6 +208,14 @@ const defs: VerbDef[] = [
       return { translate: vec2(0, lift), scale: vec2(1 + squash, 1 - squash) };
     },
   },
+  {
+    name: 'react',
+    summary:
+      'Face takeover on a cast member (jaw-drop, eye-bulge, …). The frame ' +
+      'builder reads `kind` and drives the face; the body pose is untouched.',
+    defaultDurationSeconds: 1.4,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

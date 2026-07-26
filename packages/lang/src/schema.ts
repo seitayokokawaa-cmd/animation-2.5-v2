@@ -156,6 +156,16 @@ export const MUSTACHE_CHOICES = ['imperial', 'handlebar', 'chevron', 'goatee'] a
 
 export const HELD_CHOICES = ['scroll', 'sword', 'staff', 'flag'] as const;
 
+/** Reaction kinds (M6.7) — order matches motion's REACTION_KINDS index. */
+export const REACTION_CHOICES = [
+  'jaw-drop',
+  'eye-bulge',
+  'sweat',
+  'anger-steam',
+  'hearts',
+  'deadpan',
+] as const;
+
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
@@ -238,6 +248,19 @@ const verbFields = {
     .strict()
     .optional(),
   steam: z.object(effectBase).strict().optional(),
+  hearts: z
+    .object({ ...effectBase, count: z.number().int().positive().optional() })
+    .strict()
+    .optional(),
+  /** Face takeover on a cast member (M6.7). */
+  react: z
+    .object({
+      target: nameSchema,
+      kind: z.enum(REACTION_CHOICES),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   hinge: z
     .object({
       target: partTargetSchema,
@@ -366,6 +389,8 @@ export const VERB_NAMES = [
   'speedlines',
   'sweat',
   'steam',
+  'hearts',
+  'react',
   'squash-stretch',
   'hinge',
   'oscillate',

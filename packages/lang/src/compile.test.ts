@@ -145,4 +145,24 @@ describe('cast compilation (M6.4)', () => {
     expect(f1!.shape).toBeUndefined();
     expect(f1!.object).toBeUndefined();
   });
+
+  it('react compiles a face effect plus companion particles (M6.7)', () => {
+    const withReact = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30 },
+      cast: { franz: { template: 'potato-biped' } },
+      scenes: [
+        {
+          id: 'a',
+          duration: 2,
+          place: [{ ref: 'franz', as: 'f1', at: [0, 0] }],
+          actions: [{ at: 0.5, react: { target: 'f1', kind: 'anger-steam' } }],
+        },
+      ],
+    });
+    const effects = compile(withReact).scenes[0]!.effects;
+    expect(effects.map((e) => e.verb)).toEqual(['react', 'steam']);
+    expect(effects[0]!.params.kind).toBe(3); // anger-steam's index
+    expect(effects[0]!.durationTicks).toBe(168); // 1.4 s default
+  });
 });

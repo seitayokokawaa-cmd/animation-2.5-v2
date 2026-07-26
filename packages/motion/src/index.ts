@@ -7,3 +7,4 @@ export * from './skin.js';
 export * from './potato.js';
 export * from './face.js';
 export * from './costume.js';
+export * from './reactions.js';
