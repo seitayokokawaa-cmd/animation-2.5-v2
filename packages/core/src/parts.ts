@@ -112,7 +112,7 @@ export function instantiateObject(
   };
 
   const root: SceneNode = {
-    id: options.idPrefix,
+    id: `${options.idPrefix}/object`,
     transform: scaling((options.flip ? -1 : 1) * (options.scale ?? 1), options.scale ?? 1),
     children: spec.parts.map(build),
   };
