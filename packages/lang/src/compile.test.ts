@@ -102,3 +102,41 @@ describe('compile', () => {
     expect(() => compile(bad)).toThrow(/overlap/);
   });
 });
+
+describe('cast compilation (M6.4)', () => {
+  const doc = mfsSchema.parse({
+    motionforge: 2,
+    meta: { title: 'T', resolution: '640x360', fps: 30 },
+    cast: {
+      franz: {
+        template: 'potato-biped',
+        size: 0.9,
+        palette: { outfit: '#8a1c1c', 'outfit-dark': '#5f1212' },
+      },
+    },
+    scenes: [
+      {
+        id: 'a',
+        duration: 1,
+        place: [
+          { ref: 'franz', as: 'f1', at: [-2, 0], facing: 'left', layer: 2 },
+          { ref: 'franz', as: 'f2', at: [2, 0] },
+        ],
+      },
+    ],
+  });
+
+  it('compiles cast placements into character instances', () => {
+    const [f1, f2] = compile(doc).scenes[0]!.instances;
+    expect(f1).toMatchObject({ id: 'f1', depth: 0.5, layer: 2000 });
+    expect(f1!.character).toMatchObject({ template: 'potato-biped', size: 0.9, facing: 'left' });
+    // Kebab-case YAML slots map to the template's camelCase slot names.
+    expect(f1!.character!.palette).toEqual({
+      outfit: { r: 0x8a, g: 0x1c, b: 0x1c, a: 1 },
+      outfitDark: { r: 0x5f, g: 0x12, b: 0x12, a: 1 },
+    });
+    expect(f2!.character).toMatchObject({ size: 0.9, facing: 'right' });
+    expect(f1!.shape).toBeUndefined();
+    expect(f1!.object).toBeUndefined();
+  });
+});

@@ -13,6 +13,20 @@ import type { Fill, Shape, Stroke } from './scene.js';
 import type { Tick } from './time.js';
 import type { Timeline } from './timeline.js';
 
+/**
+ * A cast-member placement (M6.4). Core carries only the descriptor; the
+ * character template registry in `motion` resolves it to a rig + skin at
+ * render time (render → motion is an allowed edge, ADR-0005).
+ */
+export interface FilmCharacter {
+  /** Template name, e.g. `potato-biped`. */
+  readonly template: string;
+  readonly size: number;
+  /** Palette slot overrides, keyed by the template's slot names. */
+  readonly palette: Readonly<Record<string, Color>>;
+  readonly facing: 'left' | 'right';
+}
+
 export interface FilmInstance {
   readonly id: string;
   /** Simple shape instances. */
@@ -25,6 +39,8 @@ export interface FilmInstance {
     readonly spec: ObjectSpec;
     readonly options: InstantiateOptions;
   };
+  /** Cast-member instances (M6.4). */
+  readonly character?: FilmCharacter;
   readonly depth: number;
   readonly layer: number;
 }

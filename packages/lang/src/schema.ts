@@ -105,10 +105,34 @@ const placeSchema = z
     rotate: z.number().finite().optional(),
     /** Mirror horizontally (objects only). */
     flip: z.boolean().optional(),
+    /** Which way a cast member looks (cast only); default right. */
+    facing: z.enum(['left', 'right']).optional(),
     /** Multiply-tint every fill (objects only). */
     tint: colorSchema.optional(),
     /** Color param overrides (objects only). */
     with: z.record(nameSchema, colorSchema).optional(),
+  })
+  .strict();
+
+/** Palette slots understood by the character templates (kebab-case here;
+ * the compiler maps them to the template's camelCase slot names). */
+export const CAST_PALETTE_SLOTS = ['skin', 'outfit', 'outfit-dark', 'outline', 'boots'] as const;
+
+const castPaletteSchema = z
+  .object(
+    Object.fromEntries(CAST_PALETTE_SLOTS.map((slot) => [slot, colorSchema.optional()])) as Record<
+      (typeof CAST_PALETTE_SLOTS)[number],
+      z.ZodOptional<typeof colorSchema>
+    >,
+  )
+  .strict();
+
+/** A cast member (M6.4): a named character built from a rig template. */
+const castMemberSchema = z
+  .object({
+    template: z.literal('potato-biped'),
+    size: z.number().finite().positive().optional(),
+    palette: castPaletteSchema.optional(),
   })
   .strict();
 
@@ -398,6 +422,7 @@ export const mfsSchema = z
       .strict(),
     shapes: z.record(nameSchema, shapeDefSchema).default({}),
     objects: z.record(nameSchema, objectDefSchema).default({}),
+    cast: z.record(nameSchema, castMemberSchema).default({}),
     /** Library files (project-relative or built-in `library/…`) — M5.4. */
     use: z.array(z.string().min(1)).default([]),
     scenes: z.array(sceneSchema).min(1),
@@ -406,6 +431,7 @@ export const mfsSchema = z
 
 export type MfsDocument = z.infer<typeof mfsSchema>;
 export type MfsShapeDef = z.infer<typeof shapeDefSchema>;
+export type MfsCastMember = z.infer<typeof castMemberSchema>;
 export type MfsScene = z.infer<typeof sceneSchema>;
 export type MfsPlace = z.infer<typeof placeSchema>;
 export type MfsAction = z.infer<typeof actionSchema>;

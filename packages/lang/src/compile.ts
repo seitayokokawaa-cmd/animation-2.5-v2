@@ -134,6 +134,17 @@ export function toObjectSpec(def: MfsObjectDef): ObjectSpec {
   return { params, parts: def.parts.map(toPartSpec) };
 }
 
+// ---- cast --------------------------------------------------------------------
+
+/** YAML palette slots (kebab-case) → character-template slot names. */
+const CAST_SLOT_NAMES: Readonly<Record<string, string>> = {
+  skin: 'skin',
+  outfit: 'outfit',
+  'outfit-dark': 'outfitDark',
+  outline: 'outline',
+  boots: 'boots',
+};
+
 // ---- anchors ----------------------------------------------------------------
 
 const anchorPhrase = (anchor: MfsAnchor): string =>
@@ -247,6 +258,24 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
 
     // -- instances -------------------------------------------------------------
     const instances: FilmInstance[] = scene.place.map((p) => {
+      const castDef = doc.cast[p.ref];
+      if (castDef) {
+        const palette: Record<string, Color> = {};
+        for (const [slot, hex] of Object.entries(castDef.palette ?? {})) {
+          if (hex !== undefined) palette[CAST_SLOT_NAMES[slot] ?? slot] = parseColor(hex);
+        }
+        return {
+          id: p.as,
+          character: {
+            template: castDef.template,
+            size: castDef.size ?? 1,
+            palette,
+            facing: p.facing ?? 'right',
+          },
+          depth: p.depth ?? 0.5,
+          layer: (p.layer ?? 0) * 1000,
+        };
+      }
       const objectDef = doc.objects[p.ref];
       if (objectDef) {
         const overrides: Record<string, Color> = {};

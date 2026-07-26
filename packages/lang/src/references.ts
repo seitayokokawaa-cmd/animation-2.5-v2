@@ -49,7 +49,11 @@ const suggest = (name: string, candidates: Iterable<string>): string => {
 
 export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: string): Finding[] {
   const findings: Finding[] = [];
-  const shapeNames = [...Object.keys(doc.shapes), ...Object.keys(doc.objects)];
+  const shapeNames = [
+    ...Object.keys(doc.shapes),
+    ...Object.keys(doc.objects),
+    ...Object.keys(doc.cast),
+  ];
   const sceneIds = new Set<string>();
 
   doc.scenes.forEach((scene, si) => {
@@ -73,8 +77,8 @@ export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: stri
           severity: 'error',
           file,
           pos: loaded.locate(['scenes', si, 'place', pi, 'ref']),
-          message: `Scene "${scene.id}" places unknown shape/object "${place.ref}"`,
-          hint: `Define it under shapes: or objects: — or fix the name.${suggest(place.ref, shapeNames)}`,
+          message: `Scene "${scene.id}" places unknown shape/object/cast "${place.ref}"`,
+          hint: `Define it under shapes:, objects:, or cast: — or fix the name.${suggest(place.ref, shapeNames)}`,
         });
       }
       if (placed.has(place.as)) {

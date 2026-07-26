@@ -10,6 +10,7 @@
 import {
   combinePoses,
   compose,
+  fnv1a,
   IDENTITY,
   instantiateObject,
   emitSvg,
@@ -29,7 +30,13 @@ import {
   type Tick,
   type Vec2,
 } from '@motionforge/core';
-import { emitEffectNodes, sampleEffect } from '@motionforge/motion';
+import {
+  CHARACTER_TEMPLATES,
+  characterNodes,
+  emitEffectNodes,
+  idlePose,
+  sampleEffect,
+} from '@motionforge/motion';
 
 import { buildCardNodes } from './cards.js';
 import { paperTextureNodes, stylePreset, type StylePreset } from './style.js';
@@ -160,6 +167,26 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             ),
           ),
         };
+        if (inst.character) {
+          const build = CHARACTER_TEMPLATES[inst.character.template];
+          if (!build) {
+            throw new Error(`Unknown character template "${inst.character.template}"`);
+          }
+          const template = build({ size: inst.character.size, palette: inst.character.palette });
+          return {
+            ...base,
+            children: [
+              characterNodes(template, {
+                idPrefix: inst.id,
+                layerBase: inst.layer,
+                at: vec2(0, 0),
+                facing: inst.character.facing,
+                // Per-character phase offset so a cast never breathes in sync.
+                pose: idlePose(localTick, fnv1a(inst.id) % 240),
+              }),
+            ],
+          };
+        }
         if (!inst.object) {
           return { ...base, shape: inst.shape, fill: inst.fill, stroke: inst.stroke };
         }
