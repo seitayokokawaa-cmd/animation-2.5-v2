@@ -70,6 +70,17 @@ function segmentRequests(doc: MfsDocument): SegmentRequest[] {
       }
       requests.push({ key: `${scene.id}/${index}`, text: segment.text, spec });
     });
+    // Character lines (M8.4) freeze through the same cache.
+    scene.lines.forEach((line, index) => {
+      const voiceName = line.voice ?? line.speaker;
+      const spec = doc.voices[voiceName];
+      if (!spec) {
+        fail(
+          `Scene "${scene.id}" line uses unknown voice "${voiceName}" — declare it under voices:`,
+        );
+      }
+      requests.push({ key: `${scene.id}/line/${index}`, text: line.say, spec });
+    });
   }
   return requests;
 }

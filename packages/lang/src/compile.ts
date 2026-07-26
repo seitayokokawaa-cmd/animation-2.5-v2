@@ -25,6 +25,7 @@ import {
   type FilmCard,
   type FilmEffect,
   type FilmInstance,
+  type FilmLine,
   type FilmNarrationSegment,
   type FilmScene,
   type Shape,
@@ -327,10 +328,56 @@ export function compileWithMarkers(
       narrationSeconds += data.durationSeconds + (segment.pause ?? DEFAULT_SEGMENT_PAUSE);
     });
 
+    // -- character lines (M8.4): anchored to a phrase's end -------------------
+    const filmLines: FilmLine[] = [];
+    let linesEndSeconds = 0;
+    scene.lines.forEach((line, index) => {
+      const key = `${scene.id}/line/${index}`;
+      const data = voice?.segment(key);
+      if (!data) {
+        throw new Error(
+          `Scene "${scene.id}": line ${key} is not in the voice cache — run \`mf voice sync\` first`,
+        );
+      }
+      const phrase = anchorPhrase(line.after);
+      const phraseLength = tokenizeWords(phrase).length;
+      let startSeconds: number | undefined;
+      for (const slot of scheduled) {
+        const segmentText = scene.narration[slot.index]!.text;
+        const hits = findPhrase(tokenizeWords(segmentText), phrase);
+        if (hits.length === 0) continue;
+        const hit = hits[Math.min(anchorNth(line.after), hits.length) - 1]!;
+        const lastWord = slot.data.words[hit + phraseLength - 1] ?? slot.data.words[hit];
+        startSeconds = slot.startSeconds + (lastWord?.end ?? 0) + 0.15;
+        break;
+      }
+      if (startSeconds === undefined) {
+        throw new Error(
+          `Scene "${scene.id}": line ${index + 1} anchors after ${JSON.stringify(phrase)}, which no narration segment contains`,
+        );
+      }
+      filmLines.push({
+        key,
+        hash: data.hash,
+        speaker: line.speaker,
+        text: line.say,
+        startTick: secondsToTicks(startSeconds),
+        durationTicks: secondsToTicks(data.durationSeconds),
+      });
+      linesEndSeconds = Math.max(linesEndSeconds, startSeconds + data.durationSeconds);
+      markers.push({
+        sceneId: scene.id,
+        kind: 'sync',
+        label: `line(${line.speaker}): ${line.say}`,
+        seconds: ticksToSeconds(filmTick) + startSeconds,
+        tick: filmTick + secondsToTicks(startSeconds),
+      });
+    });
+
     const durationTicks =
       scene.duration !== undefined
         ? secondsToTicks(scene.duration)
-        : secondsToTicks(narrationSeconds);
+        : secondsToTicks(Math.max(narrationSeconds, linesEndSeconds + 0.35));
     if (durationTicks <= 0) {
       throw new Error(`Scene "${scene.id}": empty duration`);
     }
@@ -558,6 +605,15 @@ export function compileWithMarkers(
         params,
       );
     };
+
+    // Line reactions ride the delivery window (M8.4).
+    scene.lines.forEach((line, index) => {
+      if (!line.react) return;
+      const fl = filmLines[index]!;
+      pushEffect(line.speaker, 'react', fl.startTick, ticksToSeconds(fl.durationTicks) + 0.4, {
+        kind: REACTION_CHOICES.indexOf(line.react),
+      });
+    });
 
     const baseOf = (target: string) => scene.place.find((p) => p.as === target)!;
     /** Entrances start offstage: overrides the pos track's initial value. */
@@ -1078,6 +1134,7 @@ export function compileWithMarkers(
       narration,
       effects,
       cards,
+      lines: filmLines,
       instances: [...stageInstances, ...authoredInstances],
       timeline: createTimeline(tracks, [], durationTicks),
       captions,

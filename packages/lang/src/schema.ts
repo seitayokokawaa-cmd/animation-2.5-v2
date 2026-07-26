@@ -11,7 +11,7 @@
 import { TICKS_PER_SECOND } from '@motionforge/core';
 import { z } from 'zod';
 
-import { makeNarrationSchema, voiceSpecSchema } from './narration.js';
+import { anchorSchema, makeNarrationSchema, voiceSpecSchema } from './narration.js';
 import { objectDefSchema } from './parts.js';
 import { STAGE_PRESET_NAMES } from './stage.js';
 
@@ -648,6 +648,24 @@ const sceneSchema = z
     place: z.array(placeSchema).default([]),
     actions: z.array(actionSchema).default([]),
     narration: makeNarrationSchema(verbSchema).default([]),
+    /** Character one-liners (M8.4): squeaked after a narration phrase. */
+    lines: z
+      .array(
+        z
+          .object({
+            /** Anchor phrase in this scene's narration; fires at its end. */
+            after: anchorSchema,
+            /** Speaking cast instance (its `as` name). */
+            speaker: nameSchema,
+            say: z.string().min(1),
+            /** Voice name from voices:; defaults to the speaker's name. */
+            voice: nameSchema.optional(),
+            /** Reaction to pull while delivering (M6.7). */
+            react: z.enum(REACTION_CHOICES).optional(),
+          })
+          .strict(),
+      )
+      .default([]),
   })
   .strict()
   .refine((scene) => scene.duration !== undefined || scene.narration.length > 0, {

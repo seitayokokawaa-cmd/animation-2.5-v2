@@ -101,6 +101,69 @@ function captionNodes(scene: FilmScene, localTick: Tick, preset: StylePreset): S
     });
 }
 
+/** Comic speech bubble (M8.4): rounded plate + tail + ink text, popping
+ * in above the speaker's head. Local frame = the speaker instance. */
+function speechBubble(
+  text: string,
+  characterSize: number,
+  idPrefix: string,
+  layer: number,
+  popT: number,
+): SceneNode {
+  const run = shapeText('noto-sans', text);
+  const size = 0.3;
+  const s = size / run.upem;
+  const textWidth = run.width * s;
+  const bw = textWidth + 0.6;
+  const bh = 0.72;
+  const topY = 2.25 * characterSize + 0.55;
+  const pop = ease('backOut', Math.min(1, popT));
+  const ink = { r: 0x3a, g: 0x32, b: 0x26, a: 1 };
+  return {
+    id: idPrefix,
+    layer,
+    transform: compose(translation(0.3, topY), scaling(pop, pop)),
+    children: [
+      {
+        id: `${idPrefix}/plate`,
+        layer,
+        shape: { kind: 'rect', width: bw, height: bh, rx: 0.3 },
+        transform: translation(0, bh / 2),
+        fill: { color: { r: 0xfd, g: 0xfa, b: 0xf1, a: 1 } },
+        stroke: { color: ink, width: 0.035 },
+      },
+      {
+        id: `${idPrefix}/tail`,
+        layer,
+        shape: {
+          kind: 'polygon',
+          points: [vec2(-0.25, 0.06), vec2(0.05, 0.06), vec2(-0.28, -0.42)],
+        },
+        fill: { color: { r: 0xfd, g: 0xfa, b: 0xf1, a: 1 } },
+        stroke: { color: ink, width: 0.03 },
+      },
+      // Re-cover the tail/plate seam.
+      {
+        id: `${idPrefix}/seam`,
+        layer: layer + 1,
+        shape: { kind: 'rect', width: 0.34, height: 0.14 },
+        transform: translation(-0.1, 0.1),
+        fill: { color: { r: 0xfd, g: 0xfa, b: 0xf1, a: 1 } },
+      },
+      ...run.paths.map((glyph, gi): SceneNode => ({
+        id: `${idPrefix}/g${gi}`,
+        layer: layer + 2,
+        transform: compose(
+          translation(-textWidth / 2 + glyph.x * s, bh / 2 - 0.1 + glyph.y * s),
+          scaling(s, s),
+        ),
+        shape: { kind: 'path', d: glyph.d },
+        fill: { color: ink },
+      })),
+    ],
+  };
+}
+
 /** Build the complete SVG frame for a film-global tick. */
 export function buildFrameSvg(film: Film, tick: Tick): string {
   const scene = sceneAtTick(film, tick);
@@ -264,6 +327,18 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             look = over.look ?? look;
             mouthOpen = over.mouthOpen;
           }
+          // A character delivering a line flaps its mouth (M8.4) — a plain
+          // two-frame flap at ~7 Hz, the genre's talking cycle.
+          const activeLine = (scene.lines ?? []).find(
+            (l) =>
+              l.speaker === inst.id &&
+              localTick >= l.startTick &&
+              localTick < l.startTick + l.durationTicks,
+          );
+          if (activeLine) {
+            expression = { ...expression, mouth: 'open' };
+            mouthOpen = Math.floor((localTick - activeLine.startTick) / 9) % 2 === 0 ? 1 : 0.2;
+          }
           // Quadrupeds draw their own face; bipeds get the face module.
           const face =
             template.hasFace === false
@@ -350,10 +425,20 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                   children: [rig],
                 }
               : rig;
+          // Comic speech bubble above the speaker while the line plays.
+          const bubble = activeLine
+            ? speechBubble(
+                activeLine.text,
+                inst.character.size,
+                `${inst.id}/bubble`,
+                inst.layer + 40,
+                Math.min(1, (localTick - activeLine.startTick) / 8),
+              )
+            : undefined;
           return {
             ...base,
             ...(seat ? { transform: withParallax(inst.depth, seat) } : {}),
-            children: [rooted],
+            children: bubble ? [rooted, bubble] : [rooted],
           };
         }
         if (!inst.object) {

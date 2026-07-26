@@ -30,7 +30,8 @@ export interface RenderResult {
   readonly narrationSegments: number;
 }
 
-const hasNarration = (film: Film): boolean => film.scenes.some((s) => s.narration.length > 0);
+const hasNarration = (film: Film): boolean =>
+  film.scenes.some((s) => s.narration.length > 0 || (s.lines ?? []).length > 0);
 
 /** Render the film to an MP4 at `outPath`. Deterministic end to end. */
 export async function renderFilm(

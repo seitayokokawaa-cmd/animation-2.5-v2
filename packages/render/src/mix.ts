@@ -1,13 +1,20 @@
 /**
- * Offline narration mixer (M3.6): places every scene's frozen narration
- * segments on the film timeline and sums them into one 48 kHz mono WAV —
- * sample-accurate, deterministic, no network. The WAV reader is injected
- * (the CLI passes the voice cache) so render stays decoupled from voice.
+ * Offline narration mixer (M3.6 + M8.4): places every scene's frozen
+ * narration segments and character lines on the film timeline and sums
+ * them into one 48 kHz mono WAV — sample-accurate, deterministic, no
+ * network. Narration ducks beneath character lines with short ramps so
+ * squeaked one-liners always land. The WAV reader is injected (the CLI
+ * passes the voice cache) so render stays decoupled from voice.
  */
 
 import { decodeWav, encodeWavPcm16, ticksToSeconds, type Film } from '@motionforge/core';
 
 export const MIX_SAMPLE_RATE = 48000;
+
+/** Narration gain under an active character line. */
+export const DUCK_GAIN = 0.35;
+/** Duck ramp length, seconds. */
+export const DUCK_RAMP_SECONDS = 0.1;
 
 export interface MixResult {
   readonly wav: Uint8Array;
@@ -33,6 +40,39 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
   const mix = new Float32Array(totalSamples);
   let segments = 0;
 
+  // Pass 1: character lines at full gain; remember their windows for ducking.
+  const lineTrack = new Float32Array(totalSamples);
+  const windows: Array<[number, number]> = [];
+  for (const scene of film.scenes) {
+    for (const line of scene.lines ?? []) {
+      const wav = decodeWav(readWav(line.hash));
+      const samples = resample(wav.samples, wav.sampleRate, MIX_SAMPLE_RATE);
+      const offset = Math.round(ticksToSeconds(scene.startTick + line.startTick) * MIX_SAMPLE_RATE);
+      for (let i = 0; i < samples.length && offset + i < totalSamples; i++) {
+        lineTrack[offset + i]! += samples[i]!;
+      }
+      windows.push([offset, Math.min(totalSamples, offset + samples.length)]);
+      segments++;
+    }
+  }
+
+  const ramp = Math.round(DUCK_RAMP_SECONDS * MIX_SAMPLE_RATE);
+  const duckAt = (i: number): number => {
+    let gain = 1;
+    for (const [start, end] of windows) {
+      if (i < start - ramp || i >= end + ramp) continue;
+      if (i < start) {
+        gain = Math.min(gain, 1 - (1 - DUCK_GAIN) * ((i - (start - ramp)) / ramp));
+      } else if (i >= end) {
+        gain = Math.min(gain, DUCK_GAIN + (1 - DUCK_GAIN) * ((i - end) / ramp));
+      } else {
+        gain = Math.min(gain, DUCK_GAIN);
+      }
+    }
+    return gain;
+  };
+
+  // Pass 2: narration, ducked under any active line.
   for (const scene of film.scenes) {
     for (const segment of scene.narration) {
       const wav = decodeWav(readWav(segment.hash));
@@ -41,14 +81,16 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
         ticksToSeconds(scene.startTick + segment.startTick) * MIX_SAMPLE_RATE,
       );
       for (let i = 0; i < samples.length && offset + i < totalSamples; i++) {
-        mix[offset + i]! += samples[i]!;
+        const at = offset + i;
+        mix[at]! += samples[i]! * (windows.length > 0 ? duckAt(at) : 1);
       }
       segments++;
     }
   }
 
-  // Hard safety limiter — narration segments rarely overlap, but clipping
-  // must be impossible by construction.
+  for (let i = 0; i < mix.length; i++) mix[i]! += lineTrack[i]!;
+
+  // Hard safety limiter — clipping must be impossible by construction.
   for (let i = 0; i < mix.length; i++) {
     const s = mix[i]!;
     if (s > 1) mix[i] = 1;

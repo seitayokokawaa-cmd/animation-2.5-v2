@@ -1,4 +1,4 @@
-import { sample, vec2, type Vec2 } from '@motionforge/core';
+import { sample, secondsToTicks, vec2, type Vec2 } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
 import { compile, sceneAtTick } from './compile.js';
@@ -322,6 +322,54 @@ describe('cast compilation (M6.4)', () => {
     expect(sample<Vec2>(sceneOut.timeline, 'hero/pos', 470).x).toBeGreaterThan(9);
     // The hops ride a bounce-bob.
     expect(sceneOut.effects.filter((e) => e.verb === 'bounce-bob')).toHaveLength(2);
+  });
+
+  it('schedules character lines after their anchor phrase (M8.4)', () => {
+    const skit = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30 },
+      voices: {
+        narrator: { engine: 'mock', voice: 'warm' },
+        franz: { engine: 'mock', voice: 'bright', pitch: 5 },
+      },
+      cast: { franz: { template: 'potato-biped' } },
+      scenes: [
+        {
+          id: 'a',
+          place: [{ ref: 'franz', as: 'franz', at: [0, -2.6] }],
+          narration: [{ voice: 'narrator', text: 'That is quite a lot of demands.' }],
+          lines: [{ after: 'a lot', speaker: 'franz', say: 'It really is.', react: 'deadpan' }],
+        },
+      ],
+    });
+    const voice = {
+      segment: (key: string) =>
+        key === 'a/0'
+          ? {
+              hash: 'h-narr',
+              durationSeconds: 2.8,
+              // 7 words, 0.4 s apart.
+              words: 'that is quite a lot of demands'.split(' ').map((word, i) => ({
+                word,
+                start: i * 0.4,
+                end: i * 0.4 + 0.3,
+              })),
+            }
+          : key === 'a/line/0'
+            ? { hash: 'h-line', durationSeconds: 0.9, words: [] }
+            : undefined,
+    };
+    const sceneOut = compile(skit, voice).scenes[0]!;
+    const [line] = sceneOut.lines;
+    // "a lot" ends at word #5 (index 4): end 1.9 s + 0.15 gap.
+    expect(line!.startTick).toBe(secondsToTicks(2.05));
+    expect(line!.hash).toBe('h-line');
+    expect(line!.speaker).toBe('franz');
+    // The scene stretches to cover the line plus a beat.
+    expect(sceneOut.durationTicks).toBe(secondsToTicks(2.05 + 0.9 + 0.35));
+    // The deadpan reaction rides the delivery.
+    const react = sceneOut.effects.find((e) => e.verb === 'react')!;
+    expect(react.startTick).toBe(line!.startTick);
   });
 
   it('react compiles a face effect plus companion particles (M6.7)', () => {

@@ -208,7 +208,9 @@ export const STAGE_PRESETS: Readonly<Record<StagePresetName, StagePreset>> = {
     decor: [
       { id: 'stage-column-l', spec: column, at: [-6.4, -2.6], depth: 0.75 },
       { id: 'stage-column-r', spec: column, at: [6.4, -2.6], depth: 0.75 },
-      { id: 'stage-window', spec: archWindow, at: [0, -1.4], depth: 0.82 },
+      // Windows flank the stage so center stays clear for the cast.
+      { id: 'stage-window-l', spec: archWindow, at: [-3.5, -1.1], depth: 0.82 },
+      { id: 'stage-window-r', spec: archWindow, at: [3.5, -1.1], depth: 0.82 },
     ],
   },
   'throne-room': {

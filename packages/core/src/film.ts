@@ -81,6 +81,20 @@ export interface FilmNarrationSegment {
   readonly durationTicks: Tick;
 }
 
+/** A character one-liner (M8.4): frozen audio + flap-mouth + bubble. The
+ * narration ducks beneath it in the mix. */
+export interface FilmLine {
+  /** Lock key, `sceneId/line/index`. */
+  readonly key: string;
+  readonly hash: string;
+  /** Speaking instance id. */
+  readonly speaker: string;
+  readonly text: string;
+  /** Scene-local. */
+  readonly startTick: Tick;
+  readonly durationTicks: Tick;
+}
+
 /**
  * A motion-graphics verb applied to an instance (or `camera`) for a tick
  * window. Sampled by the verb registry (in `motion`) at render time —
@@ -141,6 +155,8 @@ export interface FilmScene {
   readonly startTick: Tick;
   readonly durationTicks: Tick;
   readonly narration: readonly FilmNarrationSegment[];
+  /** Character one-liners (M8.4). */
+  readonly lines: readonly FilmLine[];
   readonly effects: readonly FilmEffect[];
   readonly cards: readonly FilmCard[];
   readonly instances: readonly FilmInstance[];

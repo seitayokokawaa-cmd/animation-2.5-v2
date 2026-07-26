@@ -59,6 +59,45 @@ describe('mixNarration', () => {
     expect(Buffer.from(again.wav).equals(Buffer.from(wav))).toBe(true);
   });
 
+  it('ducks narration under character lines with ramps (M8.4)', () => {
+    const withLine = {
+      ...film,
+      scenes: [
+        {
+          ...film.scenes[0]!,
+          narration: [{ key: 'a/0', hash: 'h1', startTick: 0, durationTicks: 240 }],
+          lines: [
+            {
+              key: 'a/line/0',
+              hash: 'h3',
+              speaker: 'x',
+              text: 'hi',
+              startTick: 120,
+              durationTicks: 60,
+            },
+          ],
+        },
+      ],
+    } as unknown as Film;
+    const wavs2 = {
+      h1: encodeWavPcm16(new Float32Array(2 * MIX_SAMPLE_RATE).fill(0.5), MIX_SAMPLE_RATE),
+      h3: encodeWavPcm16(
+        new Float32Array(Math.round(0.5 * MIX_SAMPLE_RATE)).fill(0.2),
+        MIX_SAMPLE_RATE,
+      ),
+    };
+    const { wav: ducked, segments: count } = mixNarration(
+      withLine,
+      (hash) => wavs2[hash as keyof typeof wavs2]!,
+    );
+    expect(count).toBe(2);
+    const out = decodeWav(ducked);
+    const at = (seconds: number) => out.samples[Math.floor(seconds * MIX_SAMPLE_RATE)]!;
+    expect(at(0.5)).toBeCloseTo(0.5, 2); // before the line: full narration
+    expect(at(1.25)).toBeCloseTo(0.5 * 0.35 + 0.2, 2); // during: ducked + line
+    expect(at(1.8)).toBeCloseTo(0.5, 2); // after the ramp: recovered
+  });
+
   it('limits overlapping audio to [-1, 1]', () => {
     const loud = encodeWavPcm16(new Float32Array(MIX_SAMPLE_RATE).fill(0.9), MIX_SAMPLE_RATE);
     const overlapping = {
