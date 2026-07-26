@@ -17,3 +17,4 @@ export * from './errors.js';
 export * from './validate.js';
 export * from './references.js';
 export * from './compile.js';
+export * from './stage.js';

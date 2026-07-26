@@ -291,6 +291,39 @@ describe('cast compilation (M6.4)', () => {
     expect(sample<Vec2>(zoomed.timeline, 'camera/pos', 300).x).toBeCloseTo(0.5, 6);
   });
 
+  it('stage presets dress the scene; enter/exit run through the wings (M8.1)', () => {
+    const skit = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1280x720', fps: 30 },
+      cast: { hero: { template: 'potato-biped' } },
+      scenes: [
+        {
+          id: 'a',
+          stage: { preset: 'throne-room' },
+          duration: 4,
+          place: [{ ref: 'hero', as: 'hero', at: [1, -2.6] }],
+          actions: [
+            { at: 0.4, enter: { target: 'hero', from: 'left' } },
+            { at: 3, exit: { target: 'hero', to: 'right' } },
+          ],
+        },
+      ],
+    });
+    const sceneOut = compile(skit).scenes[0]!;
+    // Stage decor compiled in behind authored content.
+    expect(sceneOut.instances.some((i) => i.id === 'stage-ground')).toBe(true);
+    expect(sceneOut.instances.some((i) => i.id === 'stage-dais')).toBe(true);
+    expect(sceneOut.instances.find((i) => i.id === 'stage-dais')!.layer).toBeLessThan(0);
+    expect(sceneOut.backdrop).toBeDefined();
+    // Before the entrance the hero waits offstage left.
+    expect(sample<Vec2>(sceneOut.timeline, 'hero/pos', 0).x).toBeLessThan(-9);
+    // Onstage after entering, offstage right after exiting.
+    expect(sample<Vec2>(sceneOut.timeline, 'hero/pos', 240).x).toBeCloseTo(1, 6);
+    expect(sample<Vec2>(sceneOut.timeline, 'hero/pos', 470).x).toBeGreaterThan(9);
+    // The hops ride a bounce-bob.
+    expect(sceneOut.effects.filter((e) => e.verb === 'bounce-bob')).toHaveLength(2);
+  });
+
   it('react compiles a face effect plus companion particles (M6.7)', () => {
     const withReact = mfsSchema.parse({
       motionforge: 2,

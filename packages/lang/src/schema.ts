@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 import { makeNarrationSchema, voiceSpecSchema } from './narration.js';
 import { objectDefSchema } from './parts.js';
+import { STAGE_PRESET_NAMES } from './stage.js';
 
 const colorSchema = z.string().regex(/^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i, {
   message: 'Expected a hex color like #d94f30 or #d94f3080',
@@ -350,6 +351,24 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Enter from the wings (M8.1): bounce in from offstage. */
+  enter: z
+    .object({
+      target: nameSchema,
+      from: z.enum(['left', 'right']),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Exit into the wings (M8.1). */
+  exit: z
+    .object({
+      target: nameSchema,
+      to: z.enum(['left', 'right']),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Region/alliance nameplates (M7.6): { region-or-group: "Text" }. */
   label: z
     .object({
@@ -527,6 +546,8 @@ export const VERB_NAMES = [
   'plant-flag',
   'label',
   'zoom-to',
+  'enter',
+  'exit',
   'squash-stretch',
   'hinge',
   'oscillate',
@@ -580,6 +601,11 @@ const sceneSchema = z
     id: nameSchema,
     /** Screen-fixed background gradient (or flat color) for this scene. */
     backdrop: backdropSchema.optional(),
+    /** Skit stage preset: backdrop + ground + decor in one line (M8.1). */
+    stage: z
+      .object({ preset: z.enum(STAGE_PRESET_NAMES) })
+      .strict()
+      .optional(),
     /**
      * Seconds. Optional when the scene has narration — its duration then
      * derives from the narration audio (plus pauses) at compile time.

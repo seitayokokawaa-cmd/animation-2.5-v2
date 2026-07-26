@@ -116,7 +116,7 @@ Legend: ☐ pending · ☑ done
 
 | Id   | Task                                                        | Done |
 | ---- | ----------------------------------------------------------- | ---- |
-| M8.1 | Stage presets (backdrops, ground, wings) + enter/exit verbs | ☐    |
+| M8.1 | Stage presets (backdrops, ground, wings) + enter/exit verbs | ☑    |
 | M8.2 | Gestures: point, wave, salute, facepalm, shrug, clap, …     | ☐    |
 | M8.3 | Postures: sit, kneel, lie-down, stand-up + transitions      | ☐    |
 | M8.4 | Character lines: voices + pitch-shift, flaps, bubbles       | ☐    |

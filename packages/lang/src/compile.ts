@@ -43,6 +43,7 @@ import {
 import { findPhrase, type MfsAnchor } from './narration.js';
 import type { MfsObjectDef, MfsPart } from './parts.js';
 import { REACTION_CHOICES, type MfsDocument, type MfsShapeDef, type verbSchema } from './schema.js';
+import { STAGE_PRESETS } from './stage.js';
 import type { z } from 'zod';
 
 export { sceneAtTick };
@@ -328,9 +329,40 @@ export function compileWithMarkers(
       throw new Error(`Scene "${scene.id}": empty duration`);
     }
 
+    // -- stage preset (M8.1): decor + ground behind everything ---------------
+    const stagePreset = scene.stage ? STAGE_PRESETS[scene.stage.preset] : undefined;
+    const stageInstances: FilmInstance[] = stagePreset
+      ? [
+          {
+            id: 'stage-ground',
+            shape: { kind: 'rect', width: (width / height) * 10 + 8, height: 6 },
+            fill: { color: parseColor(stagePreset.ground) },
+            depth: 0.9,
+            layer: -1500,
+          },
+          ...stagePreset.decor.map((decor, di): FilmInstance => ({
+            id: decor.id,
+            object: {
+              spec: decor.spec,
+              options: { idPrefix: decor.id, layerBase: -2000 + di * 10 },
+            },
+            depth: decor.depth,
+            layer: -2000 + di * 10,
+          })),
+        ]
+      : [];
+    const stagePositions = new Map<string, Vec2>(
+      stagePreset
+        ? [
+            ['stage-ground', vec2(0, stagePreset.groundY - 3)],
+            ...stagePreset.decor.map((decor): [string, Vec2] => [decor.id, vec2(...decor.at)]),
+          ]
+        : [],
+    );
+
     // -- instances -------------------------------------------------------------
     const placedMaps = new Map<string, MapData>();
-    const instances: FilmInstance[] = scene.place.map((p) => {
+    const authoredInstances: FilmInstance[] = scene.place.map((p) => {
       if (doc.maps[p.ref]) {
         const entry = maps?.map(p.ref);
         if (!entry) {
@@ -522,6 +554,8 @@ export function compileWithMarkers(
     };
 
     const baseOf = (target: string) => scene.place.find((p) => p.as === target)!;
+    /** Entrances start offstage: overrides the pos track's initial value. */
+    const basePosOverride = new Map<string, Vec2>();
     const lastPos = new Map<string, Vec2>();
     const lastRot = new Map<string, number>();
     const lastScale = new Map<string, number>();
@@ -651,6 +685,43 @@ export function compileWithMarkers(
               bow: a.bow ?? (i % 2 === 0 ? 0.16 : -0.14),
             },
           );
+        });
+      } else if (verb.enter) {
+        const { target, from, duration } = verb.enter;
+        const at = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const wingX = ((width / height) * 10) / 2 + 2;
+        const offstage = vec2(from === 'left' ? -wingX : wingX, at.y);
+        basePosOverride.set(target, offstage);
+        const seconds = duration ?? 0.8;
+        (posClips.get(target) ?? posClips.set(target, []).get(target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from: offstage,
+          to: at,
+          easing: 'linear',
+        });
+        lastPos.set(target, at);
+        pushEffect(target, 'bounce-bob', startTick, seconds, {
+          hops: Math.max(2, Math.round(Math.abs(at.x - offstage.x) / 1.6)),
+          height: 0.35,
+        });
+      } else if (verb.exit) {
+        const { target, to, duration } = verb.exit;
+        const from = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const wingX = ((width / height) * 10) / 2 + 2;
+        const offstage = vec2(to === 'left' ? -wingX : wingX, from.y);
+        const seconds = duration ?? 0.7;
+        (posClips.get(target) ?? posClips.set(target, []).get(target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from,
+          to: offstage,
+          easing: 'linear',
+        });
+        lastPos.set(target, offstage);
+        pushEffect(target, 'bounce-bob', startTick, seconds, {
+          hops: Math.max(2, Math.round(Math.abs(offstage.x - from.x) / 1.6)),
+          height: 0.35,
         });
       } else if (verb.label) {
         const l = verb.label;
@@ -916,9 +987,23 @@ export function compileWithMarkers(
     }
 
     const tracks: AnyTrack[] = [];
+    // Stage decor is static: base-value tracks only.
+    for (const [id, at] of stagePositions) {
+      tracks.push(
+        createTrack<Vec2>(`${id}/pos`, at, [], lerpVec2),
+        createTrack<number>(`${id}/rot`, 0, [], lerp),
+        createTrack<number>(`${id}/scale`, 1, [], lerp),
+        createTrack<number>(`${id}/travel`, 0, [], lerp),
+      );
+    }
     for (const p of scene.place) {
       tracks.push(
-        createTrack<Vec2>(`${p.as}/pos`, vec2(...p.at), posClips.get(p.as) ?? [], lerpVec2),
+        createTrack<Vec2>(
+          `${p.as}/pos`,
+          basePosOverride.get(p.as) ?? vec2(...p.at),
+          posClips.get(p.as) ?? [],
+          lerpVec2,
+        ),
         createTrack<number>(`${p.as}/rot`, degToRad(p.rotate ?? 0), rotClips.get(p.as) ?? [], lerp),
         createTrack<number>(`${p.as}/scale`, p.scale ?? 1, scaleClips.get(p.as) ?? [], lerp),
       );
@@ -943,9 +1028,15 @@ export function compileWithMarkers(
       createTrack<number>('camera/zoom', 1, cameraZoomClips, lerp),
     );
 
+    // Authored backdrop wins; otherwise the stage preset's.
     const backdrop =
       scene.backdrop === undefined
-        ? undefined
+        ? stagePreset
+          ? {
+              top: parseColor(stagePreset.backdrop.top),
+              bottom: parseColor(stagePreset.backdrop.bottom),
+            }
+          : undefined
         : typeof scene.backdrop === 'string'
           ? { top: parseColor(scene.backdrop), bottom: parseColor(scene.backdrop) }
           : { top: parseColor(scene.backdrop.top), bottom: parseColor(scene.backdrop.bottom) };
@@ -958,7 +1049,7 @@ export function compileWithMarkers(
       narration,
       effects,
       cards,
-      instances,
+      instances: [...stageInstances, ...authoredInstances],
       timeline: createTimeline(tracks, [], durationTicks),
       captions,
     };
