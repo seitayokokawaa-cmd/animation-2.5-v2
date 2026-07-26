@@ -110,7 +110,7 @@ Legend: ☐ pending · ☑ done
 | M7.4 | Curved growing arrows + multi-arrow offensives              | ☑    |
 | M7.5 | Unit icons marching; battle-burst; plant-flag               | ☑    |
 | M7.6 | Map labels + `zoom-to region:` camera framing               | ☑    |
-| M7.7 | `examples/07-warmap`: fully narrated war map                | ☐    |
+| M7.7 | `examples/07-warmap`: fully narrated war map                | ☑    |
 
 ## M8 — Skits & slapstick-lite
 

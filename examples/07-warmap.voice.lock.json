@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "segments": {
+    "offensive/0": {
+      "hash": "d47eaf114833e12a432949a708ecc2d555ee3aa7fd6c24fca2d4bbb103143404",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.72,
+      "text": "Then everyone attacked everyone, mostly through Belgium. Armies marched, navies steamed, and a very large amount of history happened all at once.\n"
+    },
+    "powder-keg/0": {
+      "hash": "e992a0aefce578bd58cc03d13a7f249f603cb3404968f441755a62defbc7745b",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.52,
+      "text": "By nineteen fourteen, Europe had organized itself into two heavily armed friend groups, absolutely convinced that this was fine.\n"
+    },
+    "ultimatum/0": {
+      "hash": "202ec859a9187b7e4e0067cb62b4b56579ca796818a50dd212e4afd163799b8c",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.32,
+      "text": "Austria Hungary sent Serbia an ultimatum, with demands so unreasonable that even Austria seemed briefly embarrassed.\n"
+    }
+  }
+}

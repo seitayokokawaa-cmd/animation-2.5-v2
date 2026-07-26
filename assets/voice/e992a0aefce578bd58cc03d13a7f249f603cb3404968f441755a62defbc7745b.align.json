@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "By",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "nineteen",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "fourteen",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "Europe",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "had",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "organized",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "itself",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "into",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "two",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "heavily",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "armed",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "friend",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "groups",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "absolutely",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "convinced",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "that",
+      "start": 6,
+      "end": 6.32
+    },
+    {
+      "word": "this",
+      "start": 6.4,
+      "end": 6.72
+    },
+    {
+      "word": "was",
+      "start": 6.8,
+      "end": 7.12
+    },
+    {
+      "word": "fine",
+      "start": 7.2,
+      "end": 7.5200000000000005
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+# examples/07-warmap — the M7 exit film: the genre's signature map
+# sequence, fully phrase-driven. Alliances sweep in and get labeled, a
+# custom 1914 Austria-Hungary replaces its modern successors, an ultimatum
+# arrives as a paper-note list, offensives fan out as arrows while columns
+# march, a battle bursts, a flag lands. Mock TTS keeps it offline.
+#
+#   pnpm mf voice sync examples/07-warmap.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/07-warmap.mfs.yaml -o out/07-warmap.mp4
+motionforge: 2
+meta:
+  title: The Powder Keg
+  resolution: 1280x720
+  fps: 30
+  seed: 71
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+
+maps:
+  europe:
+    source: naturalearth/europe-110m
+    style: paper
+    width: 17
+    groups:
+      central-powers: [germany, austria-hungary]
+      entente: [france, russian-federation, united-kingdom, serbia]
+    regions:
+      austria-hungary:
+        points:
+          [
+            [9.5, 47.6],
+            [12.2, 49.2],
+            [16.9, 49.6],
+            [21.2, 49.9],
+            [26.3, 48.2],
+            [26.0, 45.5],
+            [20.3, 44.2],
+            [16.4, 43.2],
+            [13.4, 45.4],
+            [9.7, 46.4],
+          ]
+        replace: [austria, hungary, czech-republic, croatia, bosnia-and-herzegovina]
+
+scenes:
+  - id: powder-keg
+    backdrop: { top: '#cfdcd8', bottom: '#c2d0cc' }
+    place:
+      - { ref: europe, as: war-map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          By nineteen fourteen, Europe had organized itself into two heavily
+          armed friend groups, absolutely convinced that this was fine.
+        sync:
+          - {
+              on: 'two heavily armed',
+              do:
+                {
+                  map:
+                    { recolor: { central-powers: '#b5453c', entente: '#3c6fb5' }, duration: 0.8 },
+                },
+            }
+          - {
+              on: 'friend groups',
+              do: { label: { of: { central-powers: CENTRAL POWERS }, size: 0.44 } },
+            }
+          - {
+              on: 'friend groups',
+              offset: 0.3,
+              do: { label: { of: { france: THE ENTENTE }, size: 0.44 } },
+            }
+          - {
+              on: 'this was fine',
+              do: { card: { style: chapter, text: IT WAS NOT FINE, duration: 2, entrance: slam } },
+            }
+
+  - id: ultimatum
+    backdrop: { top: '#cfdcd8', bottom: '#c2d0cc' }
+    place:
+      - { ref: europe, as: war-map, at: [0, 0] }
+    actions:
+      # Scene-local continuity: alliances stay colored from scene 1.
+      - { at: 0, map: { recolor: { central-powers: '#b5453c', entente: '#3c6fb5' }, duration: 0 } }
+    narration:
+      - voice: narrator
+        text: >
+          Austria Hungary sent Serbia an ultimatum, with demands so
+          unreasonable that even Austria seemed briefly embarrassed.
+        sync:
+          - { on: 'Austria Hungary', do: { 'zoom-to': { region: austria-hungary, duration: 1.1 } } }
+          - { on: 'sent Serbia', do: { map: { highlight: serbia, duration: 1.6 } } }
+          - {
+              on: 'demands so unreasonable',
+              do:
+                {
+                  card:
+                    {
+                      style: list,
+                      items: [give us everything, apologize forever, also your hats],
+                      at: [3.2, 0.4],
+                      duration: 3.4,
+                      size: 0.42,
+                    },
+                },
+            }
+
+  - id: offensive
+    backdrop: { top: '#cfdcd8', bottom: '#c2d0cc' }
+    place:
+      - { ref: europe, as: war-map, at: [0, 0] }
+    actions:
+      - { at: 0, map: { recolor: { central-powers: '#b5453c', entente: '#3c6fb5' }, duration: 0 } }
+    narration:
+      - voice: narrator
+        text: >
+          Then everyone attacked everyone, mostly through Belgium. Armies
+          marched, navies steamed, and a very large amount of history
+          happened all at once.
+        sync:
+          - {
+              on: 'everyone attacked',
+              do: { 'zoom-to': { region: germany, margin: 3.4, duration: 1 } },
+            }
+          - {
+              on: 'attacked everyone',
+              do: { arrow: { from: germany, to: [france, [5.6, 2.0]], color: '#7d1f18' } },
+            }
+          - {
+              on: 'through Belgium',
+              do:
+                {
+                  march:
+                    {
+                      from: germany,
+                      to: france,
+                      kind: infantry,
+                      count: 6,
+                      color: '#7d1f18',
+                      duration: 2.6,
+                    },
+                },
+            }
+          - {
+              on: 'navies steamed',
+              do:
+                {
+                  march:
+                    {
+                      from: united-kingdom,
+                      to: [-3.4, 1.4],
+                      kind: ship,
+                      count: 3,
+                      color: '#2c4f8a',
+                      duration: 2.4,
+                    },
+                },
+            }
+          - { on: 'history happened', do: { battle: { at: [-1.4, 0.3], duration: 1.8 } } }
+          - {
+              on: 'history happened',
+              offset: 0.3,
+              do: { 'plant-flag': { at: serbia, color: '#7d1f18' } },
+            }
+          - { on: 'all at once', do: { card: { style: date, text: '1914', duration: 1.8 } } }

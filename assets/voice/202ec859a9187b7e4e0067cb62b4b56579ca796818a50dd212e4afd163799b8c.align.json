@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Austria",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "Hungary",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "sent",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "Serbia",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "an",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "ultimatum",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "with",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "demands",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "so",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "unreasonable",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "that",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "even",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "Austria",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "seemed",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "briefly",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "embarrassed",
+      "start": 6,
+      "end": 6.32
+    }
+  ]
+}
