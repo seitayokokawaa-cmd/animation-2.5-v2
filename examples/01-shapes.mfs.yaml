@@ -1,0 +1,68 @@
+# examples/01-shapes — the M2 exit film: shapes moving, rotating, scaling,
+# multi-script captions, camera move. Renders deterministically:
+#   pnpm mf render examples/01-shapes.mfs.yaml -o out/01-shapes.mp4
+# (640x360 keeps the CI e2e double-render fast; the pipeline is
+# resolution-independent.)
+motionforge: 1
+meta:
+  title: Shapes
+  resolution: 640x360
+  fps: 30
+  seed: 7
+  background: '#1e2733'
+
+shapes:
+  box: { kind: rect, width: 2, height: 1.2, rx: 0.15, fill: '#d94f30' }
+  ball: { kind: circle, r: 0.6, fill: '#3c6fb5', stroke: { color: '#ffffff', width: 0.06 } }
+  leaf: { kind: ellipse, rx: 0.9, ry: 0.45, fill: '#7a9e6e' }
+  spark:
+    kind: polygon
+    points:
+      [[0, 0.7], [0.2, 0.2], [0.7, 0], [0.2, -0.2], [0, -0.7], [-0.2, -0.2], [-0.7, 0], [-0.2, 0.2]]
+    fill: '#ffd9a0'
+
+scenes:
+  - id: intro
+    duration: 3
+    place:
+      - { ref: box, as: hero, at: [-6, 0], depth: 0.4 }
+      - { ref: leaf, as: leaf-far, at: [3, 2.5], depth: 0.9 }
+    actions:
+      - { at: 0, move: { target: hero, to: [0, 0], duration: 1.2, easing: cubicOut } }
+      - { at: 1.2, rotate: { target: hero, to: 360, duration: 1.2, easing: cubicInOut } }
+      - { at: 0.4, caption: { text: 'MotionForge', size: 0.9, at: [0, -3.2], duration: 2.4 } }
+      - { at: 1.8, camera: { zoom: 1.25, duration: 1, easing: sineInOut } }
+
+  - id: dance
+    duration: 3
+    place:
+      - { ref: ball, as: bouncer, at: [-4, -2], depth: 0.3 }
+      - { ref: spark, as: star, at: [4, 2], depth: 0.5 }
+      - { ref: box, as: anchor, at: [0, 0], depth: 0.7, rotate: 15 }
+    actions:
+      - { at: 0, move: { target: bouncer, to: [4, -2], duration: 2.4, easing: sineInOut } }
+      - { at: 0, rotate: { target: star, to: -540, duration: 3, easing: linear } }
+      - { at: 0.6, scale: { target: star, to: 1.8, duration: 1, easing: backOut } }
+      - {
+          at: 0.5,
+          caption:
+            {
+              text: 'চলচ্চিত্র কম্পাইলার',
+              size: 0.7,
+              font: noto-bengali,
+              color: '#ffd9a0',
+              duration: 2.3,
+            },
+        }
+      - { at: 1, camera: { to: [0, -0.5], zoom: 1.1, duration: 1.5, easing: sineInOut } }
+
+  - id: outro
+    duration: 2
+    place:
+      - { ref: spark, as: star, at: [0, 0.5], depth: 0.4 }
+    actions:
+      - { at: 0, scale: { target: star, to: 2.5, duration: 1.4, easing: elasticOut } }
+      - {
+          at: 0.2,
+          caption: { text: 'fin', size: 1.2, at: [0, -2.8], color: '#ffffff', duration: 1.8 },
+        }
