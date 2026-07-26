@@ -160,7 +160,7 @@ Legend: ☐ pending · ☑ done
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
 | M12.1 | Action conflict matrix from registry declarations          | ☑    |
-| M12.2 | Continuity: presence, teleports, held items, line-speaker  | ☐    |
+| M12.2 | Continuity: presence, teleports, held items, line-speaker  | ☑    |
 | M12.3 | Pacing lints: dead air, sync collisions, card overlaps     | ☐    |
 | M12.4 | Error catalog docs + message style audit                   | ☐    |
 | M12.5 | `mf spec` generator + CI drift check                       | ☐    |
