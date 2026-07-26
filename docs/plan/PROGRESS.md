@@ -18,7 +18,7 @@ Legend: ☐ pending · ☑ done
 | M0.3 | GitHub Actions: lint/typecheck/test on push; artifact upload wiring | ☑    |
 | M0.4 | Spike: resvg-js renders SVG→PNG; measure ms/frame at 1080p          | ☑    |
 | M0.5 | Spike: multi-script text shaping (Bengali, Arabic RTL, CJK)         | ☑    |
-| M0.6 | Spike: deterministic encode pipeline (60 frames → bitexact MP4 ×2)  | ☐    |
+| M0.6 | Spike: deterministic encode pipeline (60 frames → bitexact MP4 ×2)  | ☑    |
 | M0.7 | Spike: Qwen TTS + forced alignment + freeze-cache byte-stability    | ☐    |
 | M0.8 | Spike: map render (Natural Earth → stylized SVG, recolor, morph)    | ☐    |
 | M0.9 | ADRs incl. narration spine, map engine, motion-graphics grammar     | ☐    |
