@@ -144,7 +144,7 @@ Legend: ☐ pending · ☑ done
 | M10.3 | Track with damped spring                                   | ☑    |
 | M10.4 | Framing presets: wide/medium/close-up/two-shot/region      | ☑    |
 | M10.5 | Transitions: fade, crossfade, wipe, iris + grading         | ☑    |
-| M10.6 | `examples/09-directed`: `08-skit` re-cut                   | ☐    |
+| M10.6 | `examples/09-directed`: `08-skit` re-cut                   | ☑    |
 
 ## M11 — Typography & i18n
 

@@ -777,6 +777,54 @@ const GRADE_OVERLAYS: Record<string, Array<{ color: Color; opacity: number }>> =
   ],
 };
 
+/**
+ * Drop items that lie fully outside the viewport. Only applied to
+ * opacity-wrapped crossfade layers (M10.5): the pinned resvg build
+ * panics on offscreen geometry inside a `<g opacity>` layer, and culling
+ * there is invisible by definition. Paths are kept (no cheap safe bbox).
+ */
+function cullOffscreen(
+  items: readonly DrawItem[],
+  width: number,
+  height: number,
+): readonly DrawItem[] {
+  return items.filter((item) => {
+    const s = item.shape;
+    let corners: Vec2[];
+    if (s.kind === 'rect') {
+      const hw = s.width / 2;
+      const hh = s.height / 2;
+      corners = [vec2(-hw, -hh), vec2(hw, -hh), vec2(-hw, hh), vec2(hw, hh)];
+    } else if (s.kind === 'circle') {
+      corners = [vec2(-s.r, -s.r), vec2(s.r, -s.r), vec2(-s.r, s.r), vec2(s.r, s.r)];
+    } else if (s.kind === 'ellipse') {
+      corners = [vec2(-s.rx, -s.ry), vec2(s.rx, -s.ry), vec2(-s.rx, s.ry), vec2(s.rx, s.ry)];
+    } else if (s.kind === 'polygon') {
+      if (s.points.length === 0) return false;
+      corners = [...s.points];
+    } else {
+      return true; // path: keep
+    }
+    const m = item.worldTransform;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const c of corners) {
+      const x = m.a * c.x + m.c * c.y + m.e;
+      const y = m.b * c.x + m.d * c.y + m.f;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const pad = item.stroke
+      ? item.stroke.width * Math.max(Math.hypot(m.a, m.b), Math.hypot(m.c, m.d))
+      : 0;
+    return maxX + pad >= 0 && minX - pad <= width && maxY + pad >= 0 && minY - pad <= height;
+  });
+}
+
 /** A scene's grade tints as draw items (screen-space px). */
 function gradeItems(film: Film, grade: string | undefined, idPrefix: string): DrawItem[] {
   const tints = GRADE_OVERLAYS[grade ?? 'day'] ?? [];
@@ -869,7 +917,11 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
     // This scene's grade rides inside its dissolving group.
     const t = (tick - scene.startTick) / cross.durationTicks;
     layers.push({
-      items: [...sceneDrawItems(film, scene, tick), ...gradeItems(film, scene.grade, 'grade')],
+      items: cullOffscreen(
+        [...sceneDrawItems(film, scene, tick), ...gradeItems(film, scene.grade, 'grade')],
+        film.width,
+        film.height,
+      ),
       opacity: ease('cubicInOut', t),
     });
   } else {
