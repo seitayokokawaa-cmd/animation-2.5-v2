@@ -182,8 +182,14 @@ const mapRegionDefSchema = z
 
 const mapDefSchema = z
   .object({
-    /** Vendored basemap: full world or the denser Europe subset. */
-    source: z.enum(['naturalearth/world-110m', 'naturalearth/europe-110m']),
+    /** Vendored basemap: world at 110m (wide shots) or 50m (close-ups —
+     * crisper real borders when zooming a single country), or the Europe
+     * subset. Region ids agree across all three. */
+    source: z.enum([
+      'naturalearth/world-110m',
+      'naturalearth/world-50m',
+      'naturalearth/europe-110m',
+    ]),
     style: z.enum(['paper', 'clean']).optional(),
     /** Map width in world units; default 16. */
     width: z.number().finite().positive().optional(),
@@ -294,6 +300,24 @@ const verbFields = {
       duration: secondsSchema.optional(),
     })
     .strict()
+    .optional(),
+  /** Map region verbs (M7.3): recolor sweeps, highlights, border morphs. */
+  map: z
+    .object({
+      /** Placed map instance; optional when the scene has exactly one map. */
+      target: nameSchema.optional(),
+      /** Region/group → new color; members sweep in with a small stagger. */
+      recolor: z.record(nameSchema, colorSchema).optional(),
+      /** Region or group to pulse. */
+      highlight: nameSchema.optional(),
+      /** Border change: region morphs into another region's shape. */
+      morph: z.object({ region: nameSchema, to: nameSchema }).strict().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .refine((m) => m.recolor !== undefined || m.highlight !== undefined || m.morph !== undefined, {
+      message: 'map: needs recolor:, highlight:, or morph:',
+    })
     .optional(),
   hinge: z
     .object({
@@ -425,6 +449,7 @@ export const VERB_NAMES = [
   'steam',
   'hearts',
   'react',
+  'map',
   'squash-stretch',
   'hinge',
   'oscillate',

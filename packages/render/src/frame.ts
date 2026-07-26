@@ -10,6 +10,7 @@
 import {
   combinePoses,
   compose,
+  ease,
   fnv1a,
   IDENTITY,
   instantiateObject,
@@ -48,6 +49,8 @@ import {
   sampleEffect,
   SEAT_POSE,
 } from '@motionforge/motion';
+
+import { clipToFront, highlightPulse, morphRings, unpackColor } from '@motionforge/maps';
 
 import { buildCardNodes } from './cards.js';
 import { paperTextureNodes, stylePreset, type StylePreset } from './style.js';
@@ -291,28 +294,120 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
         }
         // Part poses: articulation effects targeting `instance.part`. The
         // roll verb reads the instance's cumulative travel track (ω = v/r).
+        // Map verbs (M7.3) add overlay geometry from the region's polygons.
         const partPoses = new Map<string, Pose>();
+        const mapOverlays: SceneNode[] = [];
+        let overlayIndex = 0;
         for (const effect of scene.effects) {
           const dot = effect.target.indexOf('.');
           if (dot < 0 || effect.target.slice(0, dot) !== inst.id) continue;
           const partId = effect.target.slice(dot + 1);
-          const fed =
-            effect.verb === 'roll'
-              ? {
-                  ...effect,
-                  params: {
-                    ...effect.params,
-                    travel: sample<number>(scene.timeline, `${inst.id}/travel`, localTick),
-                  },
-                }
-              : effect;
-          const partPose = sampleEffect(fed, localTick, film.seed);
+          const active = localTick >= effect.startTick;
+          // A morphing region hides; its morphed shape draws as an overlay.
+          const partPose =
+            effect.verb === 'map-morph' && active
+              ? { opacity: 0 }
+              : sampleEffect(
+                  effect.verb === 'roll'
+                    ? {
+                        ...effect,
+                        params: {
+                          ...effect.params,
+                          travel: sample<number>(scene.timeline, `${inst.id}/travel`, localTick),
+                        },
+                      }
+                    : effect,
+                  localTick,
+                  film.seed,
+                );
           const existing = partPoses.get(partId);
           partPoses.set(partId, existing ? combinePoses([existing, partPose]) : partPose);
+
+          if (!effect.verb.startsWith('map-') || !active) continue;
+          const part = inst.object.spec.parts.find((p) => p.id === partId);
+          const rings = (part?.children ?? [])
+            .map((c) => (c.shape?.kind === 'polygon' ? c.shape.points : undefined))
+            .filter((r): r is Vec2[] => r !== undefined);
+          if (rings.length === 0) continue;
+          const t =
+            effect.durationTicks === 0
+              ? 1
+              : Math.min(1, (localTick - effect.startTick) / effect.durationTicks);
+          const layer = inst.layer + 800 + overlayIndex++;
+
+          if (effect.verb === 'map-recolor') {
+            const color = unpackColor(effect.params.color ?? 0);
+            let minX = Infinity;
+            let maxX = -Infinity;
+            for (const ring of rings) {
+              for (const p of ring) {
+                minX = Math.min(minX, p.x);
+                maxX = Math.max(maxX, p.x);
+              }
+            }
+            const front = minX + (maxX - minX + 0.01) * ease('cubicInOut', t);
+            rings.forEach((ring, ri) => {
+              const clipped = t >= 1 ? [...ring] : clipToFront(ring, front);
+              if (clipped.length < 3) return;
+              mapOverlays.push({
+                id: `${inst.id}/${effect.seed}/${ri}`,
+                layer,
+                shape: { kind: 'polygon', points: clipped },
+                fill: { color },
+              });
+            });
+          } else if (effect.verb === 'map-highlight') {
+            if (localTick >= effect.startTick + effect.durationTicks) continue;
+            const pulse = highlightPulse(t);
+            if (pulse <= 0.01) continue;
+            rings.forEach((ring, ri) => {
+              mapOverlays.push({
+                id: `${inst.id}/${effect.seed}/${ri}`,
+                layer,
+                opacity: 0.5 * pulse,
+                shape: { kind: 'polygon', points: [...ring] },
+                fill: { color: { r: 0xf2, g: 0xc1, b: 0x4e, a: 1 } },
+              });
+            });
+          } else if (effect.verb === 'map-morph') {
+            const toPart = inst.object.spec.parts[effect.params.to ?? -1];
+            const toRing = (toPart?.children ?? [])
+              .map((c) => (c.shape?.kind === 'polygon' ? c.shape.points : undefined))
+              .find((r) => r !== undefined);
+            if (!toRing) continue;
+            const largest = rings.reduce((a, b) => (b.length > a.length ? b : a), rings[0]!);
+            const paint = part?.children?.[0];
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}/morph`,
+              layer,
+              shape: {
+                kind: 'polygon',
+                points: morphRings(largest, toRing, ease('cubicInOut', t)),
+              },
+              fill: paint?.fill && 'color' in paint.fill ? paint.fill : undefined,
+              stroke: paint?.stroke,
+            });
+            // Secondary rings (islands) fade during the morph.
+            rings
+              .filter((ring) => ring !== largest)
+              .forEach((ring, ri) => {
+                if (t >= 1) return;
+                mapOverlays.push({
+                  id: `${inst.id}/${effect.seed}/i${ri}`,
+                  layer,
+                  opacity: 1 - t,
+                  shape: { kind: 'polygon', points: [...ring] },
+                  fill: paint?.fill && 'color' in paint.fill ? paint.fill : undefined,
+                });
+              });
+          }
         }
         return {
           ...base,
-          children: [instantiateObject(inst.object.spec, inst.object.options, partPoses)],
+          children: [
+            instantiateObject(inst.object.spec, inst.object.options, partPoses),
+            ...mapOverlays,
+          ],
         };
       }),
       // Cartoon FX geometry, anchored at the target's current position.

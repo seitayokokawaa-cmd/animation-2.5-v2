@@ -1,4 +1,4 @@
-import { sample, type Vec2 } from '@motionforge/core';
+import { sample, vec2, type Vec2 } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
 import { compile, sceneAtTick } from './compile.js';
@@ -173,6 +173,74 @@ describe('cast compilation (M6.4)', () => {
     expect(inst!.object!.options.idPrefix).toBe('map');
     // Without MapsData the compile fails loudly.
     expect(() => compile(withMap)).toThrow(/map data/);
+  });
+
+  it('map verbs expand groups into staggered region effects (M7.3)', () => {
+    const doc2 = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30 },
+      maps: {
+        europe: {
+          source: 'naturalearth/europe-110m',
+          groups: { entente: ['france', 'serbia'] },
+        },
+      },
+      scenes: [
+        {
+          id: 'a',
+          duration: 3,
+          place: [{ ref: 'europe', as: 'war-map', at: [0, 0] }],
+          actions: [
+            { at: 0.5, map: { recolor: { entente: '#3c6fb5' }, duration: 0.6 } },
+            { at: 1, map: { highlight: 'germany' } },
+            { at: 2, map: { morph: { region: 'germany', to: 'germany-1941' } } },
+          ],
+        },
+      ],
+    });
+    const ring = [vec2(0, 0), vec2(1, 0), vec2(1, 1)];
+    const part = (id: string) => ({
+      id,
+      z: 1,
+      children: [{ id: `${id}-main`, z: 1, shape: { kind: 'polygon' as const, points: ring } }],
+    });
+    const mapsData = {
+      map: () => ({
+        objectSpec: {
+          params: {},
+          parts: [part('france'), part('serbia'), part('germany'), part('germany-1941')],
+        },
+        regions: ['france', 'serbia', 'germany', 'germany-1941'].map((id) => ({
+          id,
+          centroid: vec2(0, 0),
+          bbox: { min: vec2(0, 0), max: vec2(1, 1) },
+        })),
+        groups: { entente: ['france', 'serbia'] },
+      }),
+    };
+    const effects = compile(doc2, undefined, mapsData).scenes[0]!.effects;
+    const recolors = effects.filter((e) => e.verb === 'map-recolor');
+    expect(recolors.map((e) => e.target)).toEqual(['war-map.france', 'war-map.serbia']);
+    // Alliance members stagger by 0.12 s.
+    expect(recolors[1]!.startTick - recolors[0]!.startTick).toBe(14);
+    expect(recolors[0]!.params.color).toBe(0x3c6fb5);
+    expect(effects.some((e) => e.verb === 'map-highlight' && e.target === 'war-map.germany')).toBe(
+      true,
+    );
+    const morph = effects.find((e) => e.verb === 'map-morph')!;
+    expect(morph.target).toBe('war-map.germany');
+    expect(morph.params.to).toBe(3); // germany-1941's part index
+    // Unknown regions fail loudly.
+    const bad = {
+      ...doc2,
+      scenes: [
+        {
+          ...doc2.scenes[0]!,
+          actions: [{ at: 0, map: { highlight: 'narnia' } }],
+        },
+      ],
+    };
+    expect(() => compile(bad, undefined, mapsData)).toThrow(/narnia/);
   });
 
   it('react compiles a face effect plus companion particles (M6.7)', () => {

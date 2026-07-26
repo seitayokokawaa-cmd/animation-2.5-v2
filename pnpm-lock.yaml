@@ -112,6 +112,9 @@ importers:
       '@motionforge/core':
         specifier: workspace:*
         version: link:../core
+      '@motionforge/maps':
+        specifier: workspace:*
+        version: link:../maps
       '@motionforge/motion':
         specifier: workspace:*
         version: link:../motion

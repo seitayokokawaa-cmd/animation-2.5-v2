@@ -282,6 +282,7 @@ export function compileWithMarkers(
     }
 
     // -- instances -------------------------------------------------------------
+    const placedMaps = new Map<string, MapData>();
     const instances: FilmInstance[] = scene.place.map((p) => {
       if (doc.maps[p.ref]) {
         const entry = maps?.map(p.ref);
@@ -290,6 +291,7 @@ export function compileWithMarkers(
             `Scene "${scene.id}": map "${p.ref}" needs compiled map data — the CLI builds it from assets/geodata`,
           );
         }
+        placedMaps.set(p.as, entry);
         return {
           id: p.as,
           object: {
@@ -568,6 +570,70 @@ export function compileWithMarkers(
         simpleFx('steam', verb.steam, startTick, []);
       } else if (verb.hearts) {
         simpleFx('hearts', verb.hearts, startTick, ['count']);
+      } else if (verb.map) {
+        const m = verb.map;
+        const instName =
+          m.target ??
+          (placedMaps.size === 1
+            ? [...placedMaps.keys()][0]!
+            : (() => {
+                throw new Error(
+                  `Scene "${scene.id}": map verb needs target: — the scene places ${placedMaps.size} maps`,
+                );
+              })());
+        const entry = placedMaps.get(instName);
+        if (!entry) {
+          throw new Error(`Scene "${scene.id}": map verb targets "${instName}", not a placed map`);
+        }
+        const expand = (target: string): readonly string[] => {
+          const members = entry.groups[target];
+          if (members) return members;
+          if (entry.regions.some((r) => r.id === target)) return [target];
+          throw new Error(
+            `Scene "${scene.id}": unknown map region/group "${target}" on "${instName}"`,
+          );
+        };
+        const pack = (hex: string): number => {
+          const c = parseColor(hex);
+          return (c.r << 16) | (c.g << 8) | c.b;
+        };
+        if (m.recolor) {
+          for (const [target, hex] of Object.entries(m.recolor)) {
+            expand(target).forEach((regionId, i) => {
+              // Alliance members sweep in with a small stagger.
+              pushEffect(
+                `${instName}.${regionId}`,
+                'map-recolor',
+                startTick + secondsToTicks(i * 0.12),
+                m.duration ?? 0.6,
+                { color: pack(hex) },
+              );
+            });
+          }
+        }
+        if (m.highlight) {
+          for (const regionId of expand(m.highlight)) {
+            pushEffect(
+              `${instName}.${regionId}`,
+              'map-highlight',
+              startTick,
+              m.duration ?? 1.2,
+              {},
+            );
+          }
+        }
+        if (m.morph) {
+          const toIndex = entry.objectSpec.parts.findIndex((part) => part.id === m.morph!.to);
+          if (toIndex < 0) {
+            throw new Error(
+              `Scene "${scene.id}": morph target region "${m.morph.to}" is not on map "${instName}"`,
+            );
+          }
+          expand(m.morph.region); // validates the source region exists
+          pushEffect(`${instName}.${m.morph.region}`, 'map-morph', startTick, m.duration ?? 0.8, {
+            to: toIndex,
+          });
+        }
       } else if (verb.react) {
         const { target, kind, duration } = verb.react;
         const seconds = duration ?? EFFECT_DEFAULT_SECONDS.react!;

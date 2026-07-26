@@ -125,6 +125,30 @@ describe('geojson compiler (M7.1)', () => {
     expect(regionOf(map, 'france').id).toBe(regionOf(compileMap(europe), 'france').id);
   });
 
+  it('offers the 50m basemap for close-ups, ids agreeing with 110m', () => {
+    const world50: GeoCollection = JSON.parse(
+      readFileSync(join(here, '../../../assets/geodata/ne_50m_world.json'), 'utf8'),
+    ) as GeoCollection;
+    const view = { lonMin: 12, lonMax: 30, latMin: 38, latMax: 48 };
+    const balkans = compileMap(world50, {
+      view,
+      widthUnits: 16,
+      simplifyTolerance: (0.05 / 18) * 16,
+    });
+    // Real border detail at zoom: Croatia's coast keeps its intricacy.
+    expect(regionOf(balkans, 'croatia').rings.length).toBeGreaterThan(3); // islands
+    expect(regionOf(balkans, 'greece').rings.length).toBeGreaterThan(5); // Aegean
+    expect(regionOf(balkans, 'serbia').id).toBe('serbia');
+    // The vendored places file carries city points for map labels (M7.6).
+    const places = JSON.parse(
+      readFileSync(join(here, '../../../assets/geodata/ne_110m_places.json'), 'utf8'),
+    ) as { places: { id: string; lon: number; lat: number; capital: number }[] };
+    expect(places.places.length).toBeGreaterThan(200);
+    const paris = places.places.find((p) => p.id === 'paris')!;
+    expect(paris.capital).toBe(1);
+    expect(Math.abs(paris.lon - 2.33)).toBeLessThan(0.2);
+  });
+
   it('respects a custom view window', () => {
     const balkans = compileMap(europe, {
       view: { lonMin: 18, lonMax: 30, latMin: 39, latMax: 47 },

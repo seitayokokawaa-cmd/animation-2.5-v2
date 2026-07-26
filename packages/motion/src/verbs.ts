@@ -216,6 +216,28 @@ const defs: VerbDef[] = [
     defaultDurationSeconds: 1.4,
     sample: () => ({}),
   },
+  // Map region verbs (M7.3) target `map-instance.region` and are drawn by
+  // the frame builder from the map's part geometry; poses stay identity.
+  {
+    name: 'map-recolor',
+    summary: 'Territory recolor: the new color sweeps across the region and stays.',
+    defaultDurationSeconds: 0.6,
+    holdAfter: true,
+    sample: () => ({}),
+  },
+  {
+    name: 'map-highlight',
+    summary: 'Pulse a region with a warm wash — "look here".',
+    defaultDurationSeconds: 1.2,
+    sample: () => ({}),
+  },
+  {
+    name: 'map-morph',
+    summary: 'Border change: the region morphs into another named shape and stays.',
+    defaultDurationSeconds: 0.8,
+    holdAfter: true,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

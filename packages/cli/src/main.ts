@@ -110,7 +110,13 @@ function fail(message: string): never {
 /** Vendored basemap sources (assets/geodata/, public domain). */
 const GEODATA_SOURCES: Record<string, string> = {
   'naturalearth/world-110m': 'ne_110m_world.json',
+  'naturalearth/world-50m': 'ne_50m_world.json',
   'naturalearth/europe-110m': 'ne_110m_europe.json',
+};
+
+/** Default simplification per source, degrees (50m keeps its detail). */
+const GEODATA_TOLERANCE_DEGREES: Record<string, number> = {
+  'naturalearth/world-50m': 0.05,
 };
 
 /** Compile every `maps:` entry once from vendored geodata (M7.2). */
@@ -123,17 +129,24 @@ function mapsDataFor(doc: MfsDocument): MapsData {
       readFileSync(join('assets', 'geodata', sourceFile), 'utf8'),
     ) as GeoCollection;
     // No explicit view → frame the whole source (world map shows the world).
-    const defaultView = def.source === 'naturalearth/world-110m' ? WORLD_VIEW : EUROPE_VIEW;
+    const defaultView = def.source.startsWith('naturalearth/world') ? WORLD_VIEW : EUROPE_VIEW;
+    const view = def.view
+      ? {
+          lonMin: def.view.lon[0],
+          lonMax: def.view.lon[1],
+          latMin: def.view.lat[0],
+          latMax: def.view.lat[1],
+        }
+      : defaultView;
+    const toleranceDegrees = GEODATA_TOLERANCE_DEGREES[def.source];
     let spec = compileMap(geo, {
-      view: def.view
-        ? {
-            lonMin: def.view.lon[0],
-            lonMax: def.view.lon[1],
-            latMin: def.view.lat[0],
-            latMax: def.view.lat[1],
-          }
-        : defaultView,
+      view,
       ...(def.width !== undefined ? { widthUnits: def.width } : {}),
+      ...(toleranceDegrees !== undefined
+        ? {
+            simplifyTolerance: (toleranceDegrees / (view.lonMax - view.lonMin)) * (def.width ?? 16),
+          }
+        : {}),
     });
     spec = applyCustomRegions(
       spec,
