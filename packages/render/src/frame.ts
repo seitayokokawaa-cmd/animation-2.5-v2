@@ -47,6 +47,8 @@ import {
   addPoses,
   applyCostume,
   blinkOpenness,
+  GAIT_KINDS,
+  gaitSample,
   CHARACTER_TEMPLATES,
   characterNodes,
   emitEffectNodes,
@@ -420,6 +422,34 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             const kind = GESTURE_KINDS[effect.params.kind ?? 0] ?? 'point';
             pose = addPoses(pose, gesturePose(kind, gt));
           }
+          // Planted gait (M14.1): solve the legs from the pos track's
+          // travel; the body drop/lean joins the posture root below.
+          let gaitDrop = 0;
+          let gaitLean = 0;
+          for (const effect of scene.effects) {
+            if (
+              effect.verb !== 'gait' ||
+              effect.target !== inst.id ||
+              localTick < effect.startTick ||
+              localTick >= effect.startTick + effect.durationTicks
+            ) {
+              continue;
+            }
+            const gt =
+              effect.durationTicks === 0
+                ? 1
+                : (localTick - effect.startTick) / effect.durationTicks;
+            const kind = GAIT_KINDS[effect.params.kind ?? 0] ?? 'walk';
+            const gait = gaitSample(
+              kind,
+              (effect.params.distance ?? 0) * gt,
+              inst.character.size,
+              effect.params.dir ?? 1,
+            );
+            pose = addPoses(pose, gait.pose);
+            gaitDrop += gait.drop;
+            gaitLean += gait.lean * (inst.character.facing === 'left' ? 1 : -1);
+          }
           // Postures (M8.3): blend from the previous held state, then hold.
           const postures = scene.effects
             .filter((e) => e.verb === 'posture' && e.target === inst.id && localTick >= e.startTick)
@@ -462,14 +492,13 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
           });
           // Postures move the whole rig: drop toward the ground and/or tip
           // about the feet (lying down).
+          const rootDrop = posture.drop * inst.character.size + gaitDrop;
+          const rootRotate = posture.rotate + gaitLean;
           const rooted =
-            posture.drop !== 0 || posture.rotate !== 0
+            rootDrop !== 0 || rootRotate !== 0
               ? {
                   id: `${inst.id}/posture-root`,
-                  transform: compose(
-                    translation(0, -posture.drop * inst.character.size),
-                    rotation(posture.rotate),
-                  ),
+                  transform: compose(translation(0, -rootDrop), rotation(rootRotate)),
                   children: [rig],
                 }
               : rig;

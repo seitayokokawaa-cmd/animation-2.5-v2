@@ -11,6 +11,8 @@ import {
   COSTUME_CHOICES,
   EASING_CHOICES,
   EFFECT_DEFAULT_SECONDS,
+  GAIT_CHOICES,
+  GAIT_SPEEDS,
   EXPRESSION_CHOICES,
   GESTURE_CHOICES,
   GRADE_CHOICES,
@@ -28,6 +30,8 @@ import {
 import {
   COSTUME_PIECES,
   FACE_EXPRESSIONS,
+  GAIT_KINDS,
+  GAITS,
   GESTURE_KINDS,
   HELD_ITEMS,
   MUSTACHES,
@@ -65,6 +69,13 @@ describe('spec generator + drift checks (M12.5)', () => {
       expect(Boolean(fromRegistry ?? fromLang), `verb "${name}" has no summary for the spec`).toBe(
         true,
       );
+    }
+  });
+
+  it('gait tables mirror the motion registry', () => {
+    expect([...GAIT_CHOICES]).toEqual([...GAIT_KINDS]);
+    for (const kind of GAIT_KINDS) {
+      expect(GAIT_SPEEDS[kind], `GAIT_SPEEDS[${kind}]`).toBe(GAITS[kind].speed);
     }
   });
 

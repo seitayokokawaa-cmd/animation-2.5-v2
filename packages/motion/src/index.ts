@@ -12,3 +12,4 @@ export * from './quadruped.js';
 export * from './characters.js';
 export * from './gestures.js';
 export * from './postures.js';
+export * from './gait.js';

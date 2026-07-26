@@ -74,6 +74,9 @@ repeats). Both share the same verb payloads:
 | `exit` | Walk off stage into a wing (`to: left|right`). | — |
 | `gesture` | Cast gesture (point, wave, salute, …): a rig-pose overlay the frame builder adds on top of the idle pose (M8.2). | 1.4s |
 | `posture` | Held body state (sit, kneel, lie-down, stand): blends in over the window and persists until the next posture (M8.3). | 0.5s |
+| `walk` | Planted walk to a position — feet plant with no sliding (M14.1). | — |
+| `run` | Planted run: long strides, forward lean, flight-phase kick. | — |
+| `sneak` | Planted sneak: short crouched steps. | — |
 | `bonk` | Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars. | 0.7s, sfx `boink` |
 | `fling` | Ballistic arc + tumble on top of a linear slide, squashing on the landing — the "yeet" (M8.5). | 0.9s, sfx `whoosh` |
 | `squash-land` | A hard landing squash and recover, no drop. | 0.5s, sfx `slam` |

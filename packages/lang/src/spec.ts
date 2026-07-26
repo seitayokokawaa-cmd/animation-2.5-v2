@@ -68,6 +68,9 @@ export const LANG_VERB_SUMMARIES: Readonly<Record<string, string>> = {
   gesture: 'A rig-pose gesture layered on the idle (point, wave, salute, …).',
   posture: 'A held body state (sit, kneel, lie-down, stand) that persists.',
   keyframes: 'Escape hatch: hand-authored frames on one property of an instance/part/bone.',
+  walk: 'Planted walk to a position — feet plant with no sliding (M14.1).',
+  run: 'Planted run: long strides, forward lean, flight-phase kick.',
+  sneak: 'Planted sneak: short crouched steps.',
   sfx: 'An explicit sound cue by name (see the Audio chapter).',
 };
 

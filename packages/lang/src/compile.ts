@@ -51,6 +51,7 @@ import {
 import { findPhrase, type MfsAnchor } from './narration.js';
 import type { MfsObjectDef, MfsPart } from './parts.js';
 import {
+  GAIT_CHOICES,
   GESTURE_CHOICES,
   REACTION_CHOICES,
   type MfsDocument,
@@ -88,6 +89,14 @@ export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
   'zoom-punch': 0.7,
   'whip-dip': 0.35,
   'camera-track': 2,
+};
+
+/** Gait cruise speeds in size units/s — mirrors motion's GAITS table
+ * (drift-checked alongside the verb defaults). */
+export const GAIT_SPEEDS: Readonly<Record<string, number>> = {
+  walk: 1.4,
+  run: 2.8,
+  sneak: 0.6,
 };
 
 /** Default silence appended after each narration segment, seconds. */
@@ -946,6 +955,33 @@ export function compileWithMarkers(
         pushEffect(target, 'bounce-bob', startTick, seconds, {
           hops: hopCount,
           ...(height !== undefined ? { height } : {}),
+        });
+      } else if (verb.walk ?? verb.run ?? verb.sneak) {
+        // Planted gaits (M14.1): a linear pos clip + a gait effect the
+        // frame builder solves legs from. Duration defaults from the
+        // gait's cruise speed scaled by the cast size.
+        const kind = verb.walk ? 'walk' : verb.run ? 'run' : 'sneak';
+        const g = (verb.walk ?? verb.run ?? verb.sneak)!;
+        const placement = scene.place.find((pl) => pl.as === g.target);
+        const size = placement ? (doc.cast[placement.ref]?.size ?? 1) : 1;
+        const from = lastPos.get(g.target) ?? vec2(...baseOf(g.target).at);
+        const toVec = vec2(...g.to);
+        const distance = Math.hypot(toVec.x - from.x, toVec.y - from.y);
+        const seconds = g.duration ?? Math.max(0.3, distance / (GAIT_SPEEDS[kind]! * size));
+        (posClips.get(g.target) ?? posClips.set(g.target, []).get(g.target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from,
+          to: toVec,
+          easing: 'linear',
+        });
+        lastPos.set(g.target, toVec);
+        const facing = placement?.facing ?? 'right';
+        const dir = (toVec.x >= from.x ? 1 : -1) * (facing === 'left' ? -1 : 1);
+        pushEffect(g.target, 'gait', startTick, seconds, {
+          kind: GAIT_CHOICES.indexOf(kind),
+          distance,
+          dir,
         });
       } else if (verb.explode) {
         simpleFx('explode', verb.explode, startTick, ['radius']);

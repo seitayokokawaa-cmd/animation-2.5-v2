@@ -159,6 +159,14 @@ const defs: VerbDef[] = [
     sample: () => ({}),
   },
   {
+    name: 'gait',
+    summary:
+      'Planted walk/run/sneak locomotion (M14.1): feet plant with no ' +
+      'slide; the frame builder solves the legs from the pos track.',
+    defaultDurationSeconds: 2,
+    sample: () => ({}),
+  },
+  {
     name: 'camera-track',
     summary: 'Damped-spring camera follow of an instance (M10.3).',
     defaultDurationSeconds: 2,

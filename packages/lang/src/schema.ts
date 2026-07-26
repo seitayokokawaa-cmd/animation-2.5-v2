@@ -62,6 +62,9 @@ export const SHOT_CHOICES = ['wide', 'medium', 'close-up', 'two-shot', 'region']
 export const TRANSITION_CHOICES = ['fade', 'crossfade', 'wipe', 'iris'] as const;
 export const GRADE_CHOICES = ['day', 'dawn', 'dusk', 'night'] as const;
 
+/** Gait kinds (M14.1) — order matches motion's GAIT_KINDS index. */
+export const GAIT_CHOICES = ['walk', 'run', 'sneak'] as const;
+
 /** Music bed moods (M9.3) — mirrors render MUSIC_MOODS (drift-checked). */
 export const MUSIC_MOOD_CHOICES = ['jaunty', 'tense', 'somber', 'triumphant'] as const;
 
@@ -643,6 +646,20 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Planted gaits (M14.1): footstep-planned locomotion — no sliding.
+   * Duration defaults from the gait's cruise speed and the distance. */
+  walk: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  run: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  sneak: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
   camera: z
     .object({
       to: vec2Schema.optional(),
@@ -717,6 +734,9 @@ export const VERB_NAMES = [
   'exit',
   'gesture',
   'posture',
+  'walk',
+  'run',
+  'sneak',
   'bonk',
   'fling',
   'squash-land',
