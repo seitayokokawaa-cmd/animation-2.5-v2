@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Presenting",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "the",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "court",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "A",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "king",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "a",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "general",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "an",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "envoy",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "and",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "one",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "extremely",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "unpaid",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "page",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    }
+  ]
+}

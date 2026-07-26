@@ -1,0 +1,132 @@
+# examples/06-cast — the M6 exit film: a caricature lineup built entirely
+# from 3-line cast descriptions (template + palette + costume), reacting to
+# narration beats with the M6.7 reaction pack, plus a mounted charge (M6.8).
+# Mock TTS + frozen voice cache keep it offline and byte-deterministic.
+#
+#   pnpm mf voice sync examples/06-cast.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/06-cast.mfs.yaml -o out/06-cast.mp4
+motionforge: 2
+meta:
+  title: The Court Assembles
+  resolution: 1280x720
+  fps: 30
+  seed: 61
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+
+cast:
+  king:
+    template: potato-biped
+    size: 0.95
+    palette: { outfit: '#8a1c1c', 'outfit-dark': '#5f1212', skin: '#f2cfa6' }
+    costume: [royal-uniform, crown]
+    mustache: imperial
+  general:
+    template: potato-biped
+    size: 1.05
+    palette: { outfit: '#3e5f3a', 'outfit-dark': '#2c452a', boots: '#26201a' }
+    costume: [military-uniform, spiked-helmet]
+    mustache: handlebar
+    held: sword
+  envoy:
+    template: potato-biped
+    costume: [suit, plumed-hat]
+    held: scroll
+  page:
+    template: potato-biped
+    size: 0.6
+    palette: { outfit: '#c8912f', 'outfit-dark': '#96691d' }
+    costume: [peasant-tunic, beret]
+    held: flag
+  steed: { template: horse }
+  pup: { template: dog }
+
+scenes:
+  - id: lineup
+    backdrop: { top: '#f2e9d6', bottom: '#dccfae' }
+    place:
+      - { ref: king, as: king, at: [-4.5, -2.6] }
+      - { ref: general, as: general, at: [-1.5, -2.6] }
+      - { ref: envoy, as: envoy, at: [1.5, -2.6] }
+      - { ref: page, as: page, at: [4, -2.6] }
+    narration:
+      - voice: narrator
+        text: >
+          Presenting the court. A king, a general, an envoy, and one
+          extremely unpaid page.
+        sync:
+          - {
+              on: 'Presenting the court',
+              do: { camera: { zoom: 1.08, duration: 1.2, easing: sineInOut } },
+            }
+          - { on: 'A king', do: { pop-in: { target: king } } }
+          - { on: 'a general', do: { pop-in: { target: general } } }
+          - { on: 'an envoy', do: { pop-in: { target: envoy } } }
+          - { on: 'unpaid page', do: { pop-in: { target: page } } }
+          - {
+              on: 'unpaid page',
+              offset: 0.3,
+              do:
+                {
+                  card: { style: label, text: 'not paid', at: [4, -0.4], duration: 2, size: 0.32 },
+                },
+            }
+
+  - id: beats
+    backdrop: { top: '#f2e9d6', bottom: '#dccfae' }
+    place:
+      - { ref: king, as: king, at: [-4.5, -2.6] }
+      - { ref: general, as: general, at: [-1.5, -2.6] }
+      - { ref: envoy, as: envoy, at: [1.5, -2.6] }
+      - { ref: page, as: page, at: [4, -2.6] }
+    narration:
+      - voice: narrator
+        text: >
+          The news arrived. The king was furious. The general was shocked.
+          The envoy, inexplicably, was delighted. The page began to sweat.
+        sync:
+          - {
+              on: 'The news arrived',
+              do: { camera: { to: [0, -1], zoom: 1.15, duration: 1, easing: cubicInOut } },
+            }
+          - { on: 'was furious', do: { react: { target: king, kind: anger-steam, duration: 2.4 } } }
+          - { on: 'was shocked', do: { react: { target: general, kind: jaw-drop, duration: 2.2 } } }
+          - { on: 'was delighted', do: { react: { target: envoy, kind: hearts, duration: 2.2 } } }
+          - { on: 'began to sweat', do: { react: { target: page, kind: sweat, duration: 2 } } }
+
+  - id: cavalry
+    backdrop: { top: '#f2e9d6', bottom: '#dccfae' }
+    place:
+      - { ref: steed, as: steed, at: [-8.5, -2.6] }
+      - { ref: king, as: king, at: [-8.5, -2.6], on: steed, layer: 1 }
+      - { ref: pup, as: pup, at: [4.5, -2.6], facing: left }
+    narration:
+      - voice: narrator
+        text: >
+          So the king rode out to handle it personally. The dog remained
+          unconvinced.
+        sync:
+          - {
+              on: 'rode out',
+              do: { move: { target: steed, to: [0.5, -2.6], duration: 2.2, easing: sineInOut } },
+            }
+          - {
+              on: 'rode out',
+              offset: 0.1,
+              do: { speedlines: { target: steed, angle: 180, duration: 1.4 } },
+            }
+          - {
+              on: 'remained unconvinced',
+              do: { react: { target: pup, kind: deadpan, duration: 2 } },
+            }
+          - {
+              on: 'remained unconvinced',
+              offset: 0.4,
+              do:
+                {
+                  caption:
+                    { text: 'the dog: unconvinced', size: 0.45, at: [0, -3.9], duration: 2.2 },
+                },
+            }

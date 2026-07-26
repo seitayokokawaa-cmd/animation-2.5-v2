@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "segments": {
+    "beats/0": {
+      "hash": "349645931f9c5f7e081e2e2ff122cf0260b109a283e7a1a56be86c4e3d34f094",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "The news arrived. The king was furious. The general was shocked. The envoy, inexplicably, was delighted. The page began to sweat.\n"
+    },
+    "cavalry/0": {
+      "hash": "f0a9e4ed3815ebd5f160d2d98f7cc7ecbb641c573222bd7c2bf109c949eea05e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 5.12,
+      "text": "So the king rode out to handle it personally. The dog remained unconvinced.\n"
+    },
+    "lineup/0": {
+      "hash": "88122b9e9cf3d3e007302e189886622f6f088bed1fe007a03f3e3e6f4d4b27cd",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 5.52,
+      "text": "Presenting the court. A king, a general, an envoy, and one extremely unpaid page.\n"
+    }
+  }
+}
