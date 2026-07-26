@@ -36,6 +36,7 @@ cast:
 scenes:
   - id: parley
     stage: { preset: throne-room }
+    music: { mood: jaunty, gain: 90 }
     place:
       - { ref: king, as: king, at: [-2.4, -2.6] }
       - { ref: envoy, as: envoy, at: [2.2, -2.6], facing: left }
@@ -51,7 +52,9 @@ scenes:
               do:
                 { card: { style: chapter, text: THE NEGOTIATION, duration: 1.8, entrance: slam } },
             }
+          - { on: 'negotiation began', do: { sfx: slam } }
           - { on: 'envoy presented', do: { enter: { target: envoy, from: right } } }
+          - { on: 'a list of', do: { sfx: quill } }
           - { on: 'reasonable demands', do: { gesture: { target: envoy, kind: point } } }
           - {
               on: 'reasonable demands',
@@ -73,6 +76,7 @@ scenes:
 
   - id: escalation
     stage: { preset: throne-room }
+    music: { mood: tense }
     place:
       - { ref: king, as: king, at: [-2.4, -2.6] }
       - { ref: envoy, as: envoy, at: [1.6, -2.6], facing: left }
@@ -83,6 +87,7 @@ scenes:
           Talks broke down almost immediately, along with the furniture.
           Diplomacy had failed, loudly.
         sync:
+          - { on: 'Talks broke', do: { sfx: riser } }
           - { on: 'broke down', do: { bonk: { target: envoy } } }
           - {
               on: 'almost immediately',
@@ -94,7 +99,9 @@ scenes:
               offset: 0.1,
               do: { camera: { zoom: 1.12, duration: 0.5, easing: cubicOut } },
             }
+          - { on: 'failed', offset: -0.4, do: { sfx: drumroll } }
           - { on: 'failed', do: { gesture: { target: king, kind: facepalm } } }
+          - { on: 'loudly', do: { sfx: sting } }
           - {
               on: 'loudly',
               do:

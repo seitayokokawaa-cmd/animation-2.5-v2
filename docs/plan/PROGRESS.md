@@ -133,7 +133,7 @@ Legend: ☐ pending · ☑ done
 | M9.3 | Music beds by mood + tension stingers + clean loop cuts     | ☑    |
 | M9.4 | Ducking automation + VO leveling                            | ☑    |
 | M9.5 | Offline mixer → WAV determinism test; mux hash test         | ☑    |
-| M9.6 | Re-render `08-skit` fully sounded                           | ☐    |
+| M9.6 | Re-render `08-skit` fully sounded                           | ☑    |
 
 ## M10 — Cinematography
 
