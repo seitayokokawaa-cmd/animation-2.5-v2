@@ -22,6 +22,7 @@ import {
   MUSTACHE_CHOICES,
   REACTION_CHOICES,
   SHOT_CHOICES,
+  TEMPLATE_CHOICES,
   VERB_NAMES,
 } from './schema.js';
 import { STAGE_PRESET_NAMES } from './stage.js';
@@ -163,8 +164,9 @@ ${verbTable(extras)}
 
 ## Cast
 
-Templates: \`potato-biped\`, \`horse\`, \`dog\` (horse/dog carry a seat —
-ride them with \`place.on\`). Palette slots: ${list(CAST_PALETTE_SLOTS)}.
+Templates: ${list(TEMPLATE_CHOICES)} (horse/dog carry a seat — ride them
+with \`place.on\`; bird/fish pair with \`fly\`/\`swim\`). Palette slots:
+${list(CAST_PALETTE_SLOTS)}.
 
 - Expressions: ${list(EXPRESSION_CHOICES)}
 - Costume pieces: ${list(COSTUME_CHOICES)}

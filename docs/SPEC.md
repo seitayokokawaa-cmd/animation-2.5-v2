@@ -77,6 +77,10 @@ repeats). Both share the same verb payloads:
 | `walk` | Planted walk to a position — feet plant with no sliding (M14.1). | — |
 | `run` | Planted run: long strides, forward lean, flight-phase kick. | — |
 | `sneak` | Planted sneak: short crouched steps. | — |
+| `jump` | A single anticipated hop (M14.2): crouch, ballistic arc, squash landing. Pairs with a pos clip when it travels. | 0.8s, sfx `boink` |
+| `climb` | Climb cycle (M14.2): overhead reaches up a wall or ladder. | 2s |
+| `swim` | Swim cycle (M14.2): stroke + tail wave with a gentle roll. | 2.5s |
+| `fly` | Flight cycle (M14.2): wing flaps with a flap-synced bob. | 2.5s |
 | `bonk` | Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars. | 0.7s, sfx `boink` |
 | `fling` | Ballistic arc + tumble on top of a linear slide, squashing on the landing — the "yeet" (M8.5). | 0.9s, sfx `whoosh` |
 | `squash-land` | A hard landing squash and recover, no drop. | 0.5s, sfx `slam` |
@@ -117,8 +121,9 @@ repeats). Both share the same verb payloads:
 
 ## Cast
 
-Templates: `potato-biped`, `horse`, `dog` (horse/dog carry a seat —
-ride them with `place.on`). Palette slots: `skin`, `outfit`, `outfit-dark`, `outline`, `boots`.
+Templates: `potato-biped`, `horse`, `dog`, `bird`, `fish` (horse/dog carry a seat — ride them
+with `place.on`; bird/fish pair with `fly`/`swim`). Palette slots:
+`skin`, `outfit`, `outfit-dark`, `outline`, `boots`.
 
 - Expressions: `neutral`, `happy`, `angry`, `sad`, `shocked`, `deadpan`
 - Costume pieces: `crown`, `spiked-helmet`, `plumed-hat`, `turban`, `beret`, `royal-uniform`, `military-uniform`, `suit`, `robe`, `peasant-tunic`

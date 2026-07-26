@@ -65,6 +65,9 @@ export const GRADE_CHOICES = ['day', 'dawn', 'dusk', 'night'] as const;
 /** Gait kinds (M14.1) — order matches motion's GAIT_KINDS index. */
 export const GAIT_CHOICES = ['walk', 'run', 'sneak'] as const;
 
+/** Rig templates — mirrors motion's CHARACTER_TEMPLATES (drift-checked). */
+export const TEMPLATE_CHOICES = ['potato-biped', 'horse', 'dog', 'bird', 'fish'] as const;
+
 /** Music bed moods (M9.3) — mirrors render MUSIC_MOODS (drift-checked). */
 export const MUSIC_MOOD_CHOICES = ['jaunty', 'tense', 'somber', 'triumphant'] as const;
 
@@ -249,7 +252,7 @@ const mapDefSchema = z
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
-    template: z.enum(['potato-biped', 'horse', 'dog']),
+    template: z.enum(TEMPLATE_CHOICES),
     size: z.number().finite().positive().optional(),
     palette: castPaletteSchema.optional(),
     /** Resting face (M6.5); reactions override it per beat (M6.7). */
@@ -646,6 +649,30 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** A single anticipated hop to a spot (M14.2). */
+  jump: z
+    .object({
+      target: nameSchema,
+      to: vec2Schema.optional(),
+      /** Arc apex, world units; default 1.2. */
+      height: z.number().finite().positive().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Locomotion cycles (M14.2): climb a wall, swim, or fly to a spot. */
+  climb: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  swim: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  fly: z
+    .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
   /** Planted gaits (M14.1): footstep-planned locomotion — no sliding.
    * Duration defaults from the gait's cruise speed and the distance. */
   walk: z
@@ -737,6 +764,10 @@ export const VERB_NAMES = [
   'walk',
   'run',
   'sneak',
+  'jump',
+  'climb',
+  'swim',
+  'fly',
   'bonk',
   'fling',
   'squash-land',

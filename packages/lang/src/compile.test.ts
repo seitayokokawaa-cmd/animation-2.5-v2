@@ -734,4 +734,62 @@ describe('cast compilation (M6.4)', () => {
       expect(() => compile(notCast)).toThrow(/not a cast member/);
     });
   });
+
+  describe('menagerie verbs (M14.2)', () => {
+    const staged = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1280x720', fps: 30 },
+      cast: {
+        imp: { template: 'potato-biped' },
+        finch: { template: 'bird', size: 0.7 },
+        carp: { template: 'fish' },
+      },
+      scenes: [
+        {
+          id: 'a',
+          duration: 12,
+          place: [
+            { ref: 'imp', as: 'imp', at: [-3, -2.6] },
+            { ref: 'finch', as: 'finch', at: [-4, 1] },
+            { ref: 'carp', as: 'carp', at: [-4, -2] },
+          ],
+          actions: [
+            { at: 0.5, jump: { target: 'imp', to: [-1, -2.6], height: 0.8 } },
+            { at: 2, climb: { target: 'imp', to: [-1, 0.6] } },
+            { at: 1, fly: { target: 'finch', to: [4, 1.5] } },
+            { at: 1, swim: { target: 'carp', to: [4, -2], duration: 4 } },
+          ],
+        },
+      ],
+    });
+    const sceneOut = compile(staged).scenes[0]!;
+
+    it('jump travels on a linear clip and packs its height', () => {
+      const jump = sceneOut.effects.find((e) => e.verb === 'jump')!;
+      expect(jump.target).toBe('imp');
+      expect(jump.params.height).toBe(0.8);
+      expect(jump.durationTicks).toBe(secondsToTicks(0.8));
+      // Landed at the far end when the effect finishes.
+      expect(sample<Vec2>(sceneOut.timeline, 'imp/pos', secondsToTicks(1.3)).x).toBeCloseTo(-1, 6);
+    });
+
+    it('climb/swim/fly emit a pos clip plus a cycle effect', () => {
+      const climb = sceneOut.effects.find((e) => e.verb === 'climb')!;
+      // The jump left imp at (-1, -2.6); 3.2 units up at 0.9 u/s,
+      // cycles = round(seconds × 1.1).
+      const climbSeconds = 3.2 / 0.9;
+      expect(climb.durationTicks).toBe(secondsToTicks(climbSeconds));
+      expect(climb.params.cycles).toBe(Math.round(climbSeconds * 1.1));
+      const fly = sceneOut.effects.find((e) => e.verb === 'fly')!;
+      expect(fly.target).toBe('finch');
+      expect(fly.params.cycles).toBe(Math.round((Math.hypot(8, 0.5) / 2.6) * 3.2));
+      // Swim keeps its explicit duration; the fish arrives with it.
+      const swim = sceneOut.effects.find((e) => e.verb === 'swim')!;
+      expect(swim.durationTicks).toBe(secondsToTicks(4));
+      expect(swim.params.cycles).toBe(Math.round(4 * 1.4));
+      expect(sample<Vec2>(sceneOut.timeline, 'carp/pos', secondsToTicks(5)).x).toBeCloseTo(4, 6);
+      // Mid-swim the fish is between banks (the clip is linear).
+      expect(sample<Vec2>(sceneOut.timeline, 'carp/pos', secondsToTicks(3)).x).toBeCloseTo(0, 6);
+    });
+  });
 });

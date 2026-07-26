@@ -89,6 +89,10 @@ export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
   'zoom-punch': 0.7,
   'whip-dip': 0.35,
   'camera-track': 2,
+  jump: 0.8,
+  climb: 2,
+  swim: 2.5,
+  fly: 2.5,
 };
 
 /** Gait cruise speeds in size units/s — mirrors motion's GAITS table
@@ -98,6 +102,20 @@ export const GAIT_SPEEDS: Readonly<Record<string, number>> = {
   run: 2.8,
   sneak: 0.6,
 };
+
+/** Locomotion cruise speeds (world units/s) and cycle rates (cycles/s)
+ * — mirror motion's LOCOMOTION_RATES (drift-checked). */
+export const LOCOMOTION_SPEEDS: Readonly<Record<string, number>> = {
+  climb: 0.9,
+  swim: 1.6,
+  fly: 2.6,
+};
+export const LOCOMOTION_RATES_LANG: Readonly<Record<string, number>> = {
+  climb: 1.1,
+  swim: 1.4,
+  fly: 3.2,
+};
+export const LOCOMOTION_CHOICES = ['climb', 'swim', 'fly'] as const;
 
 /** Default silence appended after each narration segment, seconds. */
 export const DEFAULT_SEGMENT_PAUSE = 0.3;
@@ -955,6 +973,47 @@ export function compileWithMarkers(
         pushEffect(target, 'bounce-bob', startTick, seconds, {
           hops: hopCount,
           ...(height !== undefined ? { height } : {}),
+        });
+      } else if (verb.jump) {
+        // A hop (M14.2): optional travel via a linear pos clip; the arc,
+        // anticipation, and landing squash live in the jump effect.
+        const j = verb.jump;
+        const seconds = j.duration ?? EFFECT_DEFAULT_SECONDS.jump!;
+        if (j.to) {
+          const from = lastPos.get(j.target) ?? vec2(...baseOf(j.target).at);
+          const toVec = vec2(...j.to);
+          (posClips.get(j.target) ?? posClips.set(j.target, []).get(j.target)!).push({
+            start: startTick,
+            duration: secondsToTicks(seconds),
+            from,
+            to: toVec,
+            easing: 'linear',
+          });
+          lastPos.set(j.target, toVec);
+        }
+        pushEffect(j.target, 'jump', startTick, seconds, {
+          ...(j.height !== undefined ? { height: j.height } : {}),
+        });
+      } else if (verb.climb ?? verb.swim ?? verb.fly) {
+        // Locomotion cycles (M14.2): a linear pos clip + a cycle effect;
+        // the frame builder adds the bone curves, the registry the bob.
+        const kind = verb.climb ? 'climb' : verb.swim ? 'swim' : 'fly';
+        const l = (verb.climb ?? verb.swim ?? verb.fly)!;
+        const from = lastPos.get(l.target) ?? vec2(...baseOf(l.target).at);
+        const toVec = vec2(...l.to);
+        const distance = Math.hypot(toVec.x - from.x, toVec.y - from.y);
+        const seconds = l.duration ?? Math.max(0.5, distance / LOCOMOTION_SPEEDS[kind]!);
+        (posClips.get(l.target) ?? posClips.set(l.target, []).get(l.target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from,
+          to: toVec,
+          easing: 'linear',
+        });
+        lastPos.set(l.target, toVec);
+        pushEffect(l.target, kind, startTick, seconds, {
+          kind: LOCOMOTION_CHOICES.indexOf(kind),
+          cycles: Math.max(1, Math.round(seconds * LOCOMOTION_RATES_LANG[kind]!)),
         });
       } else if (verb.walk ?? verb.run ?? verb.sneak) {
         // Planted gaits (M14.1): a linear pos clip + a gait effect the

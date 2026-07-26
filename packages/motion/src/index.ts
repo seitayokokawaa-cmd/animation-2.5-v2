@@ -13,3 +13,5 @@ export * from './characters.js';
 export * from './gestures.js';
 export * from './postures.js';
 export * from './gait.js';
+export * from './creature.js';
+export * from './locomotion.js';

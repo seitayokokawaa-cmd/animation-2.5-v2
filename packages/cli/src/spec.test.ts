@@ -13,6 +13,8 @@ import {
   EFFECT_DEFAULT_SECONDS,
   GAIT_CHOICES,
   GAIT_SPEEDS,
+  LOCOMOTION_CHOICES,
+  LOCOMOTION_RATES_LANG,
   EXPRESSION_CHOICES,
   GESTURE_CHOICES,
   GRADE_CHOICES,
@@ -24,15 +26,19 @@ import {
   SHOT_CHOICES,
   STAGE_PRESET_NAMES,
   STAGE_PRESETS,
+  TEMPLATE_CHOICES,
   TRANSITION_CHOICES,
   VERB_NAMES,
 } from '@motionforge/lang';
 import {
+  CHARACTER_TEMPLATES,
   COSTUME_PIECES,
   FACE_EXPRESSIONS,
   GAIT_KINDS,
   GAITS,
   GESTURE_KINDS,
+  LOCOMOTION_KINDS,
+  LOCOMOTION_RATES,
   HELD_ITEMS,
   MUSTACHES,
   REACTION_KINDS,
@@ -79,6 +85,15 @@ describe('spec generator + drift checks (M12.5)', () => {
     }
   });
 
+  it('locomotion tables mirror the motion registry', () => {
+    expect([...LOCOMOTION_CHOICES]).toEqual([...LOCOMOTION_KINDS]);
+    for (const kind of LOCOMOTION_KINDS) {
+      expect(LOCOMOTION_RATES_LANG[kind], `LOCOMOTION_RATES_LANG[${kind}]`).toBe(
+        LOCOMOTION_RATES[kind],
+      );
+    }
+  });
+
   it('schema choice lists mirror their engine registries', () => {
     expect([...EASING_CHOICES].sort()).toEqual([...EASING_NAMES].sort());
     expect([...SHOT_CHOICES].sort()).toEqual(Object.keys(FRAMING_MARGINS).sort());
@@ -92,5 +107,6 @@ describe('spec generator + drift checks (M12.5)', () => {
     expect([...MUSTACHE_CHOICES].sort()).toEqual(Object.keys(MUSTACHES).sort());
     expect([...HELD_CHOICES].sort()).toEqual(Object.keys(HELD_ITEMS).sort());
     expect([...STAGE_PRESET_NAMES].sort()).toEqual(Object.keys(STAGE_PRESETS).sort());
+    expect([...TEMPLATE_CHOICES].sort()).toEqual(Object.keys(CHARACTER_TEMPLATES).sort());
   });
 });

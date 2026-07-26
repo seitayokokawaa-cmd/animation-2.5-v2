@@ -49,6 +49,8 @@ import {
   blinkOpenness,
   GAIT_KINDS,
   gaitSample,
+  LOCOMOTION_KINDS,
+  locomotionPose,
   CHARACTER_TEMPLATES,
   characterNodes,
   emitEffectNodes,
@@ -449,6 +451,24 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             pose = addPoses(pose, gait.pose);
             gaitDrop += gait.drop;
             gaitLean += gait.lean * (inst.character.facing === 'left' ? 1 : -1);
+          }
+          // Locomotion cycles (M14.2): climb/swim/fly bone curves layer on
+          // like gestures; the registry sample carries the body bob/roll.
+          for (const effect of scene.effects) {
+            const kind = LOCOMOTION_KINDS.find((k) => k === effect.verb);
+            if (
+              !kind ||
+              effect.target !== inst.id ||
+              localTick < effect.startTick ||
+              localTick >= effect.startTick + effect.durationTicks
+            ) {
+              continue;
+            }
+            const gt =
+              effect.durationTicks === 0
+                ? 1
+                : (localTick - effect.startTick) / effect.durationTicks;
+            pose = addPoses(pose, locomotionPose(kind, (effect.params.cycles ?? 1) * gt));
           }
           // Postures (M8.3): blend from the previous held state, then hold.
           const postures = scene.effects

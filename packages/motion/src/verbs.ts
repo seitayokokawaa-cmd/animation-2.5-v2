@@ -159,6 +159,57 @@ const defs: VerbDef[] = [
     sample: () => ({}),
   },
   {
+    name: 'jump',
+    summary:
+      'A single anticipated hop (M14.2): crouch, ballistic arc, squash ' +
+      'landing. Pairs with a pos clip when it travels.',
+    defaultDurationSeconds: 0.8,
+    defaultSfx: 'boink',
+    sample(t, effect) {
+      const height = p(effect, 'height', 1.2);
+      if (t < 0.18) {
+        const u = t / 0.18;
+        const squash = Math.sin(Math.PI * u) * 0.18;
+        return { scale: vec2(1 + squash, 1 - squash) };
+      }
+      if (t < 0.85) {
+        const u = (t - 0.18) / 0.67;
+        const arc = 4 * height * u * (1 - u);
+        const stretch = 0.1 * Math.sin(Math.PI * u);
+        return { translate: vec2(0, arc), scale: vec2(1 - stretch, 1 + stretch) };
+      }
+      const u = (t - 0.85) / 0.15;
+      const squash = Math.sin(Math.PI * u) * 0.22;
+      return { scale: vec2(1 + squash, 1 - squash) };
+    },
+  },
+  {
+    name: 'climb',
+    summary: 'Climb cycle (M14.2): overhead reaches up a wall or ladder.',
+    defaultDurationSeconds: 2,
+    sample: () => ({}),
+  },
+  {
+    name: 'swim',
+    summary: 'Swim cycle (M14.2): stroke + tail wave with a gentle roll.',
+    defaultDurationSeconds: 2.5,
+    sample(t, effect) {
+      const cycles = p(effect, 'cycles', 3);
+      const w = 2 * Math.PI * cycles * t;
+      return { rotate: Math.sin(w) * 0.07, translate: vec2(0, Math.sin(w) * 0.05) };
+    },
+  },
+  {
+    name: 'fly',
+    summary: 'Flight cycle (M14.2): wing flaps with a flap-synced bob.',
+    defaultDurationSeconds: 2.5,
+    sample(t, effect) {
+      const cycles = p(effect, 'cycles', 8);
+      const w = 2 * Math.PI * cycles * t;
+      return { translate: vec2(0, Math.sin(w) * 0.06) };
+    },
+  },
+  {
     name: 'gait',
     summary:
       'Planted walk/run/sneak locomotion (M14.1): feet plant with no ' +
