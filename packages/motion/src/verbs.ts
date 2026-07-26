@@ -140,6 +140,22 @@ const defs: VerbDef[] = [
     },
   },
   {
+    name: 'zoom-punch',
+    summary: 'Camera snap-zoom at a point — the reaction-shot punch (M10.2).',
+    defaultDurationSeconds: 0.7,
+    defaultSfx: 'whoosh',
+    // The zoom math lives in the frame builder (zoom about the aim point,
+    // via the core camera rig) — the pose system carries no zoom channel.
+    sample: () => ({}),
+  },
+  {
+    name: 'whip-dip',
+    summary: 'Zoom dip riding a whip-pan — the speed read (M10.2).',
+    defaultDurationSeconds: 0.35,
+    defaultSfx: 'whoosh',
+    sample: () => ({}),
+  },
+  {
     name: 'hinge',
     summary: 'Rotate a part about its pivot to a target angle and hold (M5.3).',
     defaultDurationSeconds: 0.6,

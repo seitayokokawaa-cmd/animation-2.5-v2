@@ -42,6 +42,9 @@ const raw: Record<string, Easing> = {
     t === 0 || t === 1 ? t : 2 ** (-10 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1,
   bounceOut,
   bounceIn: (t) => 1 - bounceOut(1 - t),
+  // Whip-pan profile (M10.2): nearly all the travel packed into the middle
+  // of the move — the frame "whips" across and settles hard.
+  whip: (t) => (t < 0.5 ? 64 * t ** 7 : 1 - 64 * (1 - t) ** 7),
 };
 
 /** All easing names, sorted — the registry the validator and spec read. */

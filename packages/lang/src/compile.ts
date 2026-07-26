@@ -586,6 +586,8 @@ export function compileWithMarkers(
       roll: 1,
       hearts: 1.2,
       react: 1.4,
+      'zoom-punch': 0.7,
+      'whip-dip': 0.35,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */
@@ -664,28 +666,67 @@ export function compileWithMarkers(
         });
         lastScale.set(target, to);
       } else if (verb.camera) {
-        const { to, zoom, duration, easing } = verb.camera;
-        const clipTicks = secondsToTicks(duration);
-        if (to) {
-          const toVec = vec2(...to);
-          cameraPosClips.push({
-            start: startTick,
-            duration: clipTicks,
-            from: lastCameraPos,
-            to: toVec,
-            easing,
+        const cam = verb.camera;
+        /** Aim of a zoom-punch: a world point, or a placed instance —
+         * cast members aim at the face, not the feet. */
+        const resolveCameraAim = (aimTarget: string | [number, number]): Vec2 => {
+          if (Array.isArray(aimTarget)) return vec2(...aimTarget);
+          const placement = scene.place.find((pl) => pl.as === aimTarget);
+          if (!placement) {
+            throw new Error(`Scene "${scene.id}": zoom-punch target "${aimTarget}" is not placed`);
+          }
+          const base = lastPos.get(aimTarget) ?? vec2(...placement.at);
+          const castDef = doc.cast[placement.ref];
+          const faceLift = castDef ? 1.55 * (castDef.size ?? 1) : 0;
+          return vec2(base.x, base.y + faceLift);
+        };
+        if (cam['zoom-punch'] !== undefined) {
+          const aim = resolveCameraAim(cam['zoom-punch']);
+          pushEffect(
+            'camera',
+            'zoom-punch',
+            startTick,
+            cam.duration ?? EFFECT_DEFAULT_SECONDS['zoom-punch']!,
+            {
+              x: aim.x,
+              y: aim.y,
+              punch: cam.punch ?? 1.45,
+            },
+          );
+        } else if (cam.shake !== undefined) {
+          // 0.4 s mirrors the shake verb's registry default.
+          pushEffect('camera', 'shake', startTick, cam.duration ?? 0.4, {
+            intensity: cam.shake,
           });
-          lastCameraPos = toVec;
-        }
-        if (zoom !== undefined) {
-          cameraZoomClips.push({
-            start: startTick,
-            duration: clipTicks,
-            from: lastCameraZoom,
-            to: zoom,
-            easing,
-          });
-          lastCameraZoom = zoom;
+        } else {
+          const whip = cam.whip === true;
+          const clipTicks = cam.cut ? 0 : secondsToTicks(cam.duration ?? (whip ? 0.35 : 0.6));
+          const easing = whip ? 'whip' : cam.easing;
+          if (cam.to) {
+            const toVec = vec2(...cam.to);
+            cameraPosClips.push({
+              start: startTick,
+              duration: clipTicks,
+              from: lastCameraPos,
+              to: toVec,
+              easing,
+            });
+            lastCameraPos = toVec;
+          }
+          if (cam.zoom !== undefined) {
+            const toZoom = clampZoom(cam.zoom);
+            cameraZoomClips.push({
+              start: startTick,
+              duration: clipTicks,
+              from: lastCameraZoom,
+              to: toZoom,
+              easing,
+            });
+            lastCameraZoom = toZoom;
+          }
+          if (whip && clipTicks > 0) {
+            pushEffect('camera', 'whip-dip', startTick, ticksToSeconds(clipTicks), {});
+          }
         }
       } else if (verb['bounce-to']) {
         const { target, to, duration, hops, height } = verb['bounce-to'];

@@ -8,9 +8,11 @@
  * sees" has a single definition.
  */
 
+import { ease } from './easing.js';
 import {
   clamp,
   compose,
+  lerpVec2,
   scaling,
   translation,
   vec2,
@@ -113,6 +115,64 @@ export function clampCamera(
     ),
     zoom,
   };
+}
+
+// ---- camera moves (M10.2) --------------------------------------------------
+
+/**
+ * Zoom-punch envelope: snap in over the first fifth (with a little backOut
+ * overshoot past 1 — the "punch"), hold the tight framing, then release
+ * smoothly. 0 outside the window.
+ */
+export function zoomPunchEnvelope(t: number): number {
+  if (t <= 0 || t >= 1) return 0;
+  if (t < 0.2) return ease('backOut', t / 0.2);
+  if (t < 0.55) return 1;
+  return 1 - ease('cubicInOut', (t - 0.55) / 0.45);
+}
+
+/** Zoom multiplier over a zoom-punch of strength `punch` (peak ×zoom). */
+export const zoomPunchZoom = (t: number, punch: number): number =>
+  1 + (punch - 1) * zoomPunchEnvelope(t);
+
+/**
+ * Re-aim a camera so multiplying its zoom by `m` zooms about the world
+ * point `aim` — the aim keeps its exact screen position while everything
+ * else rushes past it. This is what makes a punch read as "into the face"
+ * rather than "into the middle of the screen".
+ */
+export function zoomAboutPoint(state: CameraState, aim: Vec2, m: number): CameraState {
+  return {
+    pos: vec2(aim.x + (state.pos.x - aim.x) / m, aim.y + (state.pos.y - aim.y) / m),
+    zoom: state.zoom * m,
+  };
+}
+
+/** Zoom dip riding a whip-pan — a slight mid-move pull-back reads as speed. */
+export const whipZoomDip = (t: number, dip = 0.07): number =>
+  1 - dip * Math.sin(Math.PI * clamp(t, 0, 1));
+
+/** How far a zoom-punch recenters toward its aim at full envelope. */
+export const ZOOM_PUNCH_CENTER_PULL = 0.35;
+
+/**
+ * The full zoom-punch move: snap-zoom about the aim while gliding the
+ * framing toward it — the face grows *and* slides toward frame center,
+ * the way a camera operator would actually punch in on a reaction.
+ * Continuous at both ends (envelope 0 → the input camera, untouched).
+ */
+export function zoomPunchCamera(
+  state: CameraState,
+  aim: Vec2,
+  t: number,
+  punch: number,
+): CameraState {
+  const env = zoomPunchEnvelope(t);
+  const pulled: CameraState = {
+    pos: lerpVec2(state.pos, aim, ZOOM_PUNCH_CENTER_PULL * env),
+    zoom: state.zoom,
+  };
+  return zoomAboutPoint(pulled, aim, 1 + (punch - 1) * env);
 }
 
 /**

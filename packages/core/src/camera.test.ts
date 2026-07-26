@@ -8,8 +8,15 @@ import {
   clampZoom,
   DEFAULT_CAMERA,
   letterboxBars,
+  whipZoomDip,
   WORLD_UNITS_PER_VIEW_HEIGHT,
+  ZOOM_PUNCH_CENTER_PULL,
+  zoomAboutPoint,
+  zoomPunchCamera,
+  zoomPunchEnvelope,
+  zoomPunchZoom,
 } from './camera.js';
+import { ease } from './easing.js';
 import { apply, vec2 } from './math.js';
 
 const viewport = { width: 1920, height: 1080 };
@@ -103,6 +110,71 @@ describe('camera rig (M10.1)', () => {
 
     it('matching aspect needs no bars', () => {
       expect(letterboxBars(viewport, 16 / 9)).toHaveLength(0);
+    });
+  });
+
+  describe('camera moves (M10.2)', () => {
+    it('zoom-punch snaps in, overshoots, holds, then releases', () => {
+      expect(zoomPunchEnvelope(0)).toBe(0);
+      expect(zoomPunchEnvelope(1)).toBe(0);
+      // backOut attack overshoots past 1 — the "punch".
+      expect(zoomPunchEnvelope(0.12)).toBeGreaterThan(1);
+      expect(zoomPunchEnvelope(0.3)).toBe(1); // hold
+      expect(zoomPunchEnvelope(0.8)).toBeGreaterThan(0);
+      expect(zoomPunchEnvelope(0.8)).toBeLessThan(1); // releasing
+    });
+
+    it('zoomPunchZoom holds the punch strength mid-effect', () => {
+      expect(zoomPunchZoom(0.3, 1.45)).toBeCloseTo(1.45, 9);
+      expect(zoomPunchZoom(0, 1.45)).toBe(1);
+    });
+
+    it('zoomAboutPoint keeps the aim pinned on screen while zooming', () => {
+      const state = { pos: vec2(1, -0.5), zoom: 1.2 };
+      const aim = vec2(3.5, 2);
+      const punched = zoomAboutPoint(state, aim, 1.5);
+      const before = apply(cameraTransform(state, viewport), aim);
+      const after = apply(cameraTransform(punched, viewport), aim);
+      expect(after.x).toBeCloseTo(before.x, 9);
+      expect(after.y).toBeCloseTo(before.y, 9);
+      expect(punched.zoom).toBeCloseTo(1.8, 9);
+    });
+
+    it('zoomPunchCamera zooms in while recentering toward the aim', () => {
+      const state = { pos: vec2(0, 0), zoom: 1 };
+      const aim = vec2(4, 1);
+      const center = vec2(960, 540);
+      const before = apply(cameraTransform(state, viewport), aim);
+      // Mid-hold (env = 1): the aim's screen offset from center shrinks by
+      // exactly the center pull, and the zoom holds the punch strength.
+      const held = zoomPunchCamera(state, aim, 0.3, 1.45);
+      const after = apply(cameraTransform(held, viewport), aim);
+      expect(after.x - center.x).toBeCloseTo(
+        (before.x - center.x) * (1 - ZOOM_PUNCH_CENTER_PULL),
+        6,
+      );
+      expect(after.y - center.y).toBeCloseTo(
+        (before.y - center.y) * (1 - ZOOM_PUNCH_CENTER_PULL),
+        6,
+      );
+      expect(held.zoom).toBeCloseTo(1.45, 9);
+      // Outside the window the camera is untouched.
+      expect(zoomPunchCamera(state, aim, 0, 1.45)).toEqual(state);
+      expect(zoomPunchCamera(state, aim, 1, 1.45)).toEqual(state);
+    });
+
+    it('the whip easing packs nearly all travel into the middle', () => {
+      expect(ease('whip', 0.5)).toBeCloseTo(0.5, 9);
+      expect(ease('whip', 0.25)).toBeLessThan(0.01);
+      expect(ease('whip', 0.75)).toBeGreaterThan(0.99);
+      expect(ease('whip', 0)).toBe(0);
+      expect(ease('whip', 1)).toBe(1);
+    });
+
+    it('whipZoomDip dips mid-move and returns clean', () => {
+      expect(whipZoomDip(0)).toBe(1);
+      expect(whipZoomDip(1)).toBeCloseTo(1, 9);
+      expect(whipZoomDip(0.5)).toBeCloseTo(0.93, 9);
     });
   });
 });

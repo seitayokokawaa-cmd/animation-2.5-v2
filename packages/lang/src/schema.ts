@@ -622,8 +622,21 @@ const verbFields = {
     .object({
       to: vec2Schema.optional(),
       zoom: z.number().finite().positive().optional(),
-      duration: secondsSchema,
+      /** Defaults per move: pan/zoom 0.6 s, whip 0.35 s, zoom-punch 0.7 s,
+       * shake 0.4 s. Ignored by `cut`. */
+      duration: secondsSchema.optional(),
       easing: easingSchema.optional(),
+      /** Hard cut: the new framing lands instantly (M10.2). */
+      cut: z.boolean().optional(),
+      /** Whip-pan: the travel packs into mid-move with a speed zoom dip. */
+      whip: z.boolean().optional(),
+      /** Snap-zoom at a placed instance (cast aims at the face) or a
+       * world point, then release (M10.2). */
+      'zoom-punch': z.union([nameSchema, vec2Schema]).optional(),
+      /** Zoom-punch strength — peak zoom multiplier; default 1.45. */
+      punch: z.number().finite().min(1).max(3).optional(),
+      /** Seeded camera-shake intensity in world units; default 0.3. */
+      shake: z.number().finite().positive().max(2).optional(),
     })
     .strict()
     .optional(),

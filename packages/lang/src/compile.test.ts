@@ -465,4 +465,76 @@ describe('cast compilation (M6.4)', () => {
     expect(effects[0]!.params.kind).toBe(3); // anger-steam's index
     expect(effects[0]!.durationTicks).toBe(168); // 1.4 s default
   });
+
+  describe('camera moves (M10.2)', () => {
+    const directed = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1920x1080', fps: 30, seed: 5 },
+      cast: { franz: { template: 'potato-biped', size: 0.8 } },
+      scenes: [
+        {
+          id: 'a',
+          duration: 6,
+          place: [{ ref: 'franz', as: 'franz', at: [2, -2.6] }],
+          actions: [
+            { at: 0.5, camera: { cut: true, to: [4, 1], zoom: 2 } },
+            { at: 1, camera: { to: [-4, 0], whip: true } },
+            { at: 2, camera: { 'zoom-punch': 'franz' } },
+            { at: 3, camera: { shake: 0.5 } },
+            { at: 4, camera: { 'zoom-punch': [1, 2], punch: 1.8, duration: 0.5 } },
+            { at: 5, camera: { to: [0, 0], zoom: 9, duration: 0.5 } },
+          ],
+        },
+      ],
+    });
+    const scene = compile(directed).scenes[0]!;
+
+    it('cut lands the new framing instantly', () => {
+      const tl = scene.timeline;
+      expect(sample<Vec2>(tl, 'camera/pos', 59)).toEqual({ x: 0, y: 0 });
+      expect(sample<Vec2>(tl, 'camera/pos', 60)).toEqual({ x: 4, y: 1 });
+      expect(sample<number>(tl, 'camera/zoom', 60)).toBe(2);
+    });
+
+    it('whip-pan rides the whip easing and adds a speed dip effect', () => {
+      const tl = scene.timeline;
+      // Whip default 0.35 s: barely moved a quarter in, nearly there at 3/4.
+      const quarter = sample<Vec2>(tl, 'camera/pos', 120 + 10).x;
+      const threeQuarter = sample<Vec2>(tl, 'camera/pos', 120 + 32).x;
+      expect(Math.abs(quarter - 4)).toBeLessThan(0.3);
+      expect(Math.abs(threeQuarter - -4)).toBeLessThan(0.3);
+      const dip = scene.effects.find((e) => e.verb === 'whip-dip')!;
+      expect(dip.target).toBe('camera');
+      expect(dip.startTick).toBe(120);
+      expect(dip.durationTicks).toBe(secondsToTicks(0.35));
+    });
+
+    it('zoom-punch at a cast member aims at the face, not the feet', () => {
+      const punch = scene.effects.find((e) => e.verb === 'zoom-punch')!;
+      expect(punch.target).toBe('camera');
+      expect(punch.params.x).toBe(2);
+      expect(punch.params.y).toBeCloseTo(-2.6 + 1.55 * 0.8, 9);
+      expect(punch.params.punch).toBe(1.45);
+      expect(punch.durationTicks).toBe(secondsToTicks(0.7));
+    });
+
+    it('zoom-punch also takes a raw world point and strength', () => {
+      const punch = scene.effects.filter((e) => e.verb === 'zoom-punch')[1]!;
+      expect(punch.params.x).toBe(1);
+      expect(punch.params.y).toBe(2);
+      expect(punch.params.punch).toBe(1.8);
+      expect(punch.durationTicks).toBe(secondsToTicks(0.5));
+    });
+
+    it('camera shake compiles to the seeded shake effect', () => {
+      const shake = scene.effects.find((e) => e.verb === 'shake')!;
+      expect(shake.target).toBe('camera');
+      expect(shake.params.intensity).toBe(0.5);
+      expect(shake.durationTicks).toBe(secondsToTicks(0.4));
+    });
+
+    it('authored zoom clamps to the rig range', () => {
+      expect(sample<number>(scene.timeline, 'camera/zoom', secondsToTicks(6) - 1)).toBe(6);
+    });
+  });
 });

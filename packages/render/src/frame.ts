@@ -26,7 +26,9 @@ import {
   translation,
   trs,
   vec2,
+  whipZoomDip,
   WORLD_UNITS_PER_VIEW_HEIGHT,
+  zoomPunchCamera,
   type Film,
   type FilmScene,
   type Pose,
@@ -182,9 +184,28 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
   const cameraPose = poseFor('camera');
   const cameraShift = cameraPose.translate ?? vec2(0, 0);
   const cameraPos = sample<Vec2>(scene.timeline, 'camera/pos', localTick);
-  const zoom = sample<number>(scene.timeline, 'camera/zoom', localTick);
-  const camX = cameraPos.x + cameraShift.x;
-  const camY = cameraPos.y + cameraShift.y;
+  // Camera moves the pose system can't carry (M10.2): zoom-punch zooms
+  // about its aim point, whip-dip pulls back mid-whip.
+  let camera = {
+    pos: vec2(cameraPos.x + cameraShift.x, cameraPos.y + cameraShift.y),
+    zoom: sample<number>(scene.timeline, 'camera/zoom', localTick),
+  };
+  for (const effect of scene.effects) {
+    if (effect.target !== 'camera') continue;
+    if (localTick < effect.startTick || localTick >= effect.startTick + effect.durationTicks) {
+      continue;
+    }
+    const t = (localTick - effect.startTick) / effect.durationTicks;
+    if (effect.verb === 'zoom-punch') {
+      const aim = vec2(effect.params.x ?? 0, effect.params.y ?? 0);
+      camera = zoomPunchCamera(camera, aim, t, effect.params.punch ?? 1.45);
+    } else if (effect.verb === 'whip-dip') {
+      camera = { ...camera, zoom: camera.zoom * whipZoomDip(t) };
+    }
+  }
+  const camX = camera.pos.x;
+  const camY = camera.pos.y;
+  const zoom = camera.zoom;
 
   const worldWidthUnits = (film.width / film.height) * WORLD_UNITS_PER_VIEW_HEIGHT;
 
