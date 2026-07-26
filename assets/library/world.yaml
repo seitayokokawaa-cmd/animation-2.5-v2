@@ -1,0 +1,1081 @@
+# MotionForge built-in library — world objects (M5.6).
+# Same art direction and palette as props.yaml (see its header).
+# Moving parts carry pivots: windmill.blades, cart.wheel-*, train.wheel-*.
+
+objects:
+  house:
+    params: { wall: '#efe6d0', roof: '#b5453c' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 1.6, ry: 0.14 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: wall,
+          at: [0, 0.9],
+          shape: { kind: rect, width: 2.6, height: 1.8 },
+          fill: '$wall',
+          stroke: { color: '#b9a67e', width: 0.035 },
+        }
+      - {
+          id: wall-shade,
+          at: [0.95, 0.9],
+          shape: { kind: rect, width: 0.7, height: 1.8 },
+          fill: '#d9cdb2',
+        }
+      - {
+          id: roof,
+          at: [0, 2.25],
+          shape: { kind: polygon, points: [[-1.5, -0.45], [0, 0.55], [1.5, -0.45]] },
+          fill: '$roof',
+          stroke: { color: '#8e352e', width: 0.04 },
+        }
+      - {
+          id: roof-shade,
+          at: [0, 2.25],
+          shape: { kind: polygon, points: [[0.12, 0.42], [1.5, -0.45], [0.55, -0.45]] },
+          fill: '#8e352e',
+        }
+      - {
+          id: chimney,
+          at: [0.85, 2.35],
+          shape: { kind: rect, width: 0.26, height: 0.6 },
+          fill: '#948c7c',
+        }
+      - {
+          id: door,
+          at: [-0.7, 0.5],
+          shape: { kind: rect, width: 0.55, height: 1.0, rx: 0.05 },
+          fill: '#8a6a3f',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - { id: door-knob, at: [-0.52, 0.5], shape: { kind: circle, r: 0.045 }, fill: '#c8a24a' }
+      - {
+          id: window,
+          at: [0.55, 1.15],
+          shape: { kind: rect, width: 0.6, height: 0.6, rx: 0.05 },
+          fill: '#9fd0f0',
+          stroke: { color: '#4a3a24', width: 0.035 },
+        }
+      - {
+          id: window-cross-v,
+          at: [0.55, 1.15],
+          shape: { kind: rect, width: 0.045, height: 0.6 },
+          fill: '#4a3a24',
+        }
+      - {
+          id: window-cross-h,
+          at: [0.55, 1.15],
+          shape: { kind: rect, width: 0.6, height: 0.045 },
+          fill: '#4a3a24',
+        }
+
+  palace:
+    params: { wall: '#f3ead6', roof: '#3c6fb5' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 2.6, ry: 0.16 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: wing-l,
+          at: [-1.7, 0.8],
+          shape: { kind: rect, width: 1.3, height: 1.6 },
+          fill: '$wall',
+          stroke: { color: '#c9b98e', width: 0.035 },
+        }
+      - {
+          id: wing-r,
+          at: [1.7, 0.8],
+          shape: { kind: rect, width: 1.3, height: 1.6 },
+          fill: '$wall',
+          stroke: { color: '#c9b98e', width: 0.035 },
+        }
+      - {
+          id: wing-l-roof,
+          at: [-1.7, 1.75],
+          shape: { kind: polygon, points: [[-0.75, -0.15], [0, 0.45], [0.75, -0.15]] },
+          fill: '$roof',
+          stroke: { color: '#2d5488', width: 0.03 },
+        }
+      - {
+          id: wing-r-roof,
+          at: [1.7, 1.75],
+          shape: { kind: polygon, points: [[-0.75, -0.15], [0, 0.45], [0.75, -0.15]] },
+          fill: '$roof',
+          stroke: { color: '#2d5488', width: 0.03 },
+        }
+      - {
+          id: keep,
+          at: [0, 1.15],
+          shape: { kind: rect, width: 1.6, height: 2.3 },
+          fill: '$wall',
+          stroke: { color: '#c9b98e', width: 0.04 },
+        }
+      - {
+          id: keep-shade,
+          at: [0.55, 1.15],
+          shape: { kind: rect, width: 0.5, height: 2.3 },
+          fill: '#e0d6ba',
+        }
+      - {
+          id: keep-roof,
+          at: [0, 2.75],
+          shape: { kind: polygon, points: [[-0.95, -0.45], [0, 0.65], [0.95, -0.45]] },
+          fill: '$roof',
+          stroke: { color: '#2d5488', width: 0.035 },
+        }
+      - {
+          id: spire,
+          at: [0, 3.5],
+          shape: { kind: rect, width: 0.05, height: 0.5 },
+          fill: '#a0803a',
+        }
+      - {
+          id: spire-flag,
+          at: [0.14, 3.68],
+          shape: { kind: polygon, points: [[-0.12, 0.07], [0.24, 0], [-0.12, -0.07]] },
+          fill: '#c8a24a',
+        }
+      - {
+          id: gate,
+          at: [0, 0.55],
+          shape:
+            {
+              kind: polygon,
+              points: [[-0.4, -0.55], [-0.4, 0.35], [0, 0.62], [0.4, 0.35], [0.4, -0.55]],
+            },
+          fill: '#6e5330',
+          stroke: { color: '#4a3a24', width: 0.035 },
+        }
+      - {
+          id: window-l,
+          at: [-1.7, 1.0],
+          shape: { kind: rect, width: 0.3, height: 0.55, rx: 0.15 },
+          fill: '#9fd0f0',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - {
+          id: window-r,
+          at: [1.7, 1.0],
+          shape: { kind: rect, width: 0.3, height: 0.55, rx: 0.15 },
+          fill: '#9fd0f0',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - {
+          id: window-k,
+          at: [0, 1.9],
+          shape: { kind: rect, width: 0.34, height: 0.6, rx: 0.17 },
+          fill: '#9fd0f0',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+
+  tower:
+    params: { stone: '#b8b0a0' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 0.85, ry: 0.12 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: body,
+          at: [0, 1.5],
+          shape: { kind: rect, width: 1.1, height: 3.0 },
+          fill: '$stone',
+          stroke: { color: '#7c7466', width: 0.04 },
+        }
+      - {
+          id: body-shade,
+          at: [0.38, 1.5],
+          shape: { kind: rect, width: 0.34, height: 3.0 },
+          fill: '#a49c8c',
+        }
+      - {
+          id: brick-1,
+          at: [-0.25, 0.7],
+          shape: { kind: rect, width: 0.36, height: 0.18, rx: 0.02 },
+          fill: '#948c7c',
+        }
+      - {
+          id: brick-2,
+          at: [0.15, 1.6],
+          shape: { kind: rect, width: 0.36, height: 0.18, rx: 0.02 },
+          fill: '#948c7c',
+        }
+      - {
+          id: brick-3,
+          at: [-0.2, 2.3],
+          shape: { kind: rect, width: 0.36, height: 0.18, rx: 0.02 },
+          fill: '#948c7c',
+        }
+      - {
+          id: crown,
+          at: [0, 3.1],
+          shape: { kind: rect, width: 1.3, height: 0.22 },
+          fill: '#948c7c',
+          stroke: { color: '#7c7466', width: 0.03 },
+        }
+      - {
+          id: merlon-l,
+          at: [-0.5, 3.34],
+          shape: { kind: rect, width: 0.26, height: 0.26 },
+          fill: '#948c7c',
+        }
+      - {
+          id: merlon-m,
+          at: [0, 3.34],
+          shape: { kind: rect, width: 0.26, height: 0.26 },
+          fill: '#948c7c',
+        }
+      - {
+          id: merlon-r,
+          at: [0.5, 3.34],
+          shape: { kind: rect, width: 0.26, height: 0.26 },
+          fill: '#948c7c',
+        }
+      - {
+          id: arrow-slit,
+          at: [0, 2.0],
+          shape: { kind: rect, width: 0.12, height: 0.5, rx: 0.06 },
+          fill: '#3a352c',
+        }
+
+  bridge:
+    params: { stone: '#b8b0a0' }
+    parts:
+      - {
+          id: deck,
+          at: [0, 1.0],
+          shape: { kind: rect, width: 3.6, height: 0.28 },
+          fill: '$stone',
+          stroke: { color: '#7c7466', width: 0.035 },
+        }
+      - {
+          id: deck-face,
+          at: [0, 1.1],
+          shape: { kind: rect, width: 3.6, height: 0.09 },
+          fill: '#ccc4b4',
+        }
+      - {
+          id: arch,
+          shape:
+            {
+              kind: polygon,
+              points:
+                [
+                  [-1.0, 0],
+                  [-1.0, 0.45],
+                  [-0.65, 0.78],
+                  [0, 0.88],
+                  [0.65, 0.78],
+                  [1.0, 0.45],
+                  [1.0, 0],
+                ],
+            },
+          fill: '#3a352c',
+        }
+      - {
+          id: pier-l,
+          at: [-1.55, 0.45],
+          shape: { kind: rect, width: 0.5, height: 0.9 },
+          fill: '#a49c8c',
+          stroke: { color: '#7c7466', width: 0.03 },
+        }
+      - {
+          id: pier-r,
+          at: [1.55, 0.45],
+          shape: { kind: rect, width: 0.5, height: 0.9 },
+          fill: '#a49c8c',
+          stroke: { color: '#7c7466', width: 0.03 },
+        }
+      - {
+          id: rail-1,
+          at: [-1.2, 1.35],
+          shape: { kind: rect, width: 0.1, height: 0.4 },
+          fill: '#948c7c',
+        }
+      - {
+          id: rail-2,
+          at: [-0.4, 1.35],
+          shape: { kind: rect, width: 0.1, height: 0.4 },
+          fill: '#948c7c',
+        }
+      - {
+          id: rail-3,
+          at: [0.4, 1.35],
+          shape: { kind: rect, width: 0.1, height: 0.4 },
+          fill: '#948c7c',
+        }
+      - {
+          id: rail-4,
+          at: [1.2, 1.35],
+          shape: { kind: rect, width: 0.1, height: 0.4 },
+          fill: '#948c7c',
+        }
+      - {
+          id: rail-top,
+          at: [0, 1.58],
+          shape: { kind: rect, width: 3.0, height: 0.09, rx: 0.04 },
+          fill: '#948c7c',
+        }
+
+  tree:
+    params: { leaf: '#7a9e6e' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 0.9, ry: 0.12 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: trunk,
+          at: [0, 0.7],
+          shape: { kind: rect, width: 0.28, height: 1.4, rx: 0.08 },
+          fill: '#6e5330',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - {
+          id: branch,
+          at: [0.28, 1.15],
+          rotate: 35,
+          shape: { kind: rect, width: 0.55, height: 0.14, rx: 0.07 },
+          fill: '#6e5330',
+        }
+      - { id: crown-back, at: [-0.4, 1.9], shape: { kind: circle, r: 0.62 }, fill: '#5f7d52' }
+      - {
+          id: crown-main,
+          at: [0.1, 2.15],
+          shape: { kind: circle, r: 0.8 },
+          fill: '$leaf',
+          stroke: { color: '#5f7d52', width: 0.035 },
+        }
+      - { id: crown-side, at: [0.65, 1.8], shape: { kind: circle, r: 0.5 }, fill: '$leaf' }
+      - { id: crown-light, at: [-0.1, 2.4], shape: { kind: circle, r: 0.38 }, fill: '#93b585' }
+
+  pine:
+    params: { leaf: '#5f7d52' }
+    parts:
+      - { id: shadow, shape: { kind: ellipse, rx: 0.7, ry: 0.1 }, at: [0, 0.02], fill: '#00000022' }
+      - {
+          id: trunk,
+          at: [0, 0.45],
+          shape: { kind: rect, width: 0.22, height: 0.9 },
+          fill: '#6e5330',
+          stroke: { color: '#4a3a24', width: 0.028 },
+        }
+      - {
+          id: tier-1,
+          at: [0, 1.05],
+          shape: { kind: polygon, points: [[-0.85, 0], [0, 0.8], [0.85, 0]] },
+          fill: '$leaf',
+          stroke: { color: '#4c6442', width: 0.03 },
+        }
+      - {
+          id: tier-2,
+          at: [0, 1.7],
+          shape: { kind: polygon, points: [[-0.65, 0], [0, 0.7], [0.65, 0]] },
+          fill: '$leaf',
+          stroke: { color: '#4c6442', width: 0.03 },
+        }
+      - {
+          id: tier-3,
+          at: [0, 2.3],
+          shape: { kind: polygon, points: [[-0.45, 0], [0, 0.6], [0.45, 0]] },
+          fill: '$leaf',
+          stroke: { color: '#4c6442', width: 0.03 },
+        }
+      - {
+          id: tier-light,
+          at: [-0.2, 1.15],
+          shape: { kind: polygon, points: [[-0.3, 0], [0.1, 0.45], [0.3, 0]] },
+          fill: '#748f68',
+        }
+
+  hills:
+    params: { grass: '#7a9e6e' }
+    parts:
+      - { id: far, at: [-1.8, 0], shape: { kind: ellipse, rx: 2.6, ry: 1.0 }, fill: '#93b585' }
+      - { id: mid, at: [1.6, 0], shape: { kind: ellipse, rx: 2.9, ry: 1.25 }, fill: '$grass' }
+      - {
+          id: mid-light,
+          at: [1.0, 0.55],
+          shape: { kind: ellipse, rx: 1.5, ry: 0.5 },
+          fill: '#93b585',
+        }
+      - { id: near, at: [-0.6, 0], shape: { kind: ellipse, rx: 2.4, ry: 0.85 }, fill: '#5f7d52' }
+      - { id: bush-1, at: [-1.4, 0.7], shape: { kind: circle, r: 0.13 }, fill: '#4c6442' }
+      - { id: bush-2, at: [0.2, 0.62], shape: { kind: circle, r: 0.1 }, fill: '#4c6442' }
+      - { id: bush-3, at: [2.4, 0.85], shape: { kind: circle, r: 0.12 }, fill: '#5f7d52' }
+
+  ship:
+    params: { hull: '#8a6a3f', sail: '#f3ead6' }
+    parts:
+      - {
+          id: hull,
+          at: [0, 0.5],
+          shape:
+            { kind: polygon, points: [[-1.7, 0.45], [1.7, 0.45], [1.25, -0.5], [-1.25, -0.5]] },
+          fill: '$hull',
+          stroke: { color: '#4a3a24', width: 0.04 },
+        }
+      - {
+          id: hull-shade,
+          at: [0, 0.22],
+          shape:
+            { kind: polygon, points: [[-1.55, 0.16], [1.55, 0.16], [1.25, -0.22], [-1.25, -0.22]] },
+          fill: '#6e5330',
+        }
+      - {
+          id: rail,
+          at: [0, 0.98],
+          shape: { kind: rect, width: 3.35, height: 0.08 },
+          fill: '#a8845a',
+        }
+      - { id: mast, at: [0, 2.0], shape: { kind: rect, width: 0.1, height: 2.2 }, fill: '#6e5330' }
+      - {
+          id: boom,
+          at: [0, 1.25],
+          shape: { kind: rect, width: 1.9, height: 0.08, rx: 0.04 },
+          fill: '#6e5330',
+        }
+      - {
+          id: sail-main,
+          at: [0.02, 2.1],
+          shape:
+            { kind: polygon, points: [[-0.85, -0.75], [-0.85, 0.75], [0.85, 0.75], [0.85, -0.75]] },
+          fill: '$sail',
+          stroke: { color: '#c9b98e', width: 0.03 },
+        }
+      - {
+          id: sail-shade,
+          at: [0.45, 2.1],
+          shape:
+            { kind: polygon, points: [[-0.1, -0.75], [-0.1, 0.75], [0.42, 0.75], [0.42, -0.75]] },
+          fill: '#e0d6ba',
+        }
+      - {
+          id: pennant,
+          at: [0.16, 3.2],
+          shape: { kind: polygon, points: [[-0.14, 0.08], [0.32, 0], [-0.14, -0.08]] },
+          fill: '#b5453c',
+        }
+
+  cart:
+    params: { body: '#8a6a3f' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 1.1, ry: 0.11 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: bed,
+          at: [0.1, 0.78],
+          shape:
+            { kind: polygon, points: [[-1.1, 0.25], [1.0, 0.25], [0.85, -0.25], [-0.95, -0.25]] },
+          fill: '$body',
+          stroke: { color: '#4a3a24', width: 0.035 },
+        }
+      - {
+          id: bed-face,
+          at: [0.08, 0.94],
+          shape: { kind: rect, width: 1.95, height: 0.09 },
+          fill: '#a8845a',
+        }
+      - {
+          id: handle,
+          at: [-1.25, 0.9],
+          rotate: 20,
+          shape: { kind: rect, width: 0.7, height: 0.08, rx: 0.04 },
+          fill: '#6e5330',
+        }
+      - id: wheel
+        at: [0.45, 0.42]
+        pivot: [0, 0]
+        parts:
+          - {
+              id: rim,
+              shape: { kind: circle, r: 0.42 },
+              fill: '#6e5330',
+              stroke: { color: '#4a3a24', width: 0.05 },
+            }
+          - { id: spoke-a, shape: { kind: rect, width: 0.76, height: 0.07 }, fill: '#4a3a24' }
+          - {
+              id: spoke-b,
+              rotate: 60,
+              shape: { kind: rect, width: 0.76, height: 0.07 },
+              fill: '#4a3a24',
+            }
+          - {
+              id: spoke-c,
+              rotate: 120,
+              shape: { kind: rect, width: 0.76, height: 0.07 },
+              fill: '#4a3a24',
+            }
+          - { id: hub, shape: { kind: circle, r: 0.08 }, fill: '#c8a24a' }
+      - id: wheel-front
+        at: [-0.65, 0.42]
+        pivot: [0, 0]
+        parts:
+          - {
+              id: rim-f,
+              shape: { kind: circle, r: 0.42 },
+              fill: '#6e5330',
+              stroke: { color: '#4a3a24', width: 0.05 },
+            }
+          - {
+              id: spoke-fa,
+              rotate: 30,
+              shape: { kind: rect, width: 0.76, height: 0.07 },
+              fill: '#4a3a24',
+            }
+          - {
+              id: spoke-fb,
+              rotate: 90,
+              shape: { kind: rect, width: 0.76, height: 0.07 },
+              fill: '#4a3a24',
+            }
+          - {
+              id: spoke-fc,
+              rotate: 150,
+              shape: { kind: rect, width: 0.76, height: 0.07 },
+              fill: '#4a3a24',
+            }
+          - { id: hub-f, shape: { kind: circle, r: 0.08 }, fill: '#c8a24a' }
+
+  train:
+    params: { body: '#3c6fb5' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 1.8, ry: 0.12 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: boiler,
+          at: [-0.45, 0.95],
+          shape: { kind: rect, width: 1.9, height: 0.75, rx: 0.35 },
+          fill: '$body',
+          stroke: { color: '#2d5488', width: 0.04 },
+        }
+      - {
+          id: boiler-light,
+          at: [-0.5, 1.15],
+          shape: { kind: rect, width: 1.6, height: 0.16, rx: 0.08 },
+          fill: '#5c8ac9',
+        }
+      - {
+          id: cab,
+          at: [0.95, 1.15],
+          shape: { kind: rect, width: 0.85, height: 1.2, rx: 0.06 },
+          fill: '$body',
+          stroke: { color: '#2d5488', width: 0.04 },
+        }
+      - {
+          id: cab-window,
+          at: [0.95, 1.4],
+          shape: { kind: rect, width: 0.5, height: 0.42, rx: 0.06 },
+          fill: '#9fd0f0',
+          stroke: { color: '#2d5488', width: 0.03 },
+        }
+      - {
+          id: stack,
+          at: [-1.05, 1.6],
+          shape:
+            { kind: polygon, points: [[-0.14, -0.25], [-0.2, 0.25], [0.2, 0.25], [0.14, -0.25]] },
+          fill: '#3e454e',
+        }
+      - { id: puff, at: [-1.05, 2.05], shape: { kind: circle, r: 0.18 }, fill: '#cfcfcf' }
+      - {
+          id: cowcatcher,
+          at: [-1.5, 0.42],
+          shape: { kind: polygon, points: [[0.15, 0.3], [0.15, -0.3], [-0.35, -0.3]] },
+          fill: '#5d6773',
+        }
+      - {
+          id: frame,
+          at: [0, 0.52],
+          shape: { kind: rect, width: 3.0, height: 0.18 },
+          fill: '#3e454e',
+        }
+      - id: wheel-big
+        at: [0.75, 0.42]
+        pivot: [0, 0]
+        parts:
+          - {
+              id: wb-rim,
+              shape: { kind: circle, r: 0.42 },
+              fill: '#5d6773',
+              stroke: { color: '#3e454e', width: 0.05 },
+            }
+          - { id: wb-spoke1, shape: { kind: rect, width: 0.74, height: 0.07 }, fill: '#3e454e' }
+          - {
+              id: wb-spoke2,
+              rotate: 90,
+              shape: { kind: rect, width: 0.74, height: 0.07 },
+              fill: '#3e454e',
+            }
+          - { id: wb-hub, shape: { kind: circle, r: 0.09 }, fill: '#c8a24a' }
+      - id: wheel-small
+        at: [-0.55, 0.32]
+        pivot: [0, 0]
+        parts:
+          - {
+              id: ws-rim,
+              shape: { kind: circle, r: 0.3 },
+              fill: '#5d6773',
+              stroke: { color: '#3e454e', width: 0.05 },
+            }
+          - {
+              id: ws-spoke1,
+              rotate: 45,
+              shape: { kind: rect, width: 0.52, height: 0.06 },
+              fill: '#3e454e',
+            }
+          - {
+              id: ws-spoke2,
+              rotate: 135,
+              shape: { kind: rect, width: 0.52, height: 0.06 },
+              fill: '#3e454e',
+            }
+          - { id: ws-hub, shape: { kind: circle, r: 0.07 }, fill: '#c8a24a' }
+
+  bus:
+    params: { body: '#b5453c' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 1.7, ry: 0.12 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: body,
+          at: [0, 1.05],
+          shape: { kind: rect, width: 3.2, height: 1.5, rx: 0.22 },
+          fill: '$body',
+          stroke: { color: '#8e352e', width: 0.04 },
+        }
+      - {
+          id: body-shade,
+          at: [0, 0.55],
+          shape: { kind: rect, width: 3.2, height: 0.4, rx: 0.15 },
+          fill: '#8e352e',
+        }
+      - {
+          id: window-1,
+          at: [-1.05, 1.35],
+          shape: { kind: rect, width: 0.62, height: 0.55, rx: 0.07 },
+          fill: '#9fd0f0',
+          stroke: { color: '#8e352e', width: 0.03 },
+        }
+      - {
+          id: window-2,
+          at: [-0.25, 1.35],
+          shape: { kind: rect, width: 0.62, height: 0.55, rx: 0.07 },
+          fill: '#9fd0f0',
+          stroke: { color: '#8e352e', width: 0.03 },
+        }
+      - {
+          id: window-3,
+          at: [0.55, 1.35],
+          shape: { kind: rect, width: 0.62, height: 0.55, rx: 0.07 },
+          fill: '#9fd0f0',
+          stroke: { color: '#8e352e', width: 0.03 },
+        }
+      - {
+          id: door,
+          at: [1.25, 0.95],
+          shape: { kind: rect, width: 0.5, height: 1.15, rx: 0.06 },
+          fill: '#9fd0f0',
+          stroke: { color: '#8e352e', width: 0.03 },
+        }
+      - {
+          id: stripe,
+          at: [0, 0.86],
+          shape: { kind: rect, width: 3.2, height: 0.12 },
+          fill: '#efe6d0',
+        }
+      - { id: light, at: [-1.55, 0.75], shape: { kind: circle, r: 0.09 }, fill: '#ffd9a0' }
+      - id: wheel-rear
+        at: [0.95, 0.35]
+        pivot: [0, 0]
+        parts:
+          - { id: wr-tire, shape: { kind: circle, r: 0.35 }, fill: '#3a352c' }
+          - { id: wr-hub, shape: { kind: circle, r: 0.16 }, fill: '#b8b0a0' }
+          - { id: wr-nut, at: [0.08, 0], shape: { kind: circle, r: 0.035 }, fill: '#7c7466' }
+      - id: wheel-front
+        at: [-0.95, 0.35]
+        pivot: [0, 0]
+        parts:
+          - { id: wf-tire, shape: { kind: circle, r: 0.35 }, fill: '#3a352c' }
+          - { id: wf-hub, shape: { kind: circle, r: 0.16 }, fill: '#b8b0a0' }
+          - { id: wf-nut, at: [0.08, 0], shape: { kind: circle, r: 0.035 }, fill: '#7c7466' }
+
+  windmill:
+    params: { body: '#efe6d0' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 1.0, ry: 0.13 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: body,
+          at: [0, 1.3],
+          shape:
+            { kind: polygon, points: [[-0.85, -1.3], [-0.55, 1.3], [0.55, 1.3], [0.85, -1.3]] },
+          fill: '$body',
+          stroke: { color: '#b9a67e', width: 0.04 },
+        }
+      - {
+          id: body-shade,
+          at: [0.3, 1.3],
+          shape: { kind: polygon, points: [[0.05, -1.3], [0.05, 1.3], [0.25, 1.3], [0.55, -1.3]] },
+          fill: '#d9cdb2',
+        }
+      - {
+          id: cap,
+          at: [0, 2.75],
+          shape: { kind: polygon, points: [[-0.7, -0.15], [0, 0.5], [0.7, -0.15]] },
+          fill: '#b5453c',
+          stroke: { color: '#8e352e', width: 0.035 },
+        }
+      - {
+          id: door,
+          at: [0, 0.45],
+          shape: { kind: rect, width: 0.45, height: 0.9, rx: 0.2 },
+          fill: '#8a6a3f',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - {
+          id: window,
+          at: [0, 1.7],
+          shape: { kind: circle, r: 0.18 },
+          fill: '#9fd0f0',
+          stroke: { color: '#4a3a24', width: 0.03 },
+        }
+      - id: blades
+        at: [0, 2.6]
+        pivot: [0, 0]
+        parts:
+          - {
+              id: blade-1,
+              at: [0, 0.8],
+              shape:
+                { kind: polygon, points: [[-0.12, -0.8], [-0.3, 0.8], [0.3, 0.8], [0.12, -0.8]] },
+              fill: '#8a6a3f',
+              stroke: { color: '#4a3a24', width: 0.03 },
+            }
+          - {
+              id: blade-1-panel,
+              at: [0, 0.85],
+              shape: { kind: rect, width: 0.4, height: 1.1 },
+              fill: '#f3ead6',
+            }
+          - {
+              id: blade-2,
+              at: [0.8, 0],
+              rotate: -90,
+              shape:
+                { kind: polygon, points: [[-0.12, -0.8], [-0.3, 0.8], [0.3, 0.8], [0.12, -0.8]] },
+              fill: '#8a6a3f',
+              stroke: { color: '#4a3a24', width: 0.03 },
+            }
+          - {
+              id: blade-2-panel,
+              at: [0.85, 0],
+              rotate: -90,
+              shape: { kind: rect, width: 0.4, height: 1.1 },
+              fill: '#f3ead6',
+            }
+          - {
+              id: blade-3,
+              at: [0, -0.8],
+              rotate: 180,
+              shape:
+                { kind: polygon, points: [[-0.12, -0.8], [-0.3, 0.8], [0.3, 0.8], [0.12, -0.8]] },
+              fill: '#8a6a3f',
+              stroke: { color: '#4a3a24', width: 0.03 },
+            }
+          - {
+              id: blade-3-panel,
+              at: [0, -0.85],
+              rotate: 180,
+              shape: { kind: rect, width: 0.4, height: 1.1 },
+              fill: '#f3ead6',
+            }
+          - {
+              id: blade-4,
+              at: [-0.8, 0],
+              rotate: 90,
+              shape:
+                { kind: polygon, points: [[-0.12, -0.8], [-0.3, 0.8], [0.3, 0.8], [0.12, -0.8]] },
+              fill: '#8a6a3f',
+              stroke: { color: '#4a3a24', width: 0.03 },
+            }
+          - {
+              id: blade-4-panel,
+              at: [-0.85, 0],
+              rotate: 90,
+              shape: { kind: rect, width: 0.4, height: 1.1 },
+              fill: '#f3ead6',
+            }
+          - {
+              id: axle,
+              shape: { kind: circle, r: 0.14 },
+              fill: '#c8a24a',
+              stroke: { color: '#a0803a', width: 0.03 },
+            }
+
+  monument:
+    params: { stone: '#ccc4b4' }
+    parts:
+      - {
+          id: shadow,
+          shape: { kind: ellipse, rx: 0.9, ry: 0.11 },
+          at: [0, 0.02],
+          fill: '#00000022',
+        }
+      - {
+          id: steps-b,
+          at: [0, 0.12],
+          shape: { kind: rect, width: 1.7, height: 0.24 },
+          fill: '#a49c8c',
+        }
+      - {
+          id: steps-t,
+          at: [0, 0.34],
+          shape: { kind: rect, width: 1.3, height: 0.2 },
+          fill: '$stone',
+        }
+      - {
+          id: plinth,
+          at: [0, 0.75],
+          shape: { kind: rect, width: 0.9, height: 0.65, rx: 0.03 },
+          fill: '$stone',
+          stroke: { color: '#948c7c', width: 0.035 },
+        }
+      - {
+          id: plinth-shade,
+          at: [0.3, 0.75],
+          shape: { kind: rect, width: 0.3, height: 0.65 },
+          fill: '#b8b0a0',
+        }
+      - {
+          id: plaque,
+          at: [0, 0.75],
+          shape: { kind: rect, width: 0.45, height: 0.3, rx: 0.03 },
+          fill: '#c8a24a',
+        }
+      - {
+          id: obelisk,
+          at: [0, 2.0],
+          shape:
+            { kind: polygon, points: [[-0.3, -0.95], [-0.16, 1.15], [0.16, 1.15], [0.3, -0.95]] },
+          fill: '$stone',
+          stroke: { color: '#948c7c', width: 0.035 },
+        }
+      - {
+          id: obelisk-shade,
+          at: [0.1, 2.0],
+          shape:
+            { kind: polygon, points: [[0.04, -0.95], [0.02, 1.15], [0.16, 1.15], [0.3, -0.95]] },
+          fill: '#b8b0a0',
+        }
+      - {
+          id: tip,
+          at: [0, 3.3],
+          shape: { kind: polygon, points: [[-0.16, 0], [0, 0.3], [0.16, 0]] },
+          fill: '#c8a24a',
+        }
+
+  bread:
+    parts:
+      - {
+          id: loaf,
+          at: [0, 0.22],
+          shape: { kind: ellipse, rx: 0.5, ry: 0.24 },
+          fill: '#c8964a',
+          stroke: { color: '#8f6a34', width: 0.03 },
+        }
+      - {
+          id: loaf-top,
+          at: [-0.05, 0.3],
+          shape: { kind: ellipse, rx: 0.38, ry: 0.15 },
+          fill: '#e0b26a',
+        }
+      - {
+          id: score-1,
+          at: [-0.18, 0.32],
+          rotate: -20,
+          shape: { kind: rect, width: 0.2, height: 0.035, rx: 0.017 },
+          fill: '#8f6a34',
+        }
+      - {
+          id: score-2,
+          at: [0.02, 0.34],
+          rotate: -20,
+          shape: { kind: rect, width: 0.2, height: 0.035, rx: 0.017 },
+          fill: '#8f6a34',
+        }
+      - {
+          id: score-3,
+          at: [0.22, 0.3],
+          rotate: -20,
+          shape: { kind: rect, width: 0.18, height: 0.035, rx: 0.017 },
+          fill: '#8f6a34',
+        }
+
+  apple:
+    parts:
+      - {
+          id: body,
+          at: [0, 0.26],
+          shape: { kind: circle, r: 0.26 },
+          fill: '#b5453c',
+          stroke: { color: '#8e352e', width: 0.025 },
+        }
+      - { id: cheek, at: [-0.09, 0.34], shape: { kind: circle, r: 0.09 }, fill: '#c95c50' }
+      - {
+          id: stem,
+          at: [0.02, 0.54],
+          rotate: 10,
+          shape: { kind: rect, width: 0.045, height: 0.14, rx: 0.02 },
+          fill: '#6e5330',
+        }
+      - {
+          id: leaf,
+          at: [0.12, 0.58],
+          rotate: -35,
+          shape: { kind: ellipse, rx: 0.11, ry: 0.05 },
+          fill: '#7a9e6e',
+        }
+
+  hammer:
+    parts:
+      - {
+          id: handle,
+          at: [0, 0.45],
+          rotate: -15,
+          shape: { kind: rect, width: 0.09, height: 0.9, rx: 0.045 },
+          fill: '#a8845a',
+          stroke: { color: '#4a3a24', width: 0.02 },
+        }
+      - {
+          id: grip,
+          at: [0.09, 0.12],
+          rotate: -15,
+          shape: { kind: rect, width: 0.11, height: 0.26, rx: 0.05 },
+          fill: '#6e5330',
+        }
+      - {
+          id: head,
+          at: [-0.11, 0.86],
+          rotate: -15,
+          shape: { kind: rect, width: 0.5, height: 0.22, rx: 0.05 },
+          fill: '#5d6773',
+          stroke: { color: '#3e454e', width: 0.03 },
+        }
+      - {
+          id: claw,
+          at: [0.14, 0.94],
+          rotate: -15,
+          shape:
+            { kind: polygon, points: [[-0.08, 0.05], [0.16, 0.16], [0.2, 0.02], [0.02, -0.06]] },
+          fill: '#5d6773',
+          stroke: { color: '#3e454e', width: 0.025 },
+        }
+      - {
+          id: head-face,
+          at: [-0.28, 0.9],
+          rotate: -15,
+          shape: { kind: rect, width: 0.14, height: 0.24, rx: 0.04 },
+          fill: '#7d8894',
+        }
+
+  shovel:
+    parts:
+      - {
+          id: shaft,
+          at: [0, 0.55],
+          rotate: 12,
+          shape: { kind: rect, width: 0.07, height: 1.1, rx: 0.035 },
+          fill: '#a8845a',
+          stroke: { color: '#4a3a24', width: 0.02 },
+        }
+      - {
+          id: grip,
+          at: [-0.11, 1.08],
+          rotate: 12,
+          shape: { kind: rect, width: 0.26, height: 0.08, rx: 0.04 },
+          fill: '#6e5330',
+        }
+      - {
+          id: blade,
+          at: [0.12, 0.06],
+          rotate: 12,
+          shape:
+            {
+              kind: polygon,
+              points: [[-0.18, 0.18], [0.18, 0.18], [0.14, -0.12], [0, -0.22], [-0.14, -0.12]],
+            },
+          fill: '#7d8894',
+          stroke: { color: '#3e454e', width: 0.028 },
+        }
+      - {
+          id: blade-shine,
+          at: [0.07, 0.1],
+          rotate: 12,
+          shape:
+            { kind: polygon, points: [[-0.06, 0.1], [0.02, 0.1], [-0.02, -0.08], [-0.08, -0.04]] },
+          fill: '#9aa5b1',
+        }
+
+  banner:
+    params: { cloth: '#3c6fb5' }
+    parts:
+      - {
+          id: rod,
+          at: [0, 1.62],
+          shape: { kind: rect, width: 1.3, height: 0.07, rx: 0.035 },
+          fill: '#8a6a3f',
+          stroke: { color: '#4a3a24', width: 0.02 },
+        }
+      - { id: cap-l, at: [-0.65, 1.62], shape: { kind: circle, r: 0.06 }, fill: '#c8a24a' }
+      - { id: cap-r, at: [0.65, 1.62], shape: { kind: circle, r: 0.06 }, fill: '#c8a24a' }
+      - {
+          id: cloth,
+          at: [0, 0.9],
+          shape:
+            {
+              kind: polygon,
+              points: [[-0.55, 0.68], [0.55, 0.68], [0.55, -0.5], [0, -0.72], [-0.55, -0.5]],
+            },
+          fill: '$cloth',
+          stroke: { color: '#2d5488', width: 0.03 },
+        }
+      - {
+          id: cloth-shade,
+          at: [0.3, 0.88],
+          shape:
+            { kind: polygon, points: [[-0.02, 0.7], [0.25, 0.7], [0.25, -0.44], [-0.02, -0.55]] },
+          fill: '#2d5488',
+        }
+      - {
+          id: emblem,
+          at: [0, 0.95],
+          shape: { kind: circle, r: 0.2 },
+          fill: '#c8a24a',
+          stroke: { color: '#a0803a', width: 0.03 },
+        }
