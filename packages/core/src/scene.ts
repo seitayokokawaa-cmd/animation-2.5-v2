@@ -8,8 +8,22 @@
 import type { Color } from './color.js';
 import { apply, compose, IDENTITY, type Transform, type Vec2 } from './math.js';
 
-export interface Fill {
+export interface GradientStop {
+  readonly offset: number;
   readonly color: Color;
+}
+
+/** Linear gradient in shape-local coordinates (userSpaceOnUse). */
+export interface LinearGradient {
+  readonly from: Vec2;
+  readonly to: Vec2;
+  readonly stops: readonly GradientStop[];
+}
+
+export interface Fill {
+  readonly color?: Color;
+  /** Wins over `color` when present. Deduped into `<defs>` by the emitter. */
+  readonly gradient?: LinearGradient;
 }
 
 export interface Stroke {
