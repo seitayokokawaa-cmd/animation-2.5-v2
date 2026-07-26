@@ -8,3 +8,4 @@ export const MFS_VERSION = 1;
 export { TICKS_PER_SECOND };
 
 export * from './schema.js';
+export * from './loader.js';

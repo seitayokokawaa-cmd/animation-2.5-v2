@@ -40,7 +40,7 @@ Legend: ☐ pending · ☑ done
 | Id   | Task                                                       | Done |
 | ---- | ---------------------------------------------------------- | ---- |
 | M2.1 | MFS schema v0 (meta/scenes/place/move/camera/caption)      | ☑    |
-| M2.2 | YAML loader preserving source ranges per node              | ☐    |
+| M2.2 | YAML loader preserving source ranges per node              | ☑    |
 | M2.3 | Validator T1 + MF error codes + pretty/json printers       | ☐    |
 | M2.4 | Validator T2 references + did-you-mean                     | ☐    |
 | M2.5 | Compiler: screenplay → timeline IR                         | ☐    |
