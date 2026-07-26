@@ -5,3 +5,4 @@ export * from './rig.js';
 export * from './ik.js';
 export * from './skin.js';
 export * from './potato.js';
+export * from './face.js';

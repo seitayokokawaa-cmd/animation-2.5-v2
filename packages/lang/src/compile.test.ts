@@ -112,6 +112,7 @@ describe('cast compilation (M6.4)', () => {
         template: 'potato-biped',
         size: 0.9,
         palette: { outfit: '#8a1c1c', 'outfit-dark': '#5f1212' },
+        expression: 'deadpan',
       },
     },
     scenes: [
@@ -129,7 +130,12 @@ describe('cast compilation (M6.4)', () => {
   it('compiles cast placements into character instances', () => {
     const [f1, f2] = compile(doc).scenes[0]!.instances;
     expect(f1).toMatchObject({ id: 'f1', depth: 0.5, layer: 2000 });
-    expect(f1!.character).toMatchObject({ template: 'potato-biped', size: 0.9, facing: 'left' });
+    expect(f1!.character).toMatchObject({
+      template: 'potato-biped',
+      size: 0.9,
+      facing: 'left',
+      expression: 'deadpan',
+    });
     // Kebab-case YAML slots map to the template's camelCase slot names.
     expect(f1!.character!.palette).toEqual({
       outfit: { r: 0x8a, g: 0x1c, b: 0x1c, a: 1 },

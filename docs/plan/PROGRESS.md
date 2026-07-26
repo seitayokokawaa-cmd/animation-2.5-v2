@@ -94,7 +94,7 @@ Legend: ☐ pending · ☑ done
 | M6.2 | Analytic two-bone IK (arm reaches)                          | ☑    |
 | M6.3 | Vector skinning + facing flips                              | ☑    |
 | M6.4 | Potato-biped template                                       | ☑    |
-| M6.5 | Face: eyes/blink/look-at, brows, flap-mouth; expressions    | ☐    |
+| M6.5 | Face: eyes/blink/look-at, brows, flap-mouth; expressions    | ☑    |
 | M6.6 | Costume/prop system: headwear, facial hair, outfits, items  | ☐    |
 | M6.7 | Reaction pack: jaw-drop, eye-bulge, sweat, steam, deadpan   | ☐    |
 | M6.8 | Simple quadruped (horse/dog) + rider seat                   | ☐    |

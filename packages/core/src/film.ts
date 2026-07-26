@@ -25,6 +25,8 @@ export interface FilmCharacter {
   /** Palette slot overrides, keyed by the template's slot names. */
   readonly palette: Readonly<Record<string, Color>>;
   readonly facing: 'left' | 'right';
+  /** Face expression preset name (M6.5); `neutral` when unset. */
+  readonly expression: string;
 }
 
 export interface FilmInstance {

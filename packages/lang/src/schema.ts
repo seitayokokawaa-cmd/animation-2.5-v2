@@ -127,12 +127,25 @@ const castPaletteSchema = z
   )
   .strict();
 
+/** Face expression presets (kept in sync with the motion registry; the
+ * drift check is an M12.5 deliverable, like the verb defaults). */
+export const EXPRESSION_CHOICES = [
+  'neutral',
+  'happy',
+  'angry',
+  'sad',
+  'shocked',
+  'deadpan',
+] as const;
+
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
     template: z.literal('potato-biped'),
     size: z.number().finite().positive().optional(),
     palette: castPaletteSchema.optional(),
+    /** Resting face (M6.5); reactions override it per beat (M6.7). */
+    expression: z.enum(EXPRESSION_CHOICES).optional(),
   })
   .strict();
 

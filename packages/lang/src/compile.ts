@@ -271,6 +271,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
             size: castDef.size ?? 1,
             palette,
             facing: p.facing ?? 'right',
+            expression: castDef.expression ?? 'neutral',
           },
           depth: p.depth ?? 0.5,
           layer: (p.layer ?? 0) * 1000,

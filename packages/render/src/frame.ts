@@ -31,9 +31,13 @@ import {
   type Vec2,
 } from '@motionforge/core';
 import {
+  blinkOpenness,
   CHARACTER_TEMPLATES,
   characterNodes,
   emitEffectNodes,
+  FACE_EXPRESSIONS,
+  faceNodes,
+  HEAD_ANCHOR_Z,
   idlePose,
   sampleEffect,
 } from '@motionforge/motion';
@@ -173,6 +177,20 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             throw new Error(`Unknown character template "${inst.character.template}"`);
           }
           const template = build({ size: inst.character.size, palette: inst.character.palette });
+          const face = faceNodes(
+            {
+              expression: FACE_EXPRESSIONS[inst.character.expression] ?? FACE_EXPRESSIONS.neutral!,
+              eyesOpen: blinkOpenness(scene.startTick + localTick, film.seed, inst.id),
+              look: vec2(0.35, -0.08),
+            },
+            {
+              idPrefix: `${inst.id}/face`,
+              layerBase: inst.layer + HEAD_ANCHOR_Z,
+              headRadius: template.headRadius,
+              ink: template.palette.outline,
+              lid: template.palette.skin,
+            },
+          );
           return {
             ...base,
             children: [
@@ -183,6 +201,7 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                 facing: inst.character.facing,
                 // Per-character phase offset so a cast never breathes in sync.
                 pose: idlePose(localTick, fnv1a(inst.id) % 240),
+                headNodes: [face],
               }),
             ],
           };
