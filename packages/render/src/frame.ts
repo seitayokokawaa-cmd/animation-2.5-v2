@@ -8,6 +8,7 @@
  */
 
 import {
+  cameraTransform,
   combinePoses,
   compose,
   ease,
@@ -25,6 +26,7 @@ import {
   translation,
   trs,
   vec2,
+  WORLD_UNITS_PER_VIEW_HEIGHT,
   type Film,
   type FilmScene,
   type Pose,
@@ -73,8 +75,7 @@ import { buildCardNodes } from './cards.js';
 import { paperTextureNodes, stylePreset, type StylePreset } from './style.js';
 import { shapeText } from './text.js';
 
-/** World units visible vertically at zoom 1. */
-export const WORLD_UNITS_PER_VIEW_HEIGHT = 10;
+export { WORLD_UNITS_PER_VIEW_HEIGHT } from '@motionforge/core';
 
 /** How strongly depth separates under camera pans (M5.7). */
 export const PARALLAX_STRENGTH = 0.6;
@@ -185,8 +186,6 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
   const camX = cameraPos.x + cameraShift.x;
   const camY = cameraPos.y + cameraShift.y;
 
-  const baseUnit = film.height / WORLD_UNITS_PER_VIEW_HEIGHT;
-  const unit = baseUnit * zoom;
   const worldWidthUnits = (film.width / film.height) * WORLD_UNITS_PER_VIEW_HEIGHT;
 
   /**
@@ -203,17 +202,12 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
     return compose(translation(-camX * f, -camY * f), worldTransform ?? IDENTITY);
   };
 
-  // World content: center + zoom scale; camera offset applied per node.
-  const worldTransform = compose(
-    translation(film.width / 2, film.height / 2),
-    scaling(unit, -unit),
-  );
+  // World content via the camera rig (M10.1) anchored at the parallax-
+  // neutral origin; each node then gets its own depth-scaled camera offset.
+  const worldTransform = cameraTransform({ pos: vec2(0, 0), zoom }, film);
   // Overlay content (cards, captions, texture, backdrop): screen-fixed —
   // no camera, no zoom.
-  const overlayTransform = compose(
-    translation(film.width / 2, film.height / 2),
-    scaling(baseUnit, -baseUnit),
-  );
+  const overlayTransform = cameraTransform({ pos: vec2(0, 0), zoom: 1 }, film);
 
   const backdropNodes: SceneNode[] = scene.backdrop
     ? [

@@ -139,7 +139,7 @@ Legend: ☐ pending · ☑ done
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
-| M10.1 | Camera rig: transform/zoom/bounds/letterbox                | ☐    |
+| M10.1 | Camera rig: transform/zoom/bounds/letterbox                | ☑    |
 | M10.2 | pan-to / zoom-to / cut / zoom-punch / whip-pan / shake     | ☐    |
 | M10.3 | Track with damped spring                                   | ☐    |
 | M10.4 | Framing presets: wide/medium/close-up/two-shot/region      | ☐    |

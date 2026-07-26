@@ -6,6 +6,7 @@
  */
 
 import {
+  clampZoom,
   createTimeline,
   createTrack,
   degToRad,
@@ -18,6 +19,7 @@ import {
   ticksToSeconds,
   tokenizeWords,
   vec2,
+  WORLD_UNITS_PER_VIEW_HEIGHT,
   type AnyTrack,
   type Clip,
   type Fill,
@@ -928,8 +930,8 @@ export function compileWithMarkers(
         const margin = zt.margin ?? 1.2;
         const boxW = region.bbox.max.x - region.bbox.min.x + margin * 2;
         const boxH = region.bbox.max.y - region.bbox.min.y + margin * 2;
-        const worldW = (width / height) * 10;
-        const zoomLevel = Math.max(0.5, Math.min(6, Math.min(10 / boxH, worldW / boxW)));
+        const worldW = (width / height) * WORLD_UNITS_PER_VIEW_HEIGHT;
+        const zoomLevel = clampZoom(Math.min(WORLD_UNITS_PER_VIEW_HEIGHT / boxH, worldW / boxW));
         const to = vec2(
           placement.at[0] + (region.bbox.min.x + region.bbox.max.x) / 2,
           placement.at[1] + (region.bbox.min.y + region.bbox.max.y) / 2,
