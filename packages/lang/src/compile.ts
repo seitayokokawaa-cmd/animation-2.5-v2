@@ -57,6 +57,12 @@ export function compile(doc: MfsDocument): Film {
 
   let filmTick: Tick = 0;
   const scenes: FilmScene[] = doc.scenes.map((scene) => {
+    if (scene.duration === undefined) {
+      // Narration-derived durations resolve against the voice cache (M3.5).
+      throw new Error(
+        `Scene "${scene.id}": narration-derived duration requires the voice cache (mf voice sync); give an explicit duration until then`,
+      );
+    }
     const durationTicks = secondsToTicks(scene.duration);
 
     const instances: FilmInstance[] = scene.place.map((p) => {

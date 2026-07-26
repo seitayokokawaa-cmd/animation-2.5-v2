@@ -8,6 +8,7 @@ export const MFS_VERSION = 1;
 export { TICKS_PER_SECOND };
 
 export * from './schema.js';
+export * from './narration.js';
 export * from './loader.js';
 export * from './errors.js';
 export * from './validate.js';

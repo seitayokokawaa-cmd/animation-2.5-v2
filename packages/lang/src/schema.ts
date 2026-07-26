@@ -11,6 +11,8 @@
 import { TICKS_PER_SECOND } from '@motionforge/core';
 import { z } from 'zod';
 
+import { makeNarrationSchema, voiceSpecSchema } from './narration.js';
+
 const colorSchema = z.string().regex(/^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i, {
   message: 'Expected a hex color like #d94f30 or #d94f3080',
 });
@@ -109,68 +111,89 @@ const tweenBase = {
   easing: easingSchema.optional(),
 };
 
+/** The verb payload fields, shared by timed actions and narration sync. */
+const verbFields = {
+  move: z
+    .object({ ...tweenBase, to: vec2Schema })
+    .strict()
+    .optional(),
+  rotate: z
+    .object({ ...tweenBase, to: z.number().finite() })
+    .strict()
+    .optional(),
+  scale: z
+    .object({ ...tweenBase, to: z.number().finite().positive() })
+    .strict()
+    .optional(),
+  caption: z
+    .object({
+      text: z.string().min(1),
+      duration: secondsSchema,
+      at: vec2Schema.optional(),
+      /** World units tall; default 0.6. */
+      size: z.number().finite().positive().optional(),
+      color: colorSchema.optional(),
+      font: z.enum(FONT_CHOICES).optional(),
+    })
+    .strict()
+    .optional(),
+  camera: z
+    .object({
+      to: vec2Schema.optional(),
+      zoom: z.number().finite().positive().optional(),
+      duration: secondsSchema,
+      easing: easingSchema.optional(),
+    })
+    .strict()
+    .optional(),
+};
+
+const VERB_NAMES = ['move', 'rotate', 'scale', 'caption', 'camera'];
+
+const oneVerb = (value: Record<string, unknown>): boolean =>
+  VERB_NAMES.filter((v) => value[v] !== undefined).length === 1;
+
+const ONE_VERB_MESSAGE = {
+  message: 'Exactly one verb is required: move, rotate, scale, caption, or camera',
+};
+
+/** A verb without timing — narration sync supplies the time via the anchor. */
+export const verbSchema = z
+  .object(verbFields)
+  .strict()
+  .refine((v) => oneVerb(v as Record<string, unknown>), ONE_VERB_MESSAGE);
+
 const actionSchema = z
   .object({
     /** Seconds from scene start. */
     at: secondsSchema,
-    move: z
-      .object({ ...tweenBase, to: vec2Schema })
-      .strict()
-      .optional(),
-    rotate: z
-      .object({ ...tweenBase, to: z.number().finite() })
-      .strict()
-      .optional(),
-    scale: z
-      .object({ ...tweenBase, to: z.number().finite().positive() })
-      .strict()
-      .optional(),
-    caption: z
-      .object({
-        text: z.string().min(1),
-        duration: secondsSchema,
-        at: vec2Schema.optional(),
-        /** World units tall; default 0.6. */
-        size: z.number().finite().positive().optional(),
-        color: colorSchema.optional(),
-        font: z.enum(FONT_CHOICES).optional(),
-      })
-      .strict()
-      .optional(),
-    camera: z
-      .object({
-        to: vec2Schema.optional(),
-        zoom: z.number().finite().positive().optional(),
-        duration: secondsSchema,
-        easing: easingSchema.optional(),
-      })
-      .strict()
-      .optional(),
+    ...verbFields,
   })
   .strict()
-  .refine(
-    (action) => {
-      const verbs = ['move', 'rotate', 'scale', 'caption', 'camera'].filter(
-        (v) => (action as Record<string, unknown>)[v] !== undefined,
-      );
-      return verbs.length === 1;
-    },
-    { message: 'Each action needs exactly one verb: move, rotate, scale, caption, or camera' },
-  );
+  .refine((v) => oneVerb(v as Record<string, unknown>), ONE_VERB_MESSAGE);
 
 const sceneSchema = z
   .object({
     id: nameSchema,
-    /** Seconds; scene durations are explicit in v0 (narration derives them in M3). */
-    duration: z.number().finite().positive(),
+    /**
+     * Seconds. Optional when the scene has narration — its duration then
+     * derives from the narration audio (plus pauses) at compile time.
+     */
+    duration: z.number().finite().positive().optional(),
     place: z.array(placeSchema).default([]),
     actions: z.array(actionSchema).default([]),
+    narration: makeNarrationSchema(verbSchema).default([]),
   })
-  .strict();
+  .strict()
+  .refine((scene) => scene.duration !== undefined || scene.narration.length > 0, {
+    message: 'A scene needs either an explicit duration or narration to derive one from',
+    path: ['duration'],
+  });
 
 export const mfsSchema = z
   .object({
-    motionforge: z.literal(1),
+    motionforge: z.union([z.literal(1), z.literal(2)]),
+    voices: z.record(nameSchema, voiceSpecSchema).default({}),
     meta: z
       .object({
         title: z.string().min(1),

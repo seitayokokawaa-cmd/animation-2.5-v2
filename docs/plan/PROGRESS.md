@@ -52,7 +52,7 @@ Legend: ☐ pending · ☑ done
 
 | Id   | Task                                                             | Done |
 | ---- | ---------------------------------------------------------------- | ---- |
-| M3.1 | `voices:` + `narration:` schema (segments, pauses, emphasis)     | ☐    |
+| M3.1 | `voices:` + `narration:` schema (segments, pauses, emphasis)     | ☑    |
 | M3.2 | `TtsAdapter` + Qwen DashScope impl + mock adapter                | ☐    |
 | M3.3 | Freeze-cache: hashed WAVs, `voice.lock.json`, `mf voice sync`    | ☐    |
 | M3.4 | Aligner + fuzzy transcript matching → per-word timestamps        | ☐    |

@@ -69,7 +69,7 @@ describe('mfsSchema', () => {
         scenes: [{ ...valid.scenes[0], actions: [action] }],
       });
       expect(res.success).toBe(false);
-      expect(JSON.stringify(res.error?.issues)).toMatch(/exactly one verb/);
+      expect(JSON.stringify(res.error?.issues)).toMatch(/Exactly one verb/);
     }
   });
 
