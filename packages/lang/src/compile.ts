@@ -352,6 +352,25 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
           });
           lastCameraZoom = zoom;
         }
+      } else if (verb['bounce-to']) {
+        const { target, to, duration, hops, height } = verb['bounce-to'];
+        const from = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const toVec = vec2(...to);
+        const distance = Math.hypot(toVec.x - from.x, toVec.y - from.y);
+        const hopCount = hops ?? Math.max(1, Math.round(distance / 1.5));
+        const seconds = duration ?? hopCount * 0.35;
+        (posClips.get(target) ?? posClips.set(target, []).get(target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from,
+          to: toVec,
+          easing: 'linear',
+        });
+        lastPos.set(target, toVec);
+        pushEffect(target, 'bounce-bob', startTick, seconds, {
+          hops: hopCount,
+          ...(height !== undefined ? { height } : {}),
+        });
       } else if (verb['pop-in']) {
         const { target, duration, to } = verb['pop-in'];
         pushEffect(target, 'pop-in', startTick, duration ?? EFFECT_DEFAULT_SECONDS['pop-in']!, {

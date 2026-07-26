@@ -149,6 +149,18 @@ const verbFields = {
     .object({ ...effectBase, to: z.number().finite().positive().optional() })
     .strict()
     .optional(),
+  'bounce-to': z
+    .object({
+      target: nameSchema,
+      to: vec2Schema,
+      /** Seconds; default derives from hop count (0.35 s per hop). */
+      duration: secondsSchema.optional(),
+      hops: z.number().int().positive().optional(),
+      /** Hop height in world units. */
+      height: z.number().finite().positive().optional(),
+    })
+    .strict()
+    .optional(),
   move: z
     .object({ ...tweenBase, to: vec2Schema })
     .strict()
@@ -185,6 +197,7 @@ const verbFields = {
 };
 
 export const VERB_NAMES = [
+  'bounce-to',
   'move',
   'rotate',
   'scale',
