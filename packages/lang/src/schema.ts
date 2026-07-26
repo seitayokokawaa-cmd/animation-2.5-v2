@@ -138,6 +138,24 @@ export const EXPRESSION_CHOICES = [
   'deadpan',
 ] as const;
 
+/** Costume pieces, facial hair, and held items (motion registry names). */
+export const COSTUME_CHOICES = [
+  'crown',
+  'spiked-helmet',
+  'plumed-hat',
+  'turban',
+  'beret',
+  'royal-uniform',
+  'military-uniform',
+  'suit',
+  'robe',
+  'peasant-tunic',
+] as const;
+
+export const MUSTACHE_CHOICES = ['imperial', 'handlebar', 'chevron', 'goatee'] as const;
+
+export const HELD_CHOICES = ['scroll', 'sword', 'staff', 'flag'] as const;
+
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
@@ -146,6 +164,11 @@ const castMemberSchema = z
     palette: castPaletteSchema.optional(),
     /** Resting face (M6.5); reactions override it per beat (M6.7). */
     expression: z.enum(EXPRESSION_CHOICES).optional(),
+    /** Outfits + headwear, drawn in order (M6.6). */
+    costume: z.array(z.enum(COSTUME_CHOICES)).optional(),
+    mustache: z.enum(MUSTACHE_CHOICES).optional(),
+    /** Item gripped by the near hand (M6.6). */
+    held: z.enum(HELD_CHOICES).optional(),
   })
   .strict();
 

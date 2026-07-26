@@ -31,6 +31,7 @@ import {
   type Vec2,
 } from '@motionforge/core';
 import {
+  applyCostume,
   blinkOpenness,
   CHARACTER_TEMPLATES,
   characterNodes,
@@ -176,7 +177,17 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
           if (!build) {
             throw new Error(`Unknown character template "${inst.character.template}"`);
           }
-          const template = build({ size: inst.character.size, palette: inst.character.palette });
+          const bare = build({ size: inst.character.size, palette: inst.character.palette });
+          const dressed = applyCostume(
+            bare,
+            {
+              pieces: inst.character.costume,
+              mustache: inst.character.mustache,
+              held: inst.character.held,
+            },
+            { idPrefix: `${inst.id}/costume`, layerBase: inst.layer },
+          );
+          const template = dressed.template;
           const face = faceNodes(
             {
               expression: FACE_EXPRESSIONS[inst.character.expression] ?? FACE_EXPRESSIONS.neutral!,
@@ -201,7 +212,8 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                 facing: inst.character.facing,
                 // Per-character phase offset so a cast never breathes in sync.
                 pose: idlePose(localTick, fnv1a(inst.id) % 240),
-                headNodes: [face],
+                headNodes: [face, ...dressed.headNodes],
+                handNodes: dressed.handNodes,
               }),
             ],
           };

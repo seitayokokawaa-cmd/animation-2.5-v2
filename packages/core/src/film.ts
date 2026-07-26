@@ -27,6 +27,12 @@ export interface FilmCharacter {
   readonly facing: 'left' | 'right';
   /** Face expression preset name (M6.5); `neutral` when unset. */
   readonly expression: string;
+  /** Costume piece names — outfits and headwear (M6.6). */
+  readonly costume: readonly string[];
+  /** Facial-hair style name (M6.6). */
+  readonly mustache?: string;
+  /** Held-item name for the near hand (M6.6). */
+  readonly held?: string;
 }
 
 export interface FilmInstance {

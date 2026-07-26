@@ -22,6 +22,7 @@
 import {
   compose,
   parseColor,
+  rotation,
   scaling,
   translation,
   vec2,
@@ -66,6 +67,8 @@ export interface CharacterTemplate {
   readonly parts: readonly SkinPart[];
   /** Bone whose end is the head center (face/costume anchor). */
   readonly headBone: string;
+  /** Bone whose end is the near hand (held-item anchor). */
+  readonly handBone: string;
   readonly headRadius: number;
   readonly size: number;
   readonly palette: PotatoPalette;
@@ -274,7 +277,15 @@ export function potatoBiped(options: PotatoOptions = {}): CharacterTemplate {
     hand('hand-r', 'arm-r-lower', armLower, 0.14 * s, palette.skin, 21),
   ];
 
-  return { skeleton, parts, headBone: 'head', headRadius: headR, size, palette };
+  return {
+    skeleton,
+    parts,
+    headBone: 'head',
+    handBone: 'arm-r-lower',
+    headRadius: headR,
+    size,
+    palette,
+  };
 }
 
 /** Character template registry — the render tier looks templates up by name. */
@@ -327,11 +338,16 @@ export interface CharacterRenderOptions {
   readonly pose?: RigPose;
   /** Extra nodes anchored to the head center (face, headwear) — M6.5/6.6. */
   readonly headNodes?: readonly SceneNode[];
+  /** Held-item nodes anchored to the near hand (M6.6). */
+  readonly handNodes?: readonly SceneNode[];
 }
 
 /** Layer offset of the head anchor group (face sits above the head skin,
  * below the near arm at z 20). */
 export const HEAD_ANCHOR_Z = 15;
+
+/** Layer offset of the hand anchor group (held items above the hand, z 21). */
+export const HAND_ANCHOR_Z = 22;
 
 /** Pose + skin a character template into scene nodes. */
 export function characterNodes(
@@ -357,6 +373,28 @@ export function characterNodes(
         translation(0.26 * template.size + template.headRadius * 0.55, 0),
       ),
       children: [...options.headNodes],
+    });
+  }
+  if (options.handNodes && options.handNodes.length > 0) {
+    const hand = bones.get(template.handBone)!;
+    // Grip frame: +x points world-up at the rest pose (items author their
+    // shaft along +x) and follows the hand through gestures.
+    let restWorld = 0;
+    for (
+      let bone = template.skeleton.bones.find((b) => b.id === template.handBone);
+      bone;
+      bone = bone.parent ? template.skeleton.bones.find((b) => b.id === bone!.parent) : undefined
+    ) {
+      restWorld += bone.rest;
+    }
+    children.push({
+      id: `${options.idPrefix}/hand-anchor`,
+      layer: (options.layerBase ?? 0) + HAND_ANCHOR_Z,
+      transform: compose(
+        hand.transform,
+        compose(translation(hand.bone.length, 0), rotation(Math.PI / 2 - restWorld)),
+      ),
+      children: [...options.handNodes],
     });
   }
   return { id: `${options.idPrefix}/rig`, children };
