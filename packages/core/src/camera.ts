@@ -9,6 +9,7 @@
  */
 
 import { ease } from './easing.js';
+import { TICKS_PER_SECOND } from './time.js';
 import {
   clamp,
   compose,
@@ -173,6 +174,40 @@ export function zoomPunchCamera(
     zoom: state.zoom,
   };
   return zoomAboutPoint(pulled, aim, 1 + (punch - 1) * env);
+}
+
+// ---- damped-spring tracking (M10.3) ----------------------------------------
+
+/** Default tracking stiffness ω, rad/s — snappy but never robotic. */
+export const TRACK_DEFAULT_STIFFNESS = 6;
+
+/**
+ * Critically damped spring follow: the camera starts at rest on `initial`
+ * (its framing when the window opens — no jump) and chases
+ * `targetAt(tick)`, integrated on the fixed 120 Hz tick grid
+ * (semi-implicit Euler). Recomputing the whole fold every frame keeps it
+ * a pure function of the tick — no hidden state — and the fixed step
+ * order keeps it byte-deterministic. Critical damping (c = 2ω) follows
+ * marches and chases smoothly with no wobble.
+ */
+export function dampedTrack(
+  initial: Vec2,
+  targetAt: (tick: number) => Vec2,
+  startTick: number,
+  tick: number,
+  stiffness = TRACK_DEFAULT_STIFFNESS,
+): Vec2 {
+  const dt = 1 / TICKS_PER_SECOND;
+  let pos = initial;
+  let vx = 0;
+  let vy = 0;
+  for (let at = startTick + 1; at <= tick; at++) {
+    const target = targetAt(at);
+    vx += (stiffness * stiffness * (target.x - pos.x) - 2 * stiffness * vx) * dt;
+    vy += (stiffness * stiffness * (target.y - pos.y) - 2 * stiffness * vy) * dt;
+    pos = vec2(pos.x + vx * dt, pos.y + vy * dt);
+  }
+  return pos;
 }
 
 /**

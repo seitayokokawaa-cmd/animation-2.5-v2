@@ -637,6 +637,16 @@ const verbFields = {
       punch: z.number().finite().min(1).max(3).optional(),
       /** Seeded camera-shake intensity in world units; default 0.3. */
       shake: z.number().finite().positive().max(2).optional(),
+      /** Damped-spring follow of a placed instance (M10.3): the camera
+       * glides onto the target and tracks it for the window (default 2 s).
+       * Tracking does not ease back — pair the window's end with a cut or
+       * pan, or let the scene end. Combines with `zoom:`. */
+      track: nameSchema.optional(),
+      /** Tracking stiffness ω in rad/s; default 6. */
+      stiffness: z.number().finite().positive().max(30).optional(),
+      /** Tracking frame offset in world units; default [0, 1] so a
+       * character sits chest-high in frame rather than feet-centered. */
+      offset: vec2Schema.optional(),
     })
     .strict()
     .optional(),

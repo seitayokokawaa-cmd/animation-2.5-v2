@@ -11,6 +11,7 @@ import {
   cameraTransform,
   combinePoses,
   compose,
+  dampedTrack,
   ease,
   fnv1a,
   IDENTITY,
@@ -201,6 +202,25 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
       camera = zoomPunchCamera(camera, aim, t, effect.params.punch ?? 1.45);
     } else if (effect.verb === 'whip-dip') {
       camera = { ...camera, zoom: camera.zoom * whipZoomDip(t) };
+    } else if (effect.verb === 'camera-track' && effect.text) {
+      // Damped-spring follow (M10.3): glide from the current framing onto
+      // the target (pos track + effect shifts) and chase it.
+      const id = effect.text;
+      const ox = effect.params.ox ?? 0;
+      const oy = effect.params.oy ?? 1;
+      const aimAt = (tk: number): Vec2 => {
+        const base = sample<Vec2>(scene.timeline, `${id}/pos`, tk);
+        const shift =
+          combinePoses(
+            scene.effects.filter((e) => e.target === id).map((e) => sampleEffect(e, tk, film.seed)),
+          ).translate ?? vec2(0, 0);
+        return vec2(base.x + shift.x + ox, base.y + shift.y + oy);
+      };
+      const initial = sample<Vec2>(scene.timeline, 'camera/pos', effect.startTick);
+      camera = {
+        pos: dampedTrack(initial, aimAt, effect.startTick, localTick, effect.params.stiffness),
+        zoom: camera.zoom,
+      };
     }
   }
   const camX = camera.pos.x;

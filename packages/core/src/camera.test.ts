@@ -6,6 +6,7 @@ import {
   cameraView,
   clampCamera,
   clampZoom,
+  dampedTrack,
   DEFAULT_CAMERA,
   letterboxBars,
   whipZoomDip,
@@ -175,6 +176,39 @@ describe('camera rig (M10.1)', () => {
       expect(whipZoomDip(0)).toBe(1);
       expect(whipZoomDip(1)).toBeCloseTo(1, 9);
       expect(whipZoomDip(0.5)).toBeCloseTo(0.93, 9);
+    });
+  });
+
+  describe('dampedTrack (M10.3)', () => {
+    it('opens on the initial framing — no jump — and settles on a still target', () => {
+      const target = () => vec2(4, -1);
+      expect(dampedTrack(vec2(0, 0), target, 0, 0)).toEqual(vec2(0, 0));
+      const settled = dampedTrack(vec2(0, 0), target, 0, 240); // 2 s at ω = 6
+      expect(settled.x).toBeCloseTo(4, 2);
+      expect(settled.y).toBeCloseTo(-1, 2);
+    });
+
+    it('critical damping never overshoots a step target', () => {
+      for (const tick of [15, 30, 60, 120, 240, 480]) {
+        const at = dampedTrack(vec2(0, 0), () => vec2(4, 0), 0, tick);
+        expect(at.x).toBeLessThanOrEqual(4 + 1e-6);
+        expect(at.x).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('follows a moving target with the expected steady-state lag', () => {
+      // Target moves at 2 units/s → critically damped lag ≈ 2v/ω = 0.67.
+      const target = (tick: number) => vec2(2 * (tick / 120), 0);
+      const at4s = dampedTrack(vec2(0, 0), target, 0, 480);
+      expect(at4s.x).toBeGreaterThan(7.1);
+      expect(at4s.x).toBeLessThan(7.6);
+    });
+
+    it('is deterministic — same fold, same floats', () => {
+      const target = (tick: number) => vec2(Math.sin(tick / 60) * 3, tick / 200);
+      const a = dampedTrack(vec2(1, 1), target, 10, 400, 8);
+      const b = dampedTrack(vec2(1, 1), target, 10, 400, 8);
+      expect(a).toEqual(b);
     });
   });
 });

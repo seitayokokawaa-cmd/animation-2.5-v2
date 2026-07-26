@@ -18,6 +18,7 @@ import {
   secondsToTicks,
   ticksToSeconds,
   tokenizeWords,
+  TRACK_DEFAULT_STIFFNESS,
   vec2,
   WORLD_UNITS_PER_VIEW_HEIGHT,
   type AnyTrack,
@@ -588,6 +589,7 @@ export function compileWithMarkers(
       react: 1.4,
       'zoom-punch': 0.7,
       'whip-dip': 0.35,
+      'camera-track': 2,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */
@@ -680,7 +682,37 @@ export function compileWithMarkers(
           const faceLift = castDef ? 1.55 * (castDef.size ?? 1) : 0;
           return vec2(base.x, base.y + faceLift);
         };
-        if (cam['zoom-punch'] !== undefined) {
+        if (cam.track !== undefined) {
+          if (!scene.place.some((pl) => pl.as === cam.track)) {
+            throw new Error(
+              `Scene "${scene.id}": camera track target "${cam.track}" is not placed`,
+            );
+          }
+          const trackSeconds = cam.duration ?? EFFECT_DEFAULT_SECONDS['camera-track']!;
+          pushEffect(
+            'camera',
+            'camera-track',
+            startTick,
+            trackSeconds,
+            {
+              stiffness: cam.stiffness ?? TRACK_DEFAULT_STIFFNESS,
+              ox: cam.offset?.[0] ?? 0,
+              oy: cam.offset?.[1] ?? 1,
+            },
+            cam.track,
+          );
+          if (cam.zoom !== undefined) {
+            const toZoom = clampZoom(cam.zoom);
+            cameraZoomClips.push({
+              start: startTick,
+              duration: secondsToTicks(trackSeconds),
+              from: lastCameraZoom,
+              to: toZoom,
+              easing: cam.easing,
+            });
+            lastCameraZoom = toZoom;
+          }
+        } else if (cam['zoom-punch'] !== undefined) {
           const aim = resolveCameraAim(cam['zoom-punch']);
           pushEffect(
             'camera',

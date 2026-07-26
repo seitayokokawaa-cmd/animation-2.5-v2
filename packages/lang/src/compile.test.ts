@@ -536,5 +536,40 @@ describe('cast compilation (M6.4)', () => {
     it('authored zoom clamps to the rig range', () => {
       expect(sample<number>(scene.timeline, 'camera/zoom', secondsToTicks(6) - 1)).toBe(6);
     });
+
+    it('camera track compiles to a follow effect plus a zoom clip (M10.3)', () => {
+      const tracked = mfsSchema.parse({
+        motionforge: 2,
+        meta: { title: 'T', resolution: '1920x1080', fps: 30 },
+        cast: { imp: { template: 'potato-biped' } },
+        scenes: [
+          {
+            id: 'a',
+            duration: 5,
+            place: [{ ref: 'imp', as: 'imp', at: [-4, -2.6] }],
+            actions: [{ at: 1, camera: { track: 'imp', zoom: 1.8, duration: 3 } }],
+          },
+        ],
+      });
+      const out = compile(tracked).scenes[0]!;
+      const follow = out.effects.find((e) => e.verb === 'camera-track')!;
+      expect(follow.target).toBe('camera');
+      expect(follow.text).toBe('imp');
+      expect(follow.startTick).toBe(secondsToTicks(1));
+      expect(follow.durationTicks).toBe(secondsToTicks(3));
+      expect(follow.params.stiffness).toBe(6);
+      expect(follow.params.ox).toBe(0);
+      expect(follow.params.oy).toBe(1);
+      expect(sample<number>(out.timeline, 'camera/zoom', secondsToTicks(4))).toBe(1.8);
+    });
+
+    it('camera track rejects unplaced targets', () => {
+      const bad = mfsSchema.parse({
+        motionforge: 2,
+        meta: { title: 'T', resolution: '1920x1080', fps: 30 },
+        scenes: [{ id: 'a', duration: 2, actions: [{ at: 0, camera: { track: 'ghost' } }] }],
+      });
+      expect(() => compile(bad)).toThrow(/track target "ghost" is not placed/);
+    });
   });
 });

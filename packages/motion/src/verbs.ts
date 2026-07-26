@@ -156,6 +156,13 @@ const defs: VerbDef[] = [
     sample: () => ({}),
   },
   {
+    name: 'camera-track',
+    summary: 'Damped-spring camera follow of an instance (M10.3).',
+    defaultDurationSeconds: 2,
+    // The spring fold lives in the frame builder via the core camera rig.
+    sample: () => ({}),
+  },
+  {
     name: 'hinge',
     summary: 'Rotate a part about its pivot to a target angle and hold (M5.3).',
     defaultDurationSeconds: 0.6,
