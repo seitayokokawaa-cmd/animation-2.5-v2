@@ -6,6 +6,7 @@
 import type { Finding } from './errors.js';
 import type { LoadedYaml } from './loader.js';
 import { checkNarration, type NarrationCacheProbe } from './narration-validate.js';
+import type { MfsObjectDef } from './parts.js';
 import type { MfsDocument } from './schema.js';
 import { checkStructure, type CheckResult } from './validate.js';
 
@@ -111,16 +112,21 @@ export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: stri
 export interface CheckOptions {
   /** Freeze-cache probe (from the CLI); enables stale-cache findings. */
   readonly cacheProbe?: NarrationCacheProbe;
+  /** Objects loaded from `use:` libraries (film-local names win). */
+  readonly libraries?: Readonly<Record<string, MfsObjectDef>>;
 }
 
 /** T1 + T2 + narration checks — the `mf check` entry point. */
 export function check(text: string, file: string, options: CheckOptions = {}): CheckResult {
   const t1 = checkStructure(text, file);
   if (!t1.doc) return t1;
+  const doc: MfsDocument = options.libraries
+    ? { ...t1.doc, objects: { ...options.libraries, ...t1.doc.objects } }
+    : t1.doc;
   const findings = [
     ...t1.findings,
-    ...checkReferences(t1.doc, t1.loaded, file),
-    ...checkNarration(t1.doc, t1.loaded, file, options.cacheProbe),
+    ...checkReferences(doc, t1.loaded, file),
+    ...checkNarration(doc, t1.loaded, file, options.cacheProbe),
   ];
-  return { ...t1, findings };
+  return { ...t1, doc, findings };
 }

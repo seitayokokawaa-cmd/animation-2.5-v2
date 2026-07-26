@@ -4,12 +4,15 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { secondsToTicks } from '@motionforge/core';
 import {
   check,
+  checkStructure,
   compileWithMarkers,
+  loadLibraries,
   hasErrors,
   printJson,
   printPretty,
@@ -102,9 +105,22 @@ function loadChecked(file: string, json: boolean, cacheDir?: string) {
   } catch {
     fail(`Cannot read ${file}`);
   }
+  // Two-phase: a structural parse discovers use: paths, then the full check
+  // runs with library objects merged in.
+  const pre = checkStructure(text, file);
+  const libraries = pre.doc
+    ? loadLibraries(pre.doc.use, { filmDir: dirname(file), builtinDir: join('assets', 'library') })
+    : undefined;
   const result = check(text, file, {
     ...(cacheDir ? { cacheProbe: cacheProbeFor(file, cacheDir) } : {}),
+    ...(libraries ? { libraries: libraries.objects } : {}),
   });
+  if (libraries && libraries.findings.length > 0) {
+    process.stdout.write(
+      (json ? printJson(libraries.findings) : printPretty(libraries.findings)) + '\n',
+    );
+    process.exit(1);
+  }
   if (result.findings.length > 0) {
     process.stdout.write((json ? printJson(result.findings) : printPretty(result.findings)) + '\n');
   }

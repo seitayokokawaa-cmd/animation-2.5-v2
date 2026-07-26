@@ -80,7 +80,7 @@ Legend: ☐ pending · ☑ done
 | M5.1 | Part-tree schema (shapes/gradients/strokes/pivots)          | ☑    |
 | M5.2 | Instancing: params, scale/flip/tint at placement            | ☑    |
 | M5.3 | Articulation: hinge, spin (ω=v/r), oscillate, piston        | ☑    |
-| M5.4 | Library loader (`use:` project + built-in paths)            | ☐    |
+| M5.4 | Library loader (`use:` project + built-in paths)            | ☑    |
 | M5.5 | Starter library 1: stage/props (12 objects)                 | ☐    |
 | M5.6 | Starter library 2: world (18 objects)                       | ☐    |
 | M5.7 | Depth/parallax model + background layers                    | ☐    |

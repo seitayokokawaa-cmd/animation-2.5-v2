@@ -31,6 +31,7 @@ export const MF_CODES = {
   MF3003: 'Ambiguous anchor phrase',
   MF3004: 'Anchor occurrence out of range',
   MF3005: 'Voice cache missing or stale',
+  MF4001: 'Library problem',
 } as const;
 
 export type MfCode = keyof typeof MF_CODES;

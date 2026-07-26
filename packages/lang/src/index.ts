@@ -11,6 +11,7 @@ export * from './schema.js';
 export * from './narration.js';
 export * from './narration-validate.js';
 export * from './parts.js';
+export * from './library.js';
 export * from './loader.js';
 export * from './errors.js';
 export * from './validate.js';
