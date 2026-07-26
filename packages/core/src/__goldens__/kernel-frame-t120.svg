@@ -1,10 +1,10 @@
 <svg height="180" viewBox="0 0 320 180" width="320" xmlns="http://www.w3.org/2000/svg">
 <defs><linearGradient gradientUnits="userSpaceOnUse" id="g0" x1="0" x2="0" y1="0" y2="180"><stop offset="0" stop-color="#2b3a55"/><stop offset="1" stop-color="#6e8aa8"/></linearGradient></defs>
-<rect fill="url(#g0)" height="180" width="320"/>
-<rect fill="#ffd9a0" height="24" transform="matrix(0 1 -1 0 260 40)" width="24"/>
+<rect fill="url(#g0)" height="180" transform="matrix(1 0 0 1 160 90)" width="320" x="-160" y="-90"/>
+<rect fill="#ffd9a0" height="24" transform="matrix(0 1 -1 0 260 40)" width="24" x="-12" y="-12"/>
 <ellipse fill="#7a9e6e" rx="70" ry="26" transform="matrix(1 0 0 1 250 144.552)"/>
 <ellipse fill="#7a9e6e" rx="70" ry="26" transform="matrix(1 0 0 1 160 146.675)"/>
 <ellipse fill="#7a9e6e" rx="70" ry="26" transform="matrix(1 0 0 1 -20 146.858)"/>
 <ellipse fill="#7a9e6e" rx="70" ry="26" transform="matrix(1 0 0 1 70 152.721)"/>
-<rect fill="#d94f30" height="20" rx="4" stroke="#4a3320" stroke-width="2" transform="matrix(1 0 0 1 160 140)" width="46"/>
+<rect fill="#d94f30" height="20" rx="4" stroke="#4a3320" stroke-width="2" transform="matrix(1 0 0 1 160 140)" width="46" x="-23" y="-10"/>
 </svg>

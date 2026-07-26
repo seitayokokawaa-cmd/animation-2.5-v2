@@ -49,8 +49,11 @@ function shapeElement(shape: Shape, attrs: Record<string, string | undefined>, p
   const f = (n: number) => fmtNumber(n, p);
   switch (shape.kind) {
     case 'rect':
+      // Centered on the node origin, like circle/ellipse — `at:` means center.
       return `<rect${attrsToString({
         ...attrs,
+        x: f(-shape.width / 2),
+        y: f(-shape.height / 2),
         width: f(shape.width),
         height: f(shape.height),
         ...(shape.rx !== undefined ? { rx: f(shape.rx) } : {}),

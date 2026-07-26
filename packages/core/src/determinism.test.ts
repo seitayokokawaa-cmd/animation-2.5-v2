@@ -41,6 +41,7 @@ function buildFrame(tick: number): string {
       {
         id: 'sky',
         depth: 1,
+        transform: translation(160, 90), // rects are center-anchored
         shape: { kind: 'rect', width: 320, height: 180 },
         fill: {
           gradient: {

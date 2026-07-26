@@ -3,17 +3,19 @@
  * Run via `pnpm mf <command> ...` (tsx).
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
+import { secondsToTicks } from '@motionforge/core';
 import { check, compile, hasErrors, printJson, printPretty } from '@motionforge/lang';
-import { renderFilm } from '@motionforge/render';
+import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 
 const USAGE = `MotionForge — deterministic 2.5D animation compiler
 
 Usage:
   mf check <film.mfs.yaml> [--json]
   mf render <film.mfs.yaml> [-o out.mp4]
+  mf frame <film.mfs.yaml> --at <seconds> [-o out.png|out.svg]
 `;
 
 function fail(message: string): never {
@@ -77,6 +79,22 @@ async function main(): Promise<void> {
       });
       const seconds = ((performance.now() - started) / 1000).toFixed(1);
       process.stderr.write(`\rrendered ${frames} frames → ${out} in ${seconds}s\n`);
+      return;
+    }
+    case 'frame': {
+      const doc = loadChecked(file, values.json);
+      if (values.at === undefined) fail('frame: --at <seconds> is required');
+      const seconds = Number(values.at);
+      if (!Number.isFinite(seconds) || seconds < 0) fail(`frame: invalid --at ${values.at}`);
+      const film = compile(doc);
+      const svg = buildFrameSvg(film, secondsToTicks(seconds));
+      const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + `-t${values.at}.png`;
+      if (out.endsWith('.svg')) {
+        writeFileSync(out, svg);
+      } else {
+        writeFileSync(out, resvgRasterizer.toPng(svg));
+      }
+      process.stderr.write(`wrote ${out}\n`);
       return;
     }
     default:

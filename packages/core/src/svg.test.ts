@@ -53,7 +53,7 @@ describe('emitSvg', () => {
       OPTS,
     );
     expect(svg).toContain(
-      '<rect fill="#ff0000" height="20" stroke="#000000" stroke-width="2" width="10"/>',
+      '<rect fill="#ff0000" height="20" stroke="#000000" stroke-width="2" width="10" x="-5" y="-10"/>',
     );
     expect(svg).not.toContain('matrix(1 0 0 1 0 0)');
   });
