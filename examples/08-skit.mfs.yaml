@@ -1,0 +1,112 @@
+# examples/08-skit — the M8 exit film: two leaders argue over narration in
+# a throne room. Entrances through the wings, gestures, squeaked character
+# lines with speech bubbles (narration ducks under them), a bonk, a fling,
+# an exploding crate, and a verdict card. Mock TTS keeps it offline.
+#
+#   pnpm mf voice sync examples/08-skit.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/08-skit.mfs.yaml -o out/08-skit.mp4
+motionforge: 2
+meta:
+  title: The Negotiation
+  resolution: 1280x720
+  fps: 30
+  seed: 82
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+  king: { engine: mock, voice: gravel, pitch: -3, rate: 0.92 }
+  envoy: { engine: mock, voice: bright, pitch: 7, rate: 1.1 }
+
+use: [library/props.yaml]
+
+cast:
+  king:
+    template: potato-biped
+    size: 0.95
+    palette: { outfit: '#8a1c1c', 'outfit-dark': '#5f1212', skin: '#f2cfa6' }
+    costume: [royal-uniform, crown]
+    mustache: imperial
+    expression: angry
+  envoy:
+    template: potato-biped
+    costume: [suit, plumed-hat]
+    held: scroll
+
+scenes:
+  - id: parley
+    stage: { preset: throne-room }
+    place:
+      - { ref: king, as: king, at: [-2.4, -2.6] }
+      - { ref: envoy, as: envoy, at: [2.2, -2.6], facing: left }
+      - { ref: crate, as: crate, at: [5.2, -2.6], scale: 0.9 }
+    narration:
+      - voice: narrator
+        text: >
+          The negotiation began smoothly. The envoy presented a list of
+          extremely reasonable demands.
+        sync:
+          - {
+              on: 'negotiation began',
+              do:
+                { card: { style: chapter, text: THE NEGOTIATION, duration: 1.8, entrance: slam } },
+            }
+          - { on: 'envoy presented', do: { enter: { target: envoy, from: right } } }
+          - { on: 'reasonable demands', do: { gesture: { target: envoy, kind: point } } }
+          - {
+              on: 'reasonable demands',
+              offset: 0.2,
+              do: { react: { target: king, kind: eye-bulge, duration: 1.6 } },
+            }
+        pause: 0.5
+      - voice: narrator
+        text: The king took it about as well as expected.
+        sync:
+          - {
+              on: 'about as well',
+              do: { react: { target: king, kind: anger-steam, duration: 2.2 } },
+            }
+          - { on: 'as expected', do: { gesture: { target: envoy, kind: shrug } } }
+    lines:
+      - { after: 'reasonable demands', speaker: envoy, say: Sign here please., react: hearts }
+      - { after: 'as expected', speaker: king, say: Absolutely not. }
+
+  - id: escalation
+    stage: { preset: throne-room }
+    place:
+      - { ref: king, as: king, at: [-2.4, -2.6] }
+      - { ref: envoy, as: envoy, at: [1.6, -2.6], facing: left }
+      - { ref: crate, as: crate, at: [5.2, -2.6], scale: 0.9 }
+    narration:
+      - voice: narrator
+        text: >
+          Talks broke down almost immediately, along with the furniture.
+          Diplomacy had failed, loudly.
+        sync:
+          - { on: 'broke down', do: { bonk: { target: envoy } } }
+          - {
+              on: 'almost immediately',
+              do: { fling: { target: envoy, to: [7.5, -2.6], height: 2.6, spins: 3, duration: 1 } },
+            }
+          - { on: 'with the furniture', do: { explode: { target: crate } } }
+          - {
+              on: 'with the furniture',
+              offset: 0.1,
+              do: { camera: { zoom: 1.12, duration: 0.5, easing: cubicOut } },
+            }
+          - { on: 'failed', do: { gesture: { target: king, kind: facepalm } } }
+          - {
+              on: 'loudly',
+              do:
+                {
+                  card:
+                    {
+                      style: label,
+                      text: 'DIPLOMACY: FAILED',
+                      at: [0, 1.6],
+                      duration: 2.2,
+                      size: 0.5,
+                      entrance: slam,
+                    },
+                },
+            }

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "segments": {
+    "escalation/0": {
+      "hash": "2586501e291253251f7fe5c4c9730eac0880216e5caec797ba2a2f61a0b542f4",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 5.12,
+      "text": "Talks broke down almost immediately, along with the furniture. Diplomacy had failed, loudly.\n"
+    },
+    "parley/0": {
+      "hash": "762bcdd9e8dc71d762d28ea7d27a0612b6c512fc1beb5a1d5bcf5bf18d4cc2a5",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 5.12,
+      "text": "The negotiation began smoothly. The envoy presented a list of extremely reasonable demands.\n"
+    },
+    "parley/1": {
+      "hash": "b96c0aa646e9d7735dfaf5e17eab67a371910fff3c18cf21653d936317d46199",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 3.52,
+      "text": "The king took it about as well as expected."
+    },
+    "parley/line/0": {
+      "hash": "05cca28c9df1763c9ab29bf46663147c0358f65e7d2f8f353f03eaf81cfbaab4",
+      "engine": "mock",
+      "voice": "bright",
+      "rate": 1.1,
+      "pitch": 7,
+      "durationSeconds": 1.0182083333333334,
+      "text": "Sign here please."
+    },
+    "parley/line/1": {
+      "hash": "b10b768f3141410837875e80e8ad6d182a6da7e3094b8831d56e73a3d58c9770",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.92,
+      "pitch": -3,
+      "durationSeconds": 0.782625,
+      "text": "Absolutely not."
+    }
+  }
+}

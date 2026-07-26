@@ -122,7 +122,7 @@ Legend: ☐ pending · ☑ done
 | M8.4 | Character lines: voices + pitch-shift, flaps, bubbles       | ☑    |
 | M8.5 | Slapstick-lite: bonk, fling, squash-land, chase loop        | ☑    |
 | M8.6 | `keyframes:` escape hatch on bones/parts/properties         | ☑    |
-| M8.7 | `examples/08-skit`: two leaders argue, bonk, explosion      | ☐    |
+| M8.7 | `examples/08-skit`: two leaders argue, bonk, explosion      | ☑    |
 
 ## M9 — Audio: dense sound design
 

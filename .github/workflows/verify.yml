@@ -30,6 +30,7 @@ jobs:
           pnpm mf render examples/05-props.mfs.yaml -o out/05-props.mp4
           pnpm mf render examples/06-cast.mfs.yaml -o out/06-cast.mp4
           pnpm mf render examples/07-warmap.mfs.yaml -o out/07-warmap.mp4
+          pnpm mf render examples/08-skit.mfs.yaml -o out/08-skit.mp4
 
       - name: Upload rendered films
         uses: actions/upload-artifact@v4
