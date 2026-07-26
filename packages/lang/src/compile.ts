@@ -499,7 +499,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
           durationTicks: secondsToTicks(c.duration),
           at: c.at ? vec2(...c.at) : vec2(0, -3.5),
           size: c.size ?? 0.6,
-          color: parseColor(c.color ?? '#ffffff'),
+          color: c.color ? parseColor(c.color) : undefined,
           font: c.font ?? 'noto-sans',
         });
       }
@@ -541,6 +541,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       height,
       fps: doc.meta.fps,
       seed: doc.meta.seed,
+      style: doc.meta.style,
       background: doc.meta.background ? parseColor(doc.meta.background) : undefined,
       durationTicks: filmTick,
       scenes,

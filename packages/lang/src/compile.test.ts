@@ -64,7 +64,6 @@ describe('compile', () => {
       startTick: 60,
       durationTicks: 120,
       size: 0.6,
-      color: { r: 255, g: 255, b: 255, a: 1 },
       font: 'noto-sans',
     });
     expect(caption!.at).toEqual({ x: 0, y: -3.5 });

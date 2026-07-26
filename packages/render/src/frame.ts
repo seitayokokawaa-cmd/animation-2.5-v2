@@ -30,12 +30,13 @@ import {
 import { emitEffectNodes, sampleEffect } from '@motionforge/motion';
 
 import { buildCardNodes } from './cards.js';
+import { paperTextureNodes, stylePreset, type StylePreset } from './style.js';
 import { shapeText } from './text.js';
 
 /** World units visible vertically at zoom 1. */
 export const WORLD_UNITS_PER_VIEW_HEIGHT = 10;
 
-function captionNodes(scene: FilmScene, localTick: Tick): SceneNode[] {
+function captionNodes(scene: FilmScene, localTick: Tick, preset: StylePreset): SceneNode[] {
   return scene.captions
     .filter((c) => localTick >= c.startTick && localTick < c.startTick + c.durationTicks)
     .map((c, index): SceneNode => {
@@ -51,7 +52,7 @@ function captionNodes(scene: FilmScene, localTick: Tick): SceneNode[] {
           id: `caption-${index}-g${gi}`,
           transform: compose(translation(glyph.x * s, glyph.y * s), scaling(s, s)),
           shape: { kind: 'path', d: glyph.d },
-          fill: { color: c.color },
+          fill: { color: c.color ?? preset.captionColor },
         })),
       };
     });
@@ -61,6 +62,7 @@ function captionNodes(scene: FilmScene, localTick: Tick): SceneNode[] {
 export function buildFrameSvg(film: Film, tick: Tick): string {
   const scene = sceneAtTick(film, tick);
   const localTick = Math.min(tick - scene.startTick, scene.durationTicks);
+  const preset = stylePreset(film.style);
 
   /** Combined verb pose for a target at this instant (ADR-0008). */
   const poseFor = (target: string): Pose =>
@@ -89,6 +91,9 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
     id: 'root',
     transform: screenTransform,
     children: [
+      ...(preset.paperTexture
+        ? paperTextureNodes(film.seed, (film.width / film.height) * WORLD_UNITS_PER_VIEW_HEIGHT + 4)
+        : []),
       ...scene.instances.map((inst): SceneNode => {
         const pos = sample<Vec2>(scene.timeline, `${inst.id}/pos`, localTick);
         const rot = sample<number>(scene.timeline, `${inst.id}/rot`, localTick);
@@ -129,14 +134,14 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
           },
         ];
       }),
-      ...scene.cards.flatMap((card, i) => buildCardNodes(card, localTick, i)),
-      ...captionNodes(scene, localTick),
+      ...scene.cards.flatMap((card, i) => buildCardNodes(card, localTick, i, preset.cardTheme)),
+      ...captionNodes(scene, localTick, preset),
     ],
   };
 
   return emitSvg(painterSort(flattenScene(root)), {
     width: film.width,
     height: film.height,
-    background: film.background ? formatColor(film.background) : undefined,
+    background: formatColor(film.background ?? preset.background),
   });
 }

@@ -70,7 +70,7 @@ Legend: ☐ pending · ☑ done
 | M4.3 | Cartoon FX: explode, impact stars, speedlines, emitters       | ☑    |
 | M4.4 | `squash-stretch` modifier on any node                         | ☑    |
 | M4.5 | Cards: date/chapter/list/quote + cutaways + name labels       | ☑    |
-| M4.6 | Style presets: `explainer-paper` + `clean-flat`               | ☐    |
+| M4.6 | Style presets: `explainer-paper` + `clean-flat`               | ☑    |
 | M4.7 | `examples/04-kinetic`: narrated kinetic reel                  | ☐    |
 
 ## M5 — Object system

@@ -30,7 +30,8 @@ export interface FilmCaption {
   readonly at: Vec2;
   /** World units tall (cap height ≈ em). */
   readonly size: number;
-  readonly color: Color;
+  /** Absent = use the style preset's caption color. */
+  readonly color?: Color;
   /** Bundled font name, e.g. `noto-sans`. */
   readonly font: string;
 }
@@ -114,6 +115,8 @@ export interface Film {
   readonly height: number;
   readonly fps: number;
   readonly seed: number;
+  /** Style preset name (resolved by render); default `clean-flat`. */
+  readonly style?: string;
   readonly background?: Color;
   readonly durationTicks: Tick;
   readonly scenes: readonly FilmScene[];

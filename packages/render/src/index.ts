@@ -6,4 +6,5 @@ export * from './frame.js';
 export * from './encode.js';
 export * from './mix.js';
 export * from './cards.js';
+export * from './style.js';
 export * from './service.js';

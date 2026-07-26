@@ -330,6 +330,7 @@ export const mfsSchema = z
             message: `fps must divide the ${TICKS_PER_SECOND} Hz tick clock (24, 30, 60, …)`,
           }),
         seed: z.number().int().nonnegative().default(0),
+        style: z.enum(['explainer-paper', 'clean-flat']).optional(),
         background: colorSchema.optional(),
       })
       .strict(),
