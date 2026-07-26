@@ -48,6 +48,7 @@ export const EASING_CHOICES = [
   'elasticOut',
   'bounceIn',
   'bounceOut',
+  'whip',
 ] as const;
 
 const easingSchema = z.enum(EASING_CHOICES);
@@ -60,6 +61,21 @@ export const SHOT_CHOICES = ['wide', 'medium', 'close-up', 'two-shot', 'region']
 /** Scene transitions and grades (M10.5) — mirror core TRANSITION/GRADE_KINDS. */
 export const TRANSITION_CHOICES = ['fade', 'crossfade', 'wipe', 'iris'] as const;
 export const GRADE_CHOICES = ['day', 'dawn', 'dusk', 'night'] as const;
+
+/** Music bed moods (M9.3) — mirrors render MUSIC_MOODS (drift-checked). */
+export const MUSIC_MOOD_CHOICES = ['jaunty', 'tense', 'somber', 'triumphant'] as const;
+
+/** Card styles (M4.5 + M11.2). */
+export const CARD_STYLE_CHOICES = [
+  'date',
+  'chapter',
+  'list',
+  'quote',
+  'note',
+  'label',
+  'title',
+  'lower-third',
+] as const;
 
 const strokeSchema = z
   .object({
@@ -587,7 +603,7 @@ const verbFields = {
     .optional(),
   card: z
     .object({
-      style: z.enum(['date', 'chapter', 'list', 'quote', 'note', 'label', 'title', 'lower-third']),
+      style: z.enum(CARD_STYLE_CHOICES),
       text: z.string().min(1).optional(),
       /** Second line — the lower-third role/description (M11.2). */
       subtext: z.string().min(1).optional(),
@@ -769,7 +785,7 @@ const sceneSchema = z
     /** Music bed for this scene (M9.3); ducks under narration (M9.4). */
     music: z
       .object({
-        mood: z.enum(['jaunty', 'tense', 'somber', 'triumphant']),
+        mood: z.enum(MUSIC_MOOD_CHOICES),
         /** Percent; 100 = the mood's native level. */
         gain: z.number().finite().positive().max(200).optional(),
       })

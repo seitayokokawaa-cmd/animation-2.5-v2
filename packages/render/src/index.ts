@@ -11,3 +11,5 @@ export * from './service.js';
 export * from './audio.js';
 export * from './sfx.js';
 export * from './music.js';
+export * from './sfx.js';
+export * from './music.js';

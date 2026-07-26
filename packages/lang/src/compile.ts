@@ -65,6 +65,31 @@ export type { Film, FilmScene, FilmInstance, FilmCaption };
 
 type MfsVerb = z.infer<typeof verbSchema>;
 
+/** Defaults mirror the motion verb registry (drift-checked by M12.5). */
+export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
+  'pop-in': 0.4,
+  'pop-out': 0.3,
+  'spin-in': 0.5,
+  slam: 0.45,
+  wiggle: 0.8,
+  pulse: 0.5,
+  explode: 0.8,
+  'impact-stars': 0.6,
+  speedlines: 0.6,
+  sweat: 0.9,
+  steam: 1,
+  'squash-stretch': 0.6,
+  hinge: 0.6,
+  oscillate: 2,
+  piston: 2,
+  roll: 1,
+  hearts: 1.2,
+  react: 1.4,
+  'zoom-punch': 0.7,
+  'whip-dip': 0.35,
+  'camera-track': 2,
+};
+
 /** Default silence appended after each narration segment, seconds. */
 export const DEFAULT_SEGMENT_PAUSE = 0.3;
 
@@ -640,31 +665,6 @@ export function compileWithMarkers(
         ...(text !== undefined ? { text } : {}),
         seed: `${verbName}/${scene.id}/${effectCounter++}`,
       });
-    };
-
-    /** Defaults mirror the motion verb registry (drift-checked by M12.5). */
-    const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
-      'pop-in': 0.4,
-      'pop-out': 0.3,
-      'spin-in': 0.5,
-      slam: 0.45,
-      wiggle: 0.8,
-      pulse: 0.5,
-      explode: 0.8,
-      'impact-stars': 0.6,
-      speedlines: 0.6,
-      sweat: 0.9,
-      steam: 1,
-      'squash-stretch': 0.6,
-      hinge: 0.6,
-      oscillate: 2,
-      piston: 2,
-      roll: 1,
-      hearts: 1.2,
-      react: 1.4,
-      'zoom-punch': 0.7,
-      'whip-dip': 0.35,
-      'camera-track': 2,
     };
 
     /** FX verbs share one shape: target + duration + numeric params. */

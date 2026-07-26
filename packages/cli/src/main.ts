@@ -34,6 +34,9 @@ import {
   type GeoCollection,
 } from '@motionforge/maps';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
+
+import { GEODATA_SOURCES, GEODATA_TOLERANCE_DEGREES } from './geodata.js';
+import { buildSpec } from './spec.js';
 import {
   adapterFor,
   energyAligner,
@@ -53,6 +56,7 @@ Usage:
   mf frame <film.mfs.yaml> --at <seconds> [-o out.png|out.svg]
   mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
   mf timing <film.mfs.yaml>
+  mf spec [-o docs/SPEC.md]
 `;
 
 /** The film's lock file sits beside it: film.mfs.yaml → film.voice.lock.json */
@@ -119,18 +123,6 @@ function fail(message: string): never {
   process.stderr.write(`${message}\n`);
   process.exit(1);
 }
-
-/** Vendored basemap sources (assets/geodata/, public domain). */
-const GEODATA_SOURCES: Record<string, string> = {
-  'naturalearth/world-110m': 'ne_110m_world.json',
-  'naturalearth/world-50m': 'ne_50m_world.json',
-  'naturalearth/europe-110m': 'ne_110m_europe.json',
-};
-
-/** Default simplification per source, degrees (50m keeps its detail). */
-const GEODATA_TOLERANCE_DEGREES: Record<string, number> = {
-  'naturalearth/world-50m': 0.05,
-};
 
 /** Compile every `maps:` entry once from vendored geodata (M7.2). */
 function mapsDataFor(doc: MfsDocument): MapsData {
@@ -245,6 +237,17 @@ async function main(): Promise<void> {
       'cache-dir': { type: 'string', default: 'assets/voice' },
     },
   });
+  if (command === 'spec') {
+    const spec = buildSpec();
+    if (values.out) {
+      writeFileSync(values.out, spec);
+      process.stderr.write(`wrote ${values.out}\n`);
+    } else {
+      process.stdout.write(spec);
+    }
+    return;
+  }
+
   const file = command === 'voice' ? positionals[1] : positionals[0];
   if (!file) fail(USAGE);
 

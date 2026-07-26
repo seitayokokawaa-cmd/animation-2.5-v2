@@ -19,5 +19,6 @@ export * from './errors.js';
 export * from './pacing.js';
 export * from './validate.js';
 export * from './references.js';
+export * from './spec.js';
 export * from './compile.js';
 export * from './stage.js';

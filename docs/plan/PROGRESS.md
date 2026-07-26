@@ -163,7 +163,7 @@ Legend: ☐ pending · ☑ done
 | M12.2 | Continuity: presence, teleports, held items, line-speaker  | ☑    |
 | M12.3 | Pacing lints: dead air, sync collisions, card overlaps     | ☑    |
 | M12.4 | Error catalog docs + message style audit                   | ☑    |
-| M12.5 | `mf spec` generator + CI drift check                       | ☐    |
+| M12.5 | `mf spec` generator + CI drift check                       | ☑    |
 | M12.6 | `mf check --json` finalized + exit codes                   | ☐    |
 | M12.7 | Broken-screenplay corpus (40+)                             | ☐    |
 
