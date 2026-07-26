@@ -90,7 +90,7 @@ Legend: ☐ pending · ☑ done
 
 | Id   | Task                                                        | Done |
 | ---- | ----------------------------------------------------------- | ---- |
-| M6.1 | Skeleton + FK + pose blending                               | ☐    |
+| M6.1 | Skeleton + FK + pose blending                               | ☑    |
 | M6.2 | Analytic two-bone IK (arm reaches)                          | ☐    |
 | M6.3 | Vector skinning + facing flips                              | ☐    |
 | M6.4 | Potato-biped template                                       | ☐    |
