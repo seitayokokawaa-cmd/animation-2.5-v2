@@ -32,7 +32,7 @@ Legend: ☐ pending · ☑ done
 | M1.3 | Easing library + curve sampling                               | ☑    |
 | M1.4 | Scene graph + painter sort (depth band, layer, screen-y)      | ☑    |
 | M1.5 | SVG emitter: fixed precision, sorted attrs, deduped defs      | ☑    |
-| M1.6 | Timeline core: tracks, clips, events, tick scheduler          | ☐    |
+| M1.6 | Timeline core: tracks, clips, events, tick scheduler          | ☑    |
 | M1.7 | Determinism harness + golden infra (svg snapshot, png phash)  | ☐    |
 
 ## M2 — Screenplay v1 + end-to-end pipeline

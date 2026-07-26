@@ -7,3 +7,4 @@ export * from './rng.js';
 export * from './easing.js';
 export * from './scene.js';
 export * from './svg.js';
+export * from './timeline.js';
