@@ -1,22 +1,27 @@
-# MotionForge — Progress Tracker
+# MotionForge — Progress Tracker (plan v2)
 
 Every task from `PLAN.md` §9 as a checkbox. **The rule (§7): the commit that
 completes a task ticks its box in the same commit.** The git history and this
 tracker can never disagree.
+
+M0.1–M0.5 were completed under plan v1; v2 keeps them verbatim, so they carry
+over as done.
 
 Legend: ☐ pending · ☑ done
 
 ## M0 — Bootstrap & de-risk spikes
 
 | Id   | Task                                                                | Done |
-| ---- | ------------------------------------------------------------------ | ---- |
+| ---- | ------------------------------------------------------------------- | ---- |
 | M0.1 | pnpm monorepo, TS strict, vitest, eslint+prettier, `.nvmrc`, package scaffolds | ☑ |
 | M0.2 | Commit PLAN.md + PROGRESS.md + CLAUDE.md                            | ☑    |
 | M0.3 | GitHub Actions: lint/typecheck/test on push; artifact upload wiring | ☑    |
 | M0.4 | Spike: resvg-js renders SVG→PNG; measure ms/frame at 1080p          | ☑    |
 | M0.5 | Spike: multi-script text shaping (Bengali, Arabic RTL, CJK)         | ☑    |
 | M0.6 | Spike: deterministic encode pipeline (60 frames → bitexact MP4 ×2)  | ☐    |
-| M0.7 | ADRs 0001–0005 from spike results                                   | ☐    |
+| M0.7 | Spike: Qwen TTS + forced alignment + freeze-cache byte-stability    | ☐    |
+| M0.8 | Spike: map render (Natural Earth → stylized SVG, recolor, morph)    | ☐    |
+| M0.9 | ADRs incl. narration spine, map engine, motion-graphics grammar     | ☐    |
 
 ## M1 — Deterministic kernel
 
@@ -43,148 +48,156 @@ Legend: ☐ pending · ☑ done
 | M2.7 | `mf frame --at` single-instant preview                     | ☐    |
 | M2.8 | `examples/01-shapes` + e2e test + CI artifact              | ☐    |
 
-## M3 — Object system
-
-| Id   | Task                                                        | Done |
-| ---- | ----------------------------------------------------------- | ---- |
-| M3.1 | Part-tree schema: shapes, gradients, strokes, pivots        | ☐    |
-| M3.2 | Object instancing: params, scale/flip/tint at placement     | ☐    |
-| M3.3 | Articulation behaviors: hinge, spin (ω=v/r), oscillate, piston | ☐ |
-| M3.4 | Library loader (`use:` resolution, project + built-in paths) | ☐   |
-| M3.5 | Starter library part 1: 12 objects                          | ☐    |
-| M3.6 | Starter library part 2: 18 more objects                     | ☐    |
-| M3.7 | Depth/parallax model + background layers + auto-scale       | ☐    |
-| M3.8 | `examples/02-street`: bus, parallax town, rolling wheels    | ☐    |
-
-## M4 — Characters
-
-| Id   | Task                                                            | Done |
-| ---- | --------------------------------------------------------------- | ---- |
-| M4.1 | Skeleton + FK pose system, pose blending                        | ☐    |
-| M4.2 | Analytic two-bone IK + tests                                    | ☐    |
-| M4.3 | Vector skinning: bone-attached shapes, per-part z, facing flip  | ☐    |
-| M4.4 | Biped template: proportions, palette slots, outfit/hair layers  | ☐    |
-| M4.5 | Face rig: eyes, look-at, seeded blink scheduler                 | ☐    |
-| M4.6 | Brows/lids/mouth expression presets + blending                  | ☐    |
-| M4.7 | Viseme mouth set + text→syllable timing                         | ☐    |
-| M4.8 | Quadruped, bird, fish, blob/creature-builder templates          | ☐    |
-| M4.9 | MFS character defs + `examples/03-cast`                         | ☐    |
-
-## M5 — Locomotion
-
-| Id   | Task                                                           | Done |
-| ---- | -------------------------------------------------------------- | ---- |
-| M5.1 | Path planner: waypoints, facing, turns                         | ☐    |
-| M5.2 | Footstep planner: stride model, duty factors, footfall schedule | ☐   |
-| M5.3 | Gait solver: stance pinning + IK, cycloid swing, pelvis bob    | ☐    |
-| M5.4 | No-slide + continuity metrics in CI (<0.5 px drift)            | ☐    |
-| M5.5 | Gait styles walk/run/sneak/march + speed blending              | ☐    |
-| M5.6 | Jump, climb, swim, fly (+ native fish/bird motion)             | ☐    |
-| M5.7 | Quadruped gaits: walk/trot/gallop                              | ☐    |
-| M5.8 | `examples/04-locomotion`: relay of all gaits, all templates    | ☐    |
-
-## M6 — Acting vocabulary
+## M3 — Narration spine
 
 | Id   | Task                                                             | Done |
 | ---- | ---------------------------------------------------------------- | ---- |
-| M6.1 | Action registry framework: interface, layering/conflict, docs    | ☐    |
-| M6.2 | Postures: sit, kneel, lie-down, stand-up + transitions           | ☐    |
-| M6.3 | Gestures: wave, point, nod, shake-head, shrug, clap, bow, look-at | ☐   |
-| M6.4 | Talk (visemes + beat gestures), laugh, cry, cheer, mourn         | ☐    |
-| M6.5 | Dance ×3, hug, fight set, celebrate, sleep, eat, drink           | ☐    |
-| M6.6 | `keyframes:` escape hatch on bones/parts/properties              | ☐    |
-| M6.7 | `examples/05-acting-reel` exercising every verb                  | ☐    |
+| M3.1 | `voices:` + `narration:` schema (segments, pauses, emphasis)     | ☐    |
+| M3.2 | `TtsAdapter` + Qwen DashScope impl + mock adapter                | ☐    |
+| M3.3 | Freeze-cache: hashed WAVs, `voice.lock.json`, `mf voice sync`    | ☐    |
+| M3.4 | Aligner + fuzzy transcript matching → per-word timestamps        | ☐    |
+| M3.5 | Sync anchors: `on:` phrase→tick, nth/offset, `mf timing`         | ☐    |
+| M3.6 | Narration in the mix + mux; recorded-VO adapter                  | ☐    |
+| M3.7 | Validator: missing/ambiguous anchors, stale cache + fix hints    | ☐    |
+| M3.8 | `examples/03-narrated`: 45 s narrated piece                      | ☐    |
 
-## M7 — Interaction
+## M4 — Motion-graphics grammar & cards
 
-| Id   | Task                                                    | Done |
-| ---- | ------------------------------------------------------- | ---- |
-| M7.1 | Sockets/grips/seats + attach/detach timeline events     | ☐    |
-| M7.2 | take / put / carry (IK reach + re-parent)               | ☐    |
-| M7.3 | give/take hand-off between characters                   | ☐    |
-| M7.4 | throw & catch (analytic ballistic arc + intercept IK)   | ☐    |
-| M7.5 | Operate articulated parts: doors, levers, push/pull     | ☐    |
-| M7.6 | sit-on seats; ride vehicles & animals (mount adapters)  | ☐    |
-| M7.7 | `examples/06-market`: bread hand-off, door, cart ride   | ☐    |
+| Id   | Task                                                          | Done |
+| ---- | ------------------------------------------------------------- | ---- |
+| M4.1 | Emphasis verbs: pop-in/out, spin-in, slam, wiggle, pulse      | ☐    |
+| M4.2 | `bounce-to` hop locomotion + slide-with-bob                   | ☐    |
+| M4.3 | Cartoon FX: explode, impact stars, speedlines, emitters       | ☐    |
+| M4.4 | `squash-stretch` modifier on any node                         | ☐    |
+| M4.5 | Cards: date/chapter/list/quote + cutaways + name labels       | ☐    |
+| M4.6 | Style presets: `explainer-paper` + `clean-flat`               | ☐    |
+| M4.7 | `examples/04-kinetic`: narrated kinetic reel                  | ☐    |
 
-## M8 — Physics & ragdoll
-
-| Id   | Task                                                        | Done |
-| ---- | ----------------------------------------------------------- | ---- |
-| M8.1 | PBD core: particles, distance/angle constraints, substeps   | ☐    |
-| M8.2 | Colliders (ground/AABB/circle), friction, restitution       | ☐    |
-| M8.3 | Object dynamics presets: fall, bounce, float, orbit, slide, spin | ☐ |
-| M8.4 | Ragdoll: skeleton↔particle mapping, go-limp switch          | ☐    |
-| M8.5 | Blend-back: settle capture → recovery pose → resume acting  | ☐    |
-| M8.6 | Shatter: seeded silhouette fracture + shards + debris       | ☐    |
-| M8.7 | `examples/07-slapstick`: trip → tumble → shatter → bow      | ☐    |
-
-## M9 — Cinematography & atmosphere
+## M5 — Object system
 
 | Id   | Task                                                        | Done |
 | ---- | ----------------------------------------------------------- | ---- |
-| M9.1 | Camera rig: transform, zoom, world bounds, letterbox        | ☐    |
-| M9.2 | pan-to / zoom-to / cut + eases; seeded shake                | ☐    |
-| M9.3 | track: damped-spring follow, lead-room, dead-zone           | ☐    |
-| M9.4 | Framing presets from rig queries                            | ☐    |
-| M9.5 | Transitions: fade, crossfade, wipe, iris                    | ☐    |
-| M9.6 | Sky system: gradients, sun/moon/stars, day-part grading     | ☐    |
-| M9.7 | Weather particles: rain+splash, snow, fog, clouds           | ☐    |
-| M9.8 | `examples/08-moods`: dawn / noon / storm / night + tracking | ☐    |
+| M5.1 | Part-tree schema (shapes/gradients/strokes/pivots)          | ☐    |
+| M5.2 | Instancing: params, scale/flip/tint at placement            | ☐    |
+| M5.3 | Articulation: hinge, spin (ω=v/r), oscillate, piston        | ☐    |
+| M5.4 | Library loader (`use:` project + built-in paths)            | ☐    |
+| M5.5 | Starter library 1: stage/props (12 objects)                 | ☐    |
+| M5.6 | Starter library 2: world (18 objects)                       | ☐    |
+| M5.7 | Depth/parallax model + background layers                    | ☐    |
+| M5.8 | `examples/05-props`: narrated prop showcase                 | ☐    |
 
-## M10 — Typography & i18n
+## M6 — Characters: caricature-first
 
-| Id    | Task                                                        | Done |
-| ----- | ----------------------------------------------------------- | ---- |
-| M10.1 | Font pipeline: bundle Noto set + licenses + fallback chain  | ☐    |
-| M10.2 | Title cards + styles; lower-thirds; world-anchored labels   | ☐    |
-| M10.3 | Subtitles: auto-timing from say, wrapping, contrast plate   | ☐    |
-| M10.4 | Golden frames: Bengali, Arabic (RTL+bidi), CJK, bidi mixed  | ☐    |
-| M10.5 | `examples/09-trilingual`: বাংলা / العربية / 中文 captions    | ☐    |
+| Id   | Task                                                        | Done |
+| ---- | ----------------------------------------------------------- | ---- |
+| M6.1 | Skeleton + FK + pose blending                               | ☐    |
+| M6.2 | Analytic two-bone IK (arm reaches)                          | ☐    |
+| M6.3 | Vector skinning + facing flips                              | ☐    |
+| M6.4 | Potato-biped template                                       | ☐    |
+| M6.5 | Face: eyes/blink/look-at, brows, flap-mouth; expressions    | ☐    |
+| M6.6 | Costume/prop system: headwear, facial hair, outfits, items  | ☐    |
+| M6.7 | Reaction pack: jaw-drop, eye-bulge, sweat, steam, deadpan   | ☐    |
+| M6.8 | Simple quadruped (horse/dog) + rider seat                   | ☐    |
+| M6.9 | `examples/06-cast`: caricature lineup                       | ☐    |
 
-## M11 — Audio
+## M7 — Map engine
+
+| Id   | Task                                                        | Done |
+| ---- | ----------------------------------------------------------- | ---- |
+| M7.1 | Vendor Natural Earth + GeoJSON→stylized part-tree compiler  | ☐    |
+| M7.2 | Custom/historical region overlays + `groups:`               | ☐    |
+| M7.3 | highlight / recolor sweeps / territory-change morphs        | ☐    |
+| M7.4 | Curved growing arrows + multi-arrow offensives              | ☐    |
+| M7.5 | Unit icons marching; battle-burst; plant-flag               | ☐    |
+| M7.6 | Map labels + `zoom-to region:` camera framing               | ☐    |
+| M7.7 | `examples/07-warmap`: fully narrated war map                | ☐    |
+
+## M8 — Skits & slapstick-lite
+
+| Id   | Task                                                        | Done |
+| ---- | ----------------------------------------------------------- | ---- |
+| M8.1 | Stage presets (backdrops, ground, wings) + enter/exit verbs | ☐    |
+| M8.2 | Gestures: point, wave, salute, facepalm, shrug, clap, …     | ☐    |
+| M8.3 | Postures: sit, kneel, lie-down, stand-up + transitions      | ☐    |
+| M8.4 | Character lines: voices + pitch-shift, flaps, bubbles       | ☐    |
+| M8.5 | Slapstick-lite: bonk, fling, squash-land, chase loop        | ☐    |
+| M8.6 | `keyframes:` escape hatch on bones/parts/properties         | ☐    |
+| M8.7 | `examples/08-skit`: two leaders argue, bonk, explosion      | ☐    |
+
+## M9 — Audio: dense sound design
+
+| Id   | Task                                                        | Done |
+| ---- | ----------------------------------------------------------- | ---- |
+| M9.1 | Audio event bus (cues + verb-default SFX + solver events)   | ☐    |
+| M9.2 | CC0 SFX library + license manifest                          | ☐    |
+| M9.3 | Music beds by mood + tension stingers + clean loop cuts     | ☐    |
+| M9.4 | Ducking automation + VO leveling                            | ☐    |
+| M9.5 | Offline mixer → WAV determinism test; mux hash test         | ☐    |
+| M9.6 | Re-render `08-skit` fully sounded                           | ☐    |
+
+## M10 — Cinematography
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
-| M11.1 | Audio event bus: timeline cues + solver events             | ☐    |
-| M11.2 | CC0 SFX library + license manifest + `sfx:` cues           | ☐    |
-| M11.3 | Speech blips synth (per-character voice from size+seed)    | ☐    |
-| M11.4 | Music beds by mood + clean loop-cuts + ducking             | ☐    |
-| M11.5 | Offline mixer → WAV, limiter; WAV hash test                | ☐    |
-| M11.6 | Mux into encode (bitexact), full-film hash test            | ☐    |
-| M11.7 | Re-render 07-slapstick with full audio                     | ☐    |
+| M10.1 | Camera rig: transform/zoom/bounds/letterbox                | ☐    |
+| M10.2 | pan-to / zoom-to / cut / zoom-punch / whip-pan / shake     | ☐    |
+| M10.3 | Track with damped spring                                   | ☐    |
+| M10.4 | Framing presets: wide/medium/close-up/two-shot/region      | ☐    |
+| M10.5 | Transitions: fade, crossfade, wipe, iris + grading         | ☐    |
+| M10.6 | `examples/09-directed`: `08-skit` re-cut                   | ☐    |
+
+## M11 — Typography & i18n
+
+| Id    | Task                                                       | Done |
+| ----- | ---------------------------------------------------------- | ---- |
+| M11.1 | Bundled Noto set + fallback chain + licenses               | ☐    |
+| M11.2 | Titles/lower-thirds; subtitles from narration + alignment  | ☐    |
+| M11.3 | Multi-script goldens: Bengali, Arabic, CJK, mixed          | ☐    |
+| M11.4 | `examples/10-bangla`: English VO + Bengali subtitles       | ☐    |
 
 ## M12 — Validator T3 + the LLM handbook
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
-| M12.1 | Conflict rules from registry declarations                  | ☐    |
-| M12.2 | Continuity: teleport detection, presence, held-item state  | ☐    |
-| M12.3 | Plausibility warnings: gait speeds, overlaps, overruns     | ☐    |
-| M12.4 | Error catalog: docs page per MF code, style guide, hints   | ☐    |
-| M12.5 | `mf spec` generator + committed SPEC.md + CI drift check   | ☐    |
-| M12.6 | `mf check --json` machine format + exit codes finalized    | ☐    |
-| M12.7 | Broken-screenplay corpus (30+) asserting codes+hints       | ☐    |
+| M12.1 | Action conflict matrix from registry declarations          | ☐    |
+| M12.2 | Continuity: presence, teleports, held items, line-speaker  | ☐    |
+| M12.3 | Pacing lints: dead air, sync collisions, card overlaps     | ☐    |
+| M12.4 | Error catalog docs + message style audit                   | ☐    |
+| M12.5 | `mf spec` generator + CI drift check                       | ☐    |
+| M12.6 | `mf check --json` finalized + exit codes                   | ☐    |
+| M12.7 | Broken-screenplay corpus (40+)                             | ☐    |
 
-## M13 — Agent mode
+## M13 — Agent mode: script-first authoring
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
 | M13.1 | LLM adapter interface + Anthropic impl + mock adapter      | ☐    |
-| M13.2 | `mf author`: draft → check → fix loop → render             | ☐    |
-| M13.3 | `mf storyboard` contact sheets + `--review` critique pass  | ☐    |
-| M13.4 | Response cache by content hash; resumable runs             | ☐    |
-| M13.5 | CI e2e with mock adapter (bad draft → errors → fixed → MP4) | ☐   |
-| M13.6 | `examples/10-authored` + committed transcript              | ☐    |
+| M13.2 | `docs/style-guide.md`: pacing rules + beat templates       | ☐    |
+| M13.3 | Two-pass `mf author` + `--research`                        | ☐    |
+| M13.4 | `mf storyboard` contact sheets + `--review`                | ☐    |
+| M13.5 | Response caching + resumable runs                          | ☐    |
+| M13.6 | CI e2e with mocks                                          | ☐    |
+| M13.7 | `examples/11-authored` + committed transcript              | ☐    |
 
-## M14 — Hardening, performance, showcase, v1.0
+## M14 — Realism & physics pack
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
-| M14.1 | Worker-pool rasterization, in-order encode, perf target    | ☐    |
-| M14.2 | Streaming pipeline (no whole-film buffering), memory budget | ☐   |
-| M14.3 | CLI UX: progress bars, timings, friendly failures          | ☐    |
-| M14.4 | README + quickstart + language tour + authoring cookbook   | ☐    |
-| M14.5 | Showcase: 5 finished films in CI                           | ☐    |
-| M14.6 | Cross-platform verify, pinned-toolchain doc                | ☐    |
-| M14.7 | Traceability audit → tag `v1.0.0` + release notes          | ☐    |
+| M14.1 | Footstep-planned gait + no-slide CI metric                 | ☐    |
+| M14.2 | Jump/climb/swim/fly + bird/fish/creature-builder templates | ☐    |
+| M14.3 | PBD solver + colliders                                     | ☐    |
+| M14.4 | Ragdoll + blend-back recovery                              | ☐    |
+| M14.5 | Shatter + debris                                           | ☐    |
+| M14.6 | Full interactions: take/put/give, throw & catch, ride, …   | ☐    |
+| M14.7 | `examples/12-fable`: the v1 fox-and-bread film             | ☐    |
+
+## M15 — Hardening, performance, showcase, v1.0
+
+| Id    | Task                                                       | Done |
+| ----- | ---------------------------------------------------------- | ---- |
+| M15.1 | Worker-pool rasterization + streaming pipeline             | ☐    |
+| M15.2 | CLI UX: progress, timings, friendly failures               | ☐    |
+| M15.3 | Docs: quickstart, language tour, cookbooks                 | ☐    |
+| M15.4 | Showcase films rendered in CI                              | ☐    |
+| M15.5 | Platform matrix + pinned-toolchain doc                     | ☐    |
+| M15.6 | Traceability audit → tag `v1.0.0`                          | ☐    |
