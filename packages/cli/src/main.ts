@@ -7,8 +7,22 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import { secondsToTicks } from '@motionforge/core';
-import { check, compile, hasErrors, printJson, printPretty } from '@motionforge/lang';
+import {
+  check,
+  compile,
+  hasErrors,
+  printJson,
+  printPretty,
+  type MfsDocument,
+} from '@motionforge/lang';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
+import {
+  adapterFor,
+  syncSegments,
+  VoiceCache,
+  writeLock,
+  type SegmentRequest,
+} from '@motionforge/voice';
 
 const USAGE = `MotionForge — deterministic 2.5D animation compiler
 
@@ -16,7 +30,29 @@ Usage:
   mf check <film.mfs.yaml> [--json]
   mf render <film.mfs.yaml> [-o out.mp4]
   mf frame <film.mfs.yaml> --at <seconds> [-o out.png|out.svg]
+  mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
 `;
+
+/** The film's lock file sits beside it: film.mfs.yaml → film.voice.lock.json */
+export const lockPathFor = (file: string): string =>
+  file.replace(/\.mfs\.yaml$/, '') + '.voice.lock.json';
+
+/** Collect every narration segment as a cache request (key = sceneId/index). */
+function segmentRequests(doc: MfsDocument): SegmentRequest[] {
+  const requests: SegmentRequest[] = [];
+  for (const scene of doc.scenes) {
+    scene.narration.forEach((segment, index) => {
+      const spec = doc.voices[segment.voice];
+      if (!spec) {
+        fail(
+          `Scene "${scene.id}" narration uses unknown voice "${segment.voice}" — declare it under voices:`,
+        );
+      }
+      requests.push({ key: `${scene.id}/${index}`, text: segment.text, spec });
+    });
+  }
+  return requests;
+}
 
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
@@ -54,12 +90,26 @@ async function main(): Promise<void> {
       json: { type: 'boolean', default: false },
       out: { type: 'string', short: 'o' },
       at: { type: 'string' },
+      'cache-dir': { type: 'string', default: 'assets/voice' },
     },
   });
-  const file = positionals[0];
+  const file = command === 'voice' ? positionals[1] : positionals[0];
   if (!file) fail(USAGE);
 
   switch (command) {
+    case 'voice': {
+      if (positionals[0] !== 'sync') fail(USAGE);
+      const doc = loadChecked(file, values.json);
+      const requests = segmentRequests(doc);
+      const cache = new VoiceCache(values['cache-dir']);
+      const result = await syncSegments(requests, cache, adapterFor);
+      const lockPath = lockPathFor(file);
+      writeLock(lockPath, result.lock);
+      process.stderr.write(
+        `voice sync: ${result.synthesized.length} synthesized, ${result.reused.length} cached → ${lockPath}\n`,
+      );
+      return;
+    }
     case 'check': {
       const doc = loadChecked(file, values.json);
       if (!values.json) process.stdout.write(`OK: ${doc.meta.title}\n`);

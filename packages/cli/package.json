@@ -12,6 +12,7 @@
     "@motionforge/core": "workspace:*",
     "@motionforge/lang": "workspace:*",
     "@motionforge/motion": "workspace:*",
-    "@motionforge/render": "workspace:*"
+    "@motionforge/render": "workspace:*",
+    "@motionforge/voice": "workspace:*"
   }
 }

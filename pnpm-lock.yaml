@@ -74,6 +74,9 @@ importers:
       '@motionforge/render':
         specifier: workspace:*
         version: link:../render
+      '@motionforge/voice':
+        specifier: workspace:*
+        version: link:../voice
 
   packages/core: {}
 

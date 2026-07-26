@@ -54,7 +54,7 @@ Legend: ☐ pending · ☑ done
 | ---- | ---------------------------------------------------------------- | ---- |
 | M3.1 | `voices:` + `narration:` schema (segments, pauses, emphasis)     | ☑    |
 | M3.2 | `TtsAdapter` + Qwen DashScope impl + mock adapter                | ☑    |
-| M3.3 | Freeze-cache: hashed WAVs, `voice.lock.json`, `mf voice sync`    | ☐    |
+| M3.3 | Freeze-cache: hashed WAVs, `voice.lock.json`, `mf voice sync`    | ☑    |
 | M3.4 | Aligner + fuzzy transcript matching → per-word timestamps        | ☐    |
 | M3.5 | Sync anchors: `on:` phrase→tick, nth/offset, `mf timing`         | ☐    |
 | M3.6 | Narration in the mix + mux; recorded-VO adapter                  | ☐    |
