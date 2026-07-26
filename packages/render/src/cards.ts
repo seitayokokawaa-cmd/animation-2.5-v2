@@ -188,6 +188,91 @@ export function buildCardNodes(
       );
       break;
     }
+    case 'title': {
+      // Big floating title with an accent underline (M11.2).
+      const row = textRow(`${id}-t`, card.text ?? '', card.font, size, theme.text, 0, 0);
+      const sub = card.subtext
+        ? textRow(`${id}-s`, card.subtext, card.font, size * 0.42, theme.accent, 0, -size * 1.05)
+        : undefined;
+      children.push(
+        plate(`${id}-p`, row.width + size * 1.6, size * (sub ? 2.6 : 1.9), {
+          ...theme.textOnAlt,
+          a: 0.28,
+        }),
+        row.node,
+        {
+          id: `${id}-rule`,
+          transform: translation(0, -size * 0.45),
+          shape: { kind: 'rect', width: row.width * 0.92, height: size * 0.1, rx: size * 0.05 },
+          fill: { color: theme.accent },
+        },
+        ...(sub ? [sub.node] : []),
+      );
+      break;
+    }
+    case 'lower-third': {
+      // Broadcast name strap (M11.2): accent spine, name plate, role bar —
+      // left-aligned so it hugs the corner it was placed in.
+      const nameSize = size * 0.9;
+      const roleSize = size * 0.52;
+      const name = textRow(
+        `${id}-t`,
+        card.text ?? '',
+        card.font,
+        nameSize,
+        theme.text,
+        0,
+        -nameSize * 0.32,
+        'left',
+      );
+      const role = card.subtext
+        ? textRow(
+            `${id}-r`,
+            card.subtext,
+            card.font,
+            roleSize,
+            theme.textOnAlt,
+            0,
+            -nameSize * 1.42,
+            'left',
+          )
+        : undefined;
+      const plateW = Math.max(name.width, role?.width ?? 0) + nameSize * 1.1;
+      children.push(
+        {
+          ...plate(`${id}-p`, plateW, nameSize * 1.55, theme.plate, nameSize * 0.12),
+          transform: translation(plateW / 2 - nameSize * 0.55, 0),
+        },
+        ...(role
+          ? [
+              {
+                ...plate(
+                  `${id}-role-p`,
+                  plateW * 0.86,
+                  roleSize * 1.55,
+                  theme.plateAlt,
+                  roleSize * 0.16,
+                ),
+                transform: translation(plateW * 0.43 - nameSize * 0.55, -nameSize * 1.16),
+              },
+            ]
+          : []),
+        {
+          id: `${id}-spine`,
+          transform: translation(-nameSize * 0.72, role ? -nameSize * 0.55 : 0),
+          shape: {
+            kind: 'rect',
+            width: nameSize * 0.18,
+            height: nameSize * (role ? 2.7 : 1.55),
+            rx: nameSize * 0.09,
+          },
+          fill: { color: theme.accent },
+        },
+        name.node,
+        ...(role ? [role.node] : []),
+      );
+      break;
+    }
     case 'list': {
       const items = card.items ?? [];
       const rowGap = size * 1.5;

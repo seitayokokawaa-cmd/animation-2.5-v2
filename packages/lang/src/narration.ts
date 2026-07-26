@@ -68,6 +68,9 @@ export function makeNarrationSchema<V extends z.ZodTypeAny>(verbSchema: V) {
     .object({
       voice: z.string().min(1),
       text: z.string().min(1),
+      /** Subtitle override for this segment (M11.2) — e.g. a Bengali
+       * translation under English VO. Defaults to the narration text. */
+      subtitle: z.string().min(1).optional(),
       /** Silence appended after the segment, seconds. Default 0.3. */
       pause: z.number().finite().nonnegative().optional(),
       sync: z.array(syncSchema).default([]),

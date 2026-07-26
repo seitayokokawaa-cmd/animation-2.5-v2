@@ -573,6 +573,74 @@ describe('cast compilation (M6.4)', () => {
     });
   });
 
+  describe('subtitles from narration (M11.2)', () => {
+    const words = 'One two three four five six seven eight nine ten eleven twelve'.split(' ');
+    const voice = {
+      segment: (key: string) =>
+        key === 'a/0'
+          ? {
+              hash: 'h',
+              durationSeconds: 6,
+              words: words.map((word, i) => ({ word, start: i * 0.5, end: i * 0.5 + 0.4 })),
+            }
+          : key === 'a/line/0'
+            ? { hash: 'h2', durationSeconds: 0.5, words: [] }
+            : undefined,
+    };
+    const base = {
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30, subtitles: true },
+      voices: { narrator: { engine: 'mock', voice: 'warm' } },
+      cast: { imp: { template: 'potato-biped' } },
+      scenes: [
+        {
+          id: 'a',
+          place: [{ ref: 'imp', as: 'imp', at: [0, 0] }],
+          narration: [{ voice: 'narrator', text: words.join(' ') }],
+          lines: [{ after: 'twelve', speaker: 'imp', say: 'Tiny.' }],
+        },
+      ],
+    };
+    const scene = compile(mfsSchema.parse(base), voice).scenes[0]!;
+
+    it('chunks at word boundaries under the line-length cap', () => {
+      const subs = scene.subtitles!.filter((s) => !s.text.includes(':'));
+      expect(subs).toHaveLength(2);
+      expect(subs[0]!.text).toBe('One two three four five six seven eight');
+      expect(subs[1]!.text).toBe('nine ten eleven twelve');
+      for (const s of subs) expect(s.text.length).toBeLessThanOrEqual(42);
+      // Timing comes from the alignment: chunk 2 starts on word 9's start.
+      expect(subs[0]!.startTick).toBe(0);
+      expect(subs[1]!.startTick).toBe(secondsToTicks(4));
+      // Chunk 1's tail clamps to chunk 2's start.
+      expect(subs[0]!.durationTicks).toBe(secondsToTicks(4));
+    });
+
+    it('subtitles character lines as broadcast dialogue', () => {
+      const line = scene.subtitles!.find((s) => s.text.startsWith('IMP:'))!;
+      expect(line.text).toBe('IMP: Tiny.');
+      expect(line.startTick).toBe(secondsToTicks(5.9 + 0.15));
+    });
+
+    it('translated subtitle overrides spread evenly over the segment', () => {
+      const translated = structuredClone(base) as typeof base & {
+        scenes: Array<{ narration: Array<Record<string, unknown>> }>;
+      };
+      translated.scenes[0]!.narration[0]!.subtitle = 'ঢাকা ভালো';
+      const out = compile(mfsSchema.parse(translated), voice).scenes[0]!;
+      const subs = out.subtitles!.filter((s) => !s.text.includes(':'));
+      expect(subs).toHaveLength(1);
+      expect(subs[0]!.text).toBe('ঢাকা ভালো');
+      expect(subs[0]!.startTick).toBe(0);
+    });
+
+    it('stays off unless meta.subtitles asks for them', () => {
+      const off = structuredClone(base) as { meta: Record<string, unknown> };
+      delete off.meta.subtitles;
+      expect(compile(mfsSchema.parse(off), voice).scenes[0]!.subtitles).toBeUndefined();
+    });
+  });
+
   describe('shot framing presets (M10.4)', () => {
     const staged = mfsSchema.parse({
       motionforge: 2,

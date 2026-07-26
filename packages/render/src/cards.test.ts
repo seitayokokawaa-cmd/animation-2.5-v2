@@ -47,6 +47,28 @@ describe('cards (M4.5)', () => {
     expect(buildCardNodes(c, 478, 0)[0]!.opacity!).toBeLessThan(0.5);
   });
 
+  it('title cards carry an accent rule and optional subtext (M11.2)', () => {
+    const c = card({ style: 'title', text: 'THE GREAT WAR', subtext: 'Part One' });
+    const ids = flatten(buildCardNodes(c, 240, 0) as never);
+    expect(ids).toContain('card-0-rule');
+    expect(ids).toContain('card-0-s');
+    expect(ids.some((id) => id.startsWith('card-0-t-g'))).toBe(true);
+  });
+
+  it('lower-thirds build a spine, name plate, and role bar (M11.2)', () => {
+    const c = card({ style: 'lower-third', text: 'Archduke Franz', subtext: 'Has One Job' });
+    const ids = flatten(buildCardNodes(c, 240, 0) as never);
+    expect(ids).toContain('card-0-spine');
+    expect(ids).toContain('card-0-p');
+    expect(ids).toContain('card-0-role-p');
+    // Without subtext, only the name strap remains.
+    const bare = flatten(
+      buildCardNodes(card({ style: 'lower-third', text: 'Franz' }), 240, 0) as never,
+    );
+    expect(bare).toContain('card-0-spine');
+    expect(bare).not.toContain('card-0-role-p');
+  });
+
   it('list items pop in sequentially and all render once landed', () => {
     const c = card({ style: 'list', text: undefined, items: ['a', 'bb', 'ccc'], entrance: 'pop' });
     const early = flatten(buildCardNodes(c, 130, 0) as never);

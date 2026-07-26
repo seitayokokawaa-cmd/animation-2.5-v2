@@ -115,13 +115,16 @@ export interface FilmEffect {
   readonly seed: string;
 }
 
-export type CardStyle = 'date' | 'chapter' | 'list' | 'quote' | 'note' | 'label';
+export type CardStyle =
+  'date' | 'chapter' | 'list' | 'quote' | 'note' | 'label' | 'title' | 'lower-third';
 export type CardEntrance = 'pop' | 'slam';
 
 /** A card/label/cutaway (M4.5) — timed overlay panels with text or content. */
 export interface FilmCard {
   readonly style: CardStyle;
   readonly text?: string;
+  /** Secondary line (lower-third role/description, M11.2). */
+  readonly subtext?: string;
   /** List cards: items pop in one by one. */
   readonly items?: readonly string[];
   /** World units; default screen center. */
@@ -169,6 +172,17 @@ export interface FilmTransition {
 export const GRADE_KINDS = ['day', 'dawn', 'dusk', 'night'] as const;
 export type GradeKind = (typeof GRADE_KINDS)[number];
 
+/** A timed subtitle chunk auto-generated from narration (M11.2). */
+export interface FilmSubtitle {
+  readonly text: string;
+  /** Scene-local. */
+  readonly startTick: Tick;
+  readonly durationTicks: Tick;
+  readonly font: string;
+  /** Text height, world units. */
+  readonly size: number;
+}
+
 export interface FilmScene {
   readonly id: string;
   readonly backdrop?: FilmBackdrop;
@@ -178,6 +192,8 @@ export interface FilmScene {
   readonly transition?: FilmTransition;
   /** Time-of-day grade over the finished frame (M10.5). */
   readonly grade?: GradeKind;
+  /** Auto-generated subtitles from narration + alignment (M11.2). */
+  readonly subtitles?: readonly FilmSubtitle[];
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;

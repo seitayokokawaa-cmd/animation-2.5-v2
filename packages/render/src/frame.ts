@@ -34,6 +34,7 @@ import {
   type DrawItem,
   type Film,
   type FilmScene,
+  type FilmSubtitle,
   type FilmTransition,
   type Pose,
   type SceneNode,
@@ -825,6 +826,53 @@ function cullOffscreen(
   });
 }
 
+/**
+ * The active subtitle as a broadcast lower-third (M11.2): translucent ink
+ * plate + warm-white shaped text, bottom-center, own emit layer so grading
+ * never dims it. When chunks overlap (a character line over narration) the
+ * latest-starting one wins — one subtitle at a time.
+ */
+function subtitleItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
+  const localTick = Math.max(0, Math.min(tick - scene.startTick, scene.durationTicks));
+  let sub: FilmSubtitle | undefined;
+  for (const candidate of scene.subtitles ?? []) {
+    if (localTick < candidate.startTick) continue;
+    if (localTick >= candidate.startTick + candidate.durationTicks) continue;
+    if (!sub || candidate.startTick >= sub.startTick) sub = candidate;
+  }
+  if (!sub) return [];
+  const run = shapeText(sub.font, sub.text);
+  const s = sub.size / run.upem;
+  const textWidth = run.width * s;
+  const baseUnit = film.height / WORLD_UNITS_PER_VIEW_HEIGHT;
+  const overlay = compose(
+    translation(film.width / 2, film.height / 2),
+    scaling(baseUnit, -baseUnit),
+  );
+  const y = -4.15; // baseline, world units — a caption-safe lower band
+  return flattenScene({
+    id: 'subtitle',
+    transform: overlay,
+    children: [
+      {
+        id: 'subtitle-plate',
+        shape: { kind: 'rect', width: textWidth + 0.6, height: sub.size * 1.9, rx: 0.1 },
+        transform: translation(0, y + sub.size * 0.32),
+        fill: { color: { r: 0x14, g: 0x10, b: 0x0c, a: 0.62 } },
+      },
+      ...run.paths.map((glyph, gi): SceneNode => ({
+        id: `subtitle-g${gi}`,
+        transform: compose(
+          translation(-textWidth / 2 + glyph.x * s, y + glyph.y * s),
+          scaling(s, s),
+        ),
+        shape: { kind: 'path', d: glyph.d },
+        fill: { color: { r: 0xfd, g: 0xfa, b: 0xf1, a: 1 } },
+      })),
+    ],
+  });
+}
+
 /** A scene's grade tints as draw items (screen-space px). */
 function gradeItems(film: Film, grade: string | undefined, idPrefix: string): DrawItem[] {
   const tints = GRADE_OVERLAYS[grade ?? 'day'] ?? [];
@@ -930,6 +978,10 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
     const grade = gradeItems(film, scene.grade, 'grade');
     if (grade.length > 0) layers.push({ items: grade });
   }
+
+  // Subtitles (M11.2) paint above the grade so night scenes stay readable.
+  const subtitle = subtitleItems(film, scene, tick);
+  if (subtitle.length > 0) layers.push({ items: subtitle });
 
   // Masked transitions (fade/wipe/iris) straddle the boundary: the tail
   // of the outgoing scene covers up, the head of this scene reveals.

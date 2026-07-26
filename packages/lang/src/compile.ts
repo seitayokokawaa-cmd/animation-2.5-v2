@@ -34,6 +34,7 @@ import {
   type FilmLine,
   type FilmNarrationSegment,
   type FilmScene,
+  type FilmSubtitle,
   type Shape,
   type Stroke,
   type Tick,
@@ -391,6 +392,66 @@ export function compileWithMarkers(
         tick: filmTick + secondsToTicks(startSeconds),
       });
     });
+
+    // -- subtitles (M11.2): narration text + alignment → timed chunks ---------
+    const subtitleConfig = doc.meta.subtitles;
+    const subtitles: FilmSubtitle[] = [];
+    if (subtitleConfig) {
+      const config = typeof subtitleConfig === 'object' ? subtitleConfig : {};
+      const font = config.font ?? 'noto-sans';
+      const subSize = config.size ?? 0.34;
+      const MAX_CHARS = 42;
+      scene.narration.forEach((segment, index) => {
+        const slot = scheduled[index]!;
+        const display = (segment.subtitle ?? segment.text).trim().split(/\s+/);
+        // Word timings drive the chunks when they line up with the display
+        // tokens; translated subtitles (or missing alignment) spread evenly.
+        const aligned = segment.subtitle === undefined && slot.data.words.length === display.length;
+        const per = slot.data.durationSeconds / display.length;
+        const timed = display.map((token, i) => ({
+          token,
+          start: aligned ? slot.data.words[i]!.start : i * per,
+          end: aligned ? slot.data.words[i]!.end : (i + 1) * per,
+        }));
+        const chunks: Array<{ text: string; start: number; end: number }> = [];
+        let current: typeof timed = [];
+        const flush = (): void => {
+          if (current.length === 0) return;
+          chunks.push({
+            text: current.map((t) => t.token).join(' '),
+            start: current[0]!.start,
+            end: current[current.length - 1]!.end,
+          });
+          current = [];
+        };
+        for (const entry of timed) {
+          const length = current.map((t) => t.token).join(' ').length;
+          if (current.length > 0 && length + 1 + entry.token.length > MAX_CHARS) flush();
+          current.push(entry);
+        }
+        flush();
+        chunks.forEach((chunk, i) => {
+          const tail = Math.min(chunk.end + 0.15, chunks[i + 1]?.start ?? Infinity);
+          subtitles.push({
+            text: chunk.text,
+            font,
+            size: subSize,
+            startTick: secondsToTicks(slot.startSeconds + chunk.start),
+            durationTicks: secondsToTicks(tail - chunk.start),
+          });
+        });
+      });
+      // Character lines subtitle as broadcast dialogue.
+      for (const line of filmLines) {
+        subtitles.push({
+          text: `${line.speaker.toUpperCase()}: ${line.text}`,
+          font,
+          size: subSize,
+          startTick: line.startTick,
+          durationTicks: line.durationTicks + secondsToTicks(0.2),
+        });
+      }
+    }
 
     const durationTicks =
       scene.duration !== undefined
@@ -1294,12 +1355,18 @@ export function compileWithMarkers(
         });
       } else if (verb.card) {
         const c = verb.card;
-        const big = c.style === 'date' || c.style === 'chapter';
+        const big = c.style === 'date' || c.style === 'chapter' || c.style === 'title';
+        // Lower-thirds anchor bottom-left (M11.2); everything else centers.
+        const defaultAt =
+          c.style === 'lower-third'
+            ? vec2(-((width / height) * 5) + 2.9, -3.1)
+            : vec2(0, big ? 0 : -2.8);
         cards.push({
           style: c.style,
           text: c.text,
+          subtext: c.subtext,
           items: c.items,
-          at: c.at ? vec2(...c.at) : vec2(0, big ? 0 : -2.8),
+          at: c.at ? vec2(...c.at) : defaultAt,
           startTick,
           durationTicks: secondsToTicks(c.duration),
           size: c.size ?? (big ? 0.9 : 0.5),
@@ -1413,6 +1480,7 @@ export function compileWithMarkers(
           }
         : undefined,
       grade: scene.grade,
+      subtitles: subtitleConfig ? subtitles : undefined,
       startTick: filmTick,
       durationTicks,
       narration,

@@ -587,8 +587,10 @@ const verbFields = {
     .optional(),
   card: z
     .object({
-      style: z.enum(['date', 'chapter', 'list', 'quote', 'note', 'label']),
+      style: z.enum(['date', 'chapter', 'list', 'quote', 'note', 'label', 'title', 'lower-third']),
       text: z.string().min(1).optional(),
+      /** Second line — the lower-third role/description (M11.2). */
+      subtext: z.string().min(1).optional(),
       items: z.array(z.string().min(1)).min(1).optional(),
       at: vec2Schema.optional(),
       duration: secondsSchema,
@@ -841,6 +843,22 @@ export const mfsSchema = z
         seed: z.number().int().nonnegative().default(0),
         style: z.enum(['explainer-paper', 'clean-flat']).optional(),
         background: colorSchema.optional(),
+        /** Auto-generate subtitles from narration + alignment (M11.2):
+         * `true` for defaults, or set the font/size — Bengali subtitles
+         * under English VO are `{ font: noto-bengali }` plus translated
+         * `subtitle:` texts on the narration segments. */
+        subtitles: z
+          .union([
+            z.boolean(),
+            z
+              .object({
+                font: z.enum(FONT_CHOICES).optional(),
+                /** World units tall; default 0.34. */
+                size: z.number().finite().positive().optional(),
+              })
+              .strict(),
+          ])
+          .optional(),
       })
       .strict(),
     shapes: z.record(nameSchema, shapeDefSchema).default({}),
