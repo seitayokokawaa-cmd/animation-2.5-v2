@@ -114,6 +114,12 @@ importers:
         specifier: workspace:*
         version: link:../lang
 
+  packages/voice:
+    dependencies:
+      '@motionforge/core':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@derhuerst/http-basic@8.2.4':
