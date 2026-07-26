@@ -42,6 +42,8 @@ import {
   FACE_EXPRESSIONS,
   faceNodes,
   fk,
+  GESTURE_KINDS,
+  gesturePose,
   HEAD_ANCHOR_Z,
   idlePose,
   REACTION_KINDS,
@@ -279,9 +281,26 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
           const idleFn = template.idle ?? idlePose;
           // A mounted rider sits in the mount's seat and rides its idle.
           const seat = inst.character.mount ? seatTransformFor(inst.character.mount) : undefined;
-          const pose = seat
+          let pose = seat
             ? addPoses(SEAT_POSE, idlePose(localTick, fnv1a(inst.id) % 240))
             : idleFn(localTick, fnv1a(inst.id) % 240);
+          // Gestures (M8.2) layer on top of the idle/seat pose.
+          for (const effect of scene.effects) {
+            if (
+              effect.verb !== 'gesture' ||
+              effect.target !== inst.id ||
+              localTick < effect.startTick ||
+              localTick >= effect.startTick + effect.durationTicks
+            ) {
+              continue;
+            }
+            const gt =
+              effect.durationTicks === 0
+                ? 1
+                : (localTick - effect.startTick) / effect.durationTicks;
+            const kind = GESTURE_KINDS[effect.params.kind ?? 0] ?? 'point';
+            pose = addPoses(pose, gesturePose(kind, gt));
+          }
           return {
             ...base,
             ...(seat ? { transform: withParallax(inst.depth, seat) } : {}),

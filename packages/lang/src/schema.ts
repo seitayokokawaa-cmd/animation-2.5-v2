@@ -159,6 +159,19 @@ export const MUSTACHE_CHOICES = ['imperial', 'handlebar', 'chevron', 'goatee'] a
 
 export const HELD_CHOICES = ['scroll', 'sword', 'staff', 'flag'] as const;
 
+/** Gesture kinds (M8.2) — order matches motion's GESTURE_KINDS index. */
+export const GESTURE_CHOICES = [
+  'point',
+  'wave',
+  'salute',
+  'facepalm',
+  'shrug',
+  'clap',
+  'nod',
+  'shake-head',
+  'bow',
+] as const;
+
 /** Reaction kinds (M6.7) — order matches motion's REACTION_KINDS index. */
 export const REACTION_CHOICES = [
   'jaw-drop',
@@ -348,6 +361,15 @@ const verbFields = {
       target: nameSchema.optional(),
       at: z.union([nameSchema, vec2Schema]),
       color: colorSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Cast gestures (M8.2). */
+  gesture: z
+    .object({
+      target: nameSchema,
+      kind: z.enum(GESTURE_CHOICES),
+      duration: secondsSchema.optional(),
     })
     .strict()
     .optional(),
@@ -548,6 +570,7 @@ export const VERB_NAMES = [
   'zoom-to',
   'enter',
   'exit',
+  'gesture',
   'squash-stretch',
   'hinge',
   'oscillate',

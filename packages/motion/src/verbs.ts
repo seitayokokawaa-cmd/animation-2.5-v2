@@ -276,6 +276,14 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  {
+    name: 'gesture',
+    summary:
+      'Cast gesture (point, wave, salute, …): a rig-pose overlay the frame ' +
+      'builder adds on top of the idle pose (M8.2).',
+    defaultDurationSeconds: 1.4,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

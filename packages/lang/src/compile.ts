@@ -42,7 +42,13 @@ import {
 
 import { findPhrase, type MfsAnchor } from './narration.js';
 import type { MfsObjectDef, MfsPart } from './parts.js';
-import { REACTION_CHOICES, type MfsDocument, type MfsShapeDef, type verbSchema } from './schema.js';
+import {
+  GESTURE_CHOICES,
+  REACTION_CHOICES,
+  type MfsDocument,
+  type MfsShapeDef,
+  type verbSchema,
+} from './schema.js';
 import { STAGE_PRESETS } from './stage.js';
 import type { z } from 'zod';
 
@@ -685,6 +691,23 @@ export function compileWithMarkers(
               bow: a.bow ?? (i % 2 === 0 ? 0.16 : -0.14),
             },
           );
+        });
+      } else if (verb.gesture) {
+        const g = verb.gesture;
+        /** Defaults mirror motion's GESTURE_DEFAULT_SECONDS (M12.5 checks). */
+        const GESTURE_SECONDS: Record<string, number> = {
+          point: 1.4,
+          wave: 1.6,
+          salute: 1.3,
+          facepalm: 1.7,
+          shrug: 1.4,
+          clap: 1.6,
+          nod: 1.2,
+          'shake-head': 1.2,
+          bow: 1.6,
+        };
+        pushEffect(g.target, 'gesture', startTick, g.duration ?? GESTURE_SECONDS[g.kind] ?? 1.4, {
+          kind: GESTURE_CHOICES.indexOf(g.kind),
         });
       } else if (verb.enter) {
         const { target, from, duration } = verb.enter;
