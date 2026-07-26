@@ -8,6 +8,8 @@ import {
   clampZoom,
   dampedTrack,
   DEFAULT_CAMERA,
+  frameRect,
+  FRAMING_MARGINS,
   letterboxBars,
   whipZoomDip,
   WORLD_UNITS_PER_VIEW_HEIGHT,
@@ -176,6 +178,33 @@ describe('camera rig (M10.1)', () => {
       expect(whipZoomDip(0)).toBe(1);
       expect(whipZoomDip(1)).toBeCloseTo(1, 9);
       expect(whipZoomDip(0.5)).toBeCloseTo(0.93, 9);
+    });
+  });
+
+  describe('frameRect (M10.4)', () => {
+    it('centers on the rect and zooms until the tight axis fits', () => {
+      const framing = frameRect({ min: vec2(1, -2), max: vec2(5, 0) }, 16 / 9, 0.5);
+      expect(framing.pos).toEqual(vec2(3, -1));
+      // Height 2 + 1 margin → 10/3; width 4 + 1 → 10·(16/9)/5 — height binds.
+      expect(framing.zoom).toBeCloseTo(10 / 3, 9);
+    });
+
+    it('width binds for panoramic rects; extremes clamp to the rig range', () => {
+      const wide = frameRect({ min: vec2(-15, -1), max: vec2(15, 1) }, 16 / 9, 0);
+      expect(wide.zoom).toBeCloseTo((10 * (16 / 9)) / 30, 9);
+      expect(frameRect({ min: vec2(0, 0), max: vec2(0.1, 0.1) }, 16 / 9, 0).zoom).toBe(
+        CAMERA_MAX_ZOOM,
+      );
+    });
+
+    it('the margin table covers every shot kind', () => {
+      expect(Object.keys(FRAMING_MARGINS).sort()).toEqual([
+        'close-up',
+        'medium',
+        'region',
+        'two-shot',
+        'wide',
+      ]);
     });
   });
 

@@ -572,4 +572,98 @@ describe('cast compilation (M6.4)', () => {
       expect(() => compile(bad)).toThrow(/track target "ghost" is not placed/);
     });
   });
+
+  describe('shot framing presets (M10.4)', () => {
+    const staged = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1920x1080', fps: 30 },
+      cast: {
+        franz: { template: 'potato-biped', size: 1 },
+        imp: { template: 'potato-biped', size: 0.6 },
+      },
+      scenes: [
+        {
+          id: 'a',
+          duration: 6,
+          place: [
+            { ref: 'franz', as: 'franz', at: [2, -2.6] },
+            { ref: 'imp', as: 'imp', at: [-3, -2.6] },
+          ],
+          actions: [
+            { at: 1, shot: { kind: 'close-up', of: 'franz', cut: true } },
+            { at: 2, shot: { kind: 'two-shot', of: ['franz', 'imp'] } },
+            { at: 3, shot: { kind: 'wide', cut: true } },
+            {
+              at: 4,
+              shot: {
+                kind: 'region',
+                rect: [
+                  [-4, -3],
+                  [4, 3],
+                ],
+                duration: 0.5,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    const tl = compile(staged).scenes[0]!.timeline;
+
+    it('close-up frames the face band tight', () => {
+      const pos = sample<Vec2>(tl, 'camera/pos', secondsToTicks(1));
+      expect(pos.x).toBe(2);
+      expect(pos.y).toBeCloseTo(-2.6 + (1.2 + 2.2) / 2, 6);
+      // Band 1 unit tall + 0.35 margin each side → 10 / 1.7.
+      expect(sample<number>(tl, 'camera/zoom', secondsToTicks(1))).toBeCloseTo(10 / 1.7, 4);
+    });
+
+    it('two-shot spans both subjects, sized per cast member', () => {
+      const pos = sample<Vec2>(tl, 'camera/pos', secondsToTicks(2.6));
+      // franz body edge at 2 + 0.85, imp at -3 - 0.85·0.6.
+      expect(pos.x).toBeCloseTo((2 + 0.85 + (-3 - 0.51)) / 2, 6);
+      expect(sample<number>(tl, 'camera/zoom', secondsToTicks(2.6))).toBeGreaterThan(1);
+    });
+
+    it('wide resets to the full stage', () => {
+      expect(sample<Vec2>(tl, 'camera/pos', secondsToTicks(3))).toEqual({ x: 0, y: 0 });
+      expect(sample<number>(tl, 'camera/zoom', secondsToTicks(3))).toBe(1);
+    });
+
+    it('region frames a raw world rect with the map margin', () => {
+      // Rect 8×6 + 1.2 margin → height binds: 10 / 8.4.
+      expect(sample<number>(tl, 'camera/zoom', secondsToTicks(5))).toBeCloseTo(10 / 8.4, 4);
+    });
+
+    it('rejects malformed subjects', () => {
+      const oneName = mfsSchema.parse({
+        motionforge: 2,
+        meta: { title: 'T', resolution: '1920x1080', fps: 30 },
+        cast: { imp: { template: 'potato-biped' } },
+        scenes: [
+          {
+            id: 'a',
+            duration: 2,
+            place: [{ ref: 'imp', as: 'imp', at: [0, 0] }],
+            actions: [{ at: 0, shot: { kind: 'two-shot', of: 'imp' } }],
+          },
+        ],
+      });
+      expect(() => compile(oneName)).toThrow(/two-shot needs two subjects/);
+      const notCast = mfsSchema.parse({
+        motionforge: 2,
+        meta: { title: 'T', resolution: '1920x1080', fps: 30 },
+        shapes: { box: { kind: 'rect', width: 1, height: 1 } },
+        scenes: [
+          {
+            id: 'a',
+            duration: 2,
+            place: [{ ref: 'box', as: 'crate', at: [0, 0] }],
+            actions: [{ at: 0, shot: { kind: 'close-up', of: 'crate' } }],
+          },
+        ],
+      });
+      expect(() => compile(notCast)).toThrow(/not a cast member/);
+    });
+  });
 });

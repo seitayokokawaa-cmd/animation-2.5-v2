@@ -9,8 +9,11 @@ import {
   clampZoom,
   createTimeline,
   createTrack,
+  DEFAULT_CAMERA,
   degToRad,
   EASING_NAMES,
+  frameRect,
+  FRAMING_MARGINS,
   lerp,
   lerpVec2,
   parseColor,
@@ -20,7 +23,6 @@ import {
   tokenizeWords,
   TRACK_DEFAULT_STIFFNESS,
   vec2,
-  WORLD_UNITS_PER_VIEW_HEIGHT,
   type AnyTrack,
   type Clip,
   type Fill,
@@ -177,6 +179,18 @@ const CAST_SLOT_NAMES: Readonly<Record<string, string>> = {
   outline: 'outline',
   boots: 'boots',
 };
+
+/**
+ * Character world extents for camera framing (M10.2/M10.4), in multiples
+ * of cast size from the feet anchor — matched to the potato-biped
+ * template by eyeball: face center, full height including headwear,
+ * body half-width, bottom of the face band, chest line.
+ */
+const CHAR_FACE_LIFT = 1.55;
+const CHAR_HEIGHT = 2.2;
+const CHAR_HALF_WIDTH = 0.85;
+const CHAR_FACE_BOTTOM = 1.2;
+const CHAR_CHEST = 0.7;
 
 // ---- anchors ----------------------------------------------------------------
 
@@ -679,7 +693,7 @@ export function compileWithMarkers(
           }
           const base = lastPos.get(aimTarget) ?? vec2(...placement.at);
           const castDef = doc.cast[placement.ref];
-          const faceLift = castDef ? 1.55 * (castDef.size ?? 1) : 0;
+          const faceLift = castDef ? CHAR_FACE_LIFT * (castDef.size ?? 1) : 0;
           return vec2(base.x, base.y + faceLift);
         };
         if (cam.track !== undefined) {
@@ -760,6 +774,99 @@ export function compileWithMarkers(
             pushEffect('camera', 'whip-dip', startTick, ticksToSeconds(clipTicks), {});
           }
         }
+      } else if (verb.shot) {
+        // Framing presets (M10.4): the camera computed from subjects.
+        const s = verb.shot;
+        const aspect = width / height;
+        const subjectRect = (
+          name: string,
+          from: number,
+          to: number,
+          halfWidth: number,
+        ): { min: Vec2; max: Vec2 } => {
+          const placement = scene.place.find((pl) => pl.as === name);
+          if (!placement) {
+            throw new Error(`Scene "${scene.id}": shot subject "${name}" is not placed`);
+          }
+          const castDef = doc.cast[placement.ref];
+          if (!castDef) {
+            throw new Error(
+              `Scene "${scene.id}": shot subject "${name}" is not a cast member — use kind: region for props and maps`,
+            );
+          }
+          const size = castDef.size ?? 1;
+          const base = lastPos.get(name) ?? vec2(...placement.at);
+          return {
+            min: vec2(base.x - halfWidth * size, base.y + from * size),
+            max: vec2(base.x + halfWidth * size, base.y + to * size),
+          };
+        };
+        const oneName = (): string => {
+          if (typeof s.of !== 'string') {
+            throw new Error(`Scene "${scene.id}": shot kind "${s.kind}" needs one subject in "of"`);
+          }
+          return s.of;
+        };
+        let framing: { pos: Vec2; zoom: number };
+        if (s.kind === 'wide') {
+          framing = DEFAULT_CAMERA;
+        } else if (s.kind === 'region') {
+          if (!s.rect) {
+            throw new Error(`Scene "${scene.id}": shot kind "region" needs "rect"`);
+          }
+          const [[x0, y0], [x1, y1]] = s.rect;
+          framing = frameRect(
+            {
+              min: vec2(Math.min(x0, x1), Math.min(y0, y1)),
+              max: vec2(Math.max(x0, x1), Math.max(y0, y1)),
+            },
+            aspect,
+            FRAMING_MARGINS.region,
+          );
+        } else if (s.kind === 'two-shot') {
+          if (!Array.isArray(s.of)) {
+            throw new Error(`Scene "${scene.id}": two-shot needs two subjects in "of"`);
+          }
+          const [a, b] = s.of.map((name) => subjectRect(name, 0, CHAR_HEIGHT, CHAR_HALF_WIDTH));
+          framing = frameRect(
+            {
+              min: vec2(Math.min(a!.min.x, b!.min.x), Math.min(a!.min.y, b!.min.y)),
+              max: vec2(Math.max(a!.max.x, b!.max.x), Math.max(a!.max.y, b!.max.y)),
+            },
+            aspect,
+            FRAMING_MARGINS['two-shot'],
+          );
+        } else if (s.kind === 'close-up') {
+          framing = frameRect(
+            subjectRect(oneName(), CHAR_FACE_BOTTOM, CHAR_HEIGHT, 0.7),
+            aspect,
+            FRAMING_MARGINS['close-up'],
+          );
+        } else {
+          framing = frameRect(
+            subjectRect(oneName(), CHAR_CHEST, CHAR_HEIGHT, CHAR_HALF_WIDTH),
+            aspect,
+            FRAMING_MARGINS.medium,
+          );
+        }
+        const clipTicks = s.cut ? 0 : secondsToTicks(s.duration ?? 0.5);
+        const easing = s.easing ?? 'cubicInOut';
+        cameraPosClips.push({
+          start: startTick,
+          duration: clipTicks,
+          from: lastCameraPos,
+          to: framing.pos,
+          easing,
+        });
+        lastCameraPos = framing.pos;
+        cameraZoomClips.push({
+          start: startTick,
+          duration: clipTicks,
+          from: lastCameraZoom,
+          to: framing.zoom,
+          easing,
+        });
+        lastCameraZoom = framing.zoom;
       } else if (verb['bounce-to']) {
         const { target, to, duration, hops, height } = verb['bounce-to'];
         const from = lastPos.get(target) ?? vec2(...baseOf(target).at);
@@ -1000,14 +1107,14 @@ export function compileWithMarkers(
           );
         }
         const placement = scene.place.find((p) => p.as === instName)!;
-        const margin = zt.margin ?? 1.2;
-        const boxW = region.bbox.max.x - region.bbox.min.x + margin * 2;
-        const boxH = region.bbox.max.y - region.bbox.min.y + margin * 2;
-        const worldW = (width / height) * WORLD_UNITS_PER_VIEW_HEIGHT;
-        const zoomLevel = clampZoom(Math.min(WORLD_UNITS_PER_VIEW_HEIGHT / boxH, worldW / boxW));
-        const to = vec2(
-          placement.at[0] + (region.bbox.min.x + region.bbox.max.x) / 2,
-          placement.at[1] + (region.bbox.min.y + region.bbox.max.y) / 2,
+        // One framing definition for regions and shot presets (M10.4).
+        const framing = frameRect(
+          {
+            min: vec2(placement.at[0] + region.bbox.min.x, placement.at[1] + region.bbox.min.y),
+            max: vec2(placement.at[0] + region.bbox.max.x, placement.at[1] + region.bbox.max.y),
+          },
+          width / height,
+          zt.margin ?? FRAMING_MARGINS.region,
         );
         const clipTicks = secondsToTicks(zt.duration ?? 1.2);
         const easing = zt.easing ?? 'cubicInOut';
@@ -1015,18 +1122,18 @@ export function compileWithMarkers(
           start: startTick,
           duration: clipTicks,
           from: lastCameraPos,
-          to,
+          to: framing.pos,
           easing,
         });
-        lastCameraPos = to;
+        lastCameraPos = framing.pos;
         cameraZoomClips.push({
           start: startTick,
           duration: clipTicks,
           from: lastCameraZoom,
-          to: zoomLevel,
+          to: framing.zoom,
           easing,
         });
-        lastCameraZoom = zoomLevel;
+        lastCameraZoom = framing.zoom;
       } else if (verb.march) {
         const m = verb.march;
         const [instName, entry] = resolveMapTarget(scene.id, placedMaps, m.target);

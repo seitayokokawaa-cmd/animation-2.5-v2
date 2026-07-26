@@ -176,6 +176,39 @@ export function zoomPunchCamera(
   return zoomAboutPoint(pulled, aim, 1 + (punch - 1) * env);
 }
 
+// ---- framing presets (M10.4) -----------------------------------------------
+
+/**
+ * Directorial margin (world units) around the subject rect per shot kind.
+ * `wide` takes the whole stage and ignores rects; `region` matches the
+ * map `zoom-to` default.
+ */
+export const FRAMING_MARGINS = {
+  wide: 0,
+  medium: 0.4,
+  'close-up': 0.35,
+  'two-shot': 0.9,
+  region: 1.2,
+} as const;
+
+export type FramingKind = keyof typeof FRAMING_MARGINS;
+
+/**
+ * Frame a world rect: center on it and zoom until it fills the view
+ * (plus `margin` on every side), clamped to the rig's zoom range. The
+ * one framing definition behind `shot:` presets and map `zoom-to`.
+ */
+export function frameRect(rect: WorldRect, aspect: number, margin = 0): CameraState {
+  const w = rect.max.x - rect.min.x + margin * 2;
+  const h = rect.max.y - rect.min.y + margin * 2;
+  return {
+    pos: vec2((rect.min.x + rect.max.x) / 2, (rect.min.y + rect.max.y) / 2),
+    zoom: clampZoom(
+      Math.min(WORLD_UNITS_PER_VIEW_HEIGHT / h, (WORLD_UNITS_PER_VIEW_HEIGHT * aspect) / w),
+    ),
+  };
+}
+
 // ---- damped-spring tracking (M10.3) ----------------------------------------
 
 /** Default tracking stiffness ω, rad/s — snappy but never robotic. */

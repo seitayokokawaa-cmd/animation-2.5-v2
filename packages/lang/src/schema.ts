@@ -54,6 +54,9 @@ const easingSchema = z.enum(EASING_CHOICES);
 
 export const FONT_CHOICES = ['noto-sans', 'noto-bengali', 'noto-arabic', 'noto-sc'] as const;
 
+/** Framing preset kinds (M10.4) — mirrors core FRAMING_MARGINS. */
+export const SHOT_CHOICES = ['wide', 'medium', 'close-up', 'two-shot', 'region'] as const;
+
 const strokeSchema = z
   .object({
     color: colorSchema,
@@ -650,6 +653,27 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Framing preset (M10.4): compute the camera from subjects instead of
+   * hand-picking pos/zoom. `wide` resets to the full stage; `close-up`
+   * and `medium` frame one cast member; `two-shot` frames two; `region`
+   * frames a raw world rect. */
+  shot: z
+    .object({
+      kind: z.enum(SHOT_CHOICES),
+      /** Subject(s): one placed cast name (close-up/medium), two for
+       * two-shot. */
+      of: z.union([nameSchema, z.tuple([nameSchema, nameSchema])]).optional(),
+      /** World rect for `kind: region` as [[x0,y0],[x1,y1]]. */
+      rect: z.tuple([vec2Schema, vec2Schema]).optional(),
+      /** Glide time into the framing; default 0.5 s. */
+      duration: secondsSchema.optional(),
+      /** Default cubicInOut. */
+      easing: easingSchema.optional(),
+      /** Hard cut into the framing. */
+      cut: z.boolean().optional(),
+    })
+    .strict()
+    .optional(),
 };
 
 export const VERB_NAMES = [
@@ -690,6 +714,7 @@ export const VERB_NAMES = [
   'card',
   'cutaway',
   'camera',
+  'shot',
   'pop-in',
   'pop-out',
   'spin-in',
