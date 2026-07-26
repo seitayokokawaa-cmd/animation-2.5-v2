@@ -35,11 +35,23 @@ export interface FilmCaption {
   readonly font: string;
 }
 
+/** A frozen narration segment scheduled inside a scene (audio mixed M3.6). */
+export interface FilmNarrationSegment {
+  /** Lock key, `sceneId/index`. */
+  readonly key: string;
+  /** Voice-cache content hash of the frozen WAV. */
+  readonly hash: string;
+  /** Scene-local. */
+  readonly startTick: Tick;
+  readonly durationTicks: Tick;
+}
+
 export interface FilmScene {
   readonly id: string;
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;
+  readonly narration: readonly FilmNarrationSegment[];
   readonly instances: readonly FilmInstance[];
   /**
    * Scene-local tracks: `<instance>/pos` (Vec2), `<instance>/rot` (radians),

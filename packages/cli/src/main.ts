@@ -9,16 +9,19 @@ import { parseArgs } from 'node:util';
 import { secondsToTicks } from '@motionforge/core';
 import {
   check,
-  compile,
+  compileWithMarkers,
   hasErrors,
   printJson,
   printPretty,
+  timingTable,
   type MfsDocument,
+  type VoiceData,
 } from '@motionforge/lang';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 import {
   adapterFor,
   energyAligner,
+  readLock,
   syncSegments,
   VoiceCache,
   writeLock,
@@ -32,6 +35,7 @@ Usage:
   mf render <film.mfs.yaml> [-o out.mp4]
   mf frame <film.mfs.yaml> --at <seconds> [-o out.png|out.svg]
   mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
+  mf timing <film.mfs.yaml>
 `;
 
 /** The film's lock file sits beside it: film.mfs.yaml → film.voice.lock.json */
@@ -53,6 +57,21 @@ function segmentRequests(doc: MfsDocument): SegmentRequest[] {
     });
   }
   return requests;
+}
+
+/** Frozen narration lookup for the compiler, from lock + cache. */
+function voiceDataFor(file: string, cacheDir: string): VoiceData {
+  const lock = readLock(lockPathFor(file));
+  const cache = new VoiceCache(cacheDir);
+  return {
+    segment(key) {
+      const entry = lock.segments[key];
+      if (!entry) return undefined;
+      if (!cache.hasWav(entry.hash)) return undefined;
+      const words = cache.hasAlign(entry.hash) ? cache.readAlign(entry.hash).words : [];
+      return { hash: entry.hash, durationSeconds: entry.durationSeconds, words };
+    },
+  };
 }
 
 function fail(message: string): never {
@@ -118,7 +137,7 @@ async function main(): Promise<void> {
     }
     case 'render': {
       const doc = loadChecked(file, values.json);
-      const film = compile(doc);
+      const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.mp4';
       const started = performance.now();
       const { frames } = await renderFilm(film, out, {
@@ -137,7 +156,7 @@ async function main(): Promise<void> {
       if (values.at === undefined) fail('frame: --at <seconds> is required');
       const seconds = Number(values.at);
       if (!Number.isFinite(seconds) || seconds < 0) fail(`frame: invalid --at ${values.at}`);
-      const film = compile(doc);
+      const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
       const svg = buildFrameSvg(film, secondsToTicks(seconds));
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + `-t${values.at}.png`;
       if (out.endsWith('.svg')) {
@@ -146,6 +165,12 @@ async function main(): Promise<void> {
         writeFileSync(out, resvgRasterizer.toPng(svg));
       }
       process.stderr.write(`wrote ${out}\n`);
+      return;
+    }
+    case 'timing': {
+      const doc = loadChecked(file, values.json);
+      const { markers } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
+      process.stdout.write(timingTable(markers) + '\n');
       return;
     }
     default:
