@@ -269,6 +269,26 @@ describe('cast compilation (M6.4)', () => {
     expect(arrows[1]!.startTick - arrows[0]!.startTick).toBe(18); // 0.15 s
     expect(arrows[1]!.params.x1).toBe(3);
     expect(arrows[0]!.params.color).toBe(0x8a1c1c);
+
+    // Labels carry text; groups land at the mean member centroid (M7.6).
+    const withLabels = {
+      ...doc2,
+      scenes: [
+        {
+          ...doc2.scenes[0]!,
+          actions: [
+            { at: 0, label: { of: { entente: 'The Entente', germany: 'Germany' } } },
+            { at: 1, 'zoom-to': { region: 'germany' } },
+          ],
+        },
+      ],
+    };
+    const zoomed = compile(withLabels, undefined, mapsData).scenes[0]!;
+    const labels = zoomed.effects.filter((e) => e.verb === 'map-label');
+    expect(labels.map((e) => e.text)).toEqual(['The Entente', 'Germany']);
+    // zoom-to frames the region bbox: camera lands zoomed in past 1×.
+    expect(sample<number>(zoomed.timeline, 'camera/zoom', 300)).toBeGreaterThan(1.5);
+    expect(sample<Vec2>(zoomed.timeline, 'camera/pos', 300).x).toBeCloseTo(0.5, 6);
   });
 
   it('react compiles a face effect plus companion particles (M6.7)', () => {

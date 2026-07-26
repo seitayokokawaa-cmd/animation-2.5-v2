@@ -268,6 +268,14 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  {
+    name: 'map-label',
+    summary: 'A region/alliance nameplate pops onto the map and stays.',
+    defaultDurationSeconds: 0.4,
+    defaultSfx: 'pop',
+    holdAfter: true,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

@@ -95,6 +95,8 @@ export interface FilmEffect {
   readonly startTick: Tick;
   readonly durationTicks: Tick;
   readonly params: Readonly<Record<string, number>>;
+  /** Label text for text-bearing verbs (map labels, M7.6). */
+  readonly text?: string;
   /** Noise stream name, unique per effect. */
   readonly seed: string;
 }

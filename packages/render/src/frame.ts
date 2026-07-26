@@ -481,6 +481,50 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                 `${inst.id}/${effect.seed}`,
               ),
             });
+          } else if (effect.verb === 'map-label') {
+            // Nameplate (M7.6): haloed text popping in at the anchor,
+            // living in the map's frame so it pans/zooms with it.
+            if (!effect.text) continue;
+            const run = shapeText('noto-sans', effect.text);
+            const s = (effect.params.size ?? 0.34) / run.upem;
+            const pop = ease('backOut', t);
+            const xStart = (-run.width * s) / 2;
+            const labelLayer = inst.layer + 1200 + overlayIndex++;
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}`,
+              layer: labelLayer,
+              transform: compose(
+                translation(effect.params.x ?? 0, effect.params.y ?? 0),
+                scaling(pop, pop),
+              ),
+              children: run.paths.flatMap((glyph, gi): SceneNode[] => {
+                const glyphTransform = compose(
+                  translation(xStart + glyph.x * s, glyph.y * s),
+                  scaling(s, s),
+                );
+                return [
+                  {
+                    id: `${inst.id}/${effect.seed}/h${gi}`,
+                    layer: labelLayer,
+                    transform: glyphTransform,
+                    shape: { kind: 'path', d: glyph.d },
+                    fill: { color: { r: 0xf4, g: 0xed, b: 0xdb, a: 1 } },
+                    stroke: {
+                      color: { r: 0xf4, g: 0xed, b: 0xdb, a: 1 },
+                      width: run.upem * 0.09,
+                    },
+                  },
+                  {
+                    id: `${inst.id}/${effect.seed}/g${gi}`,
+                    layer: labelLayer + 1,
+                    transform: glyphTransform,
+                    shape: { kind: 'path', d: glyph.d },
+                    fill: { color: { r: 0x3a, g: 0x32, b: 0x26, a: 1 } },
+                  },
+                ];
+              }),
+            });
+            overlayIndex++; // the ink layer above the halo
           }
         }
         return {

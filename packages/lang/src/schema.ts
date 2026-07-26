@@ -350,6 +350,28 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Region/alliance nameplates (M7.6): { region-or-group: "Text" }. */
+  label: z
+    .object({
+      target: nameSchema.optional(),
+      of: z.record(nameSchema, z.string().min(1)),
+      /** Text height, world units. */
+      size: z.number().finite().positive().optional(),
+    })
+    .strict()
+    .optional(),
+  /** Camera framing from a region's bbox (M7.6). */
+  'zoom-to': z
+    .object({
+      target: nameSchema.optional(),
+      region: nameSchema,
+      duration: secondsSchema.optional(),
+      easing: easingSchema.optional(),
+      /** Extra world units around the bbox. */
+      margin: z.number().finite().nonnegative().optional(),
+    })
+    .strict()
+    .optional(),
   /** Map region verbs (M7.3): recolor sweeps, highlights, border morphs. */
   map: z
     .object({
@@ -503,6 +525,8 @@ export const VERB_NAMES = [
   'march',
   'battle',
   'plant-flag',
+  'label',
+  'zoom-to',
   'squash-stretch',
   'hinge',
   'oscillate',

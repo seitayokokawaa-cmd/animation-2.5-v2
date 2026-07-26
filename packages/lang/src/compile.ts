@@ -465,6 +465,7 @@ export function compileWithMarkers(
       startTick: Tick,
       durationSeconds: number,
       params: Record<string, number>,
+      text?: string,
     ): void => {
       effects.push({
         target,
@@ -472,6 +473,7 @@ export function compileWithMarkers(
         startTick,
         durationTicks: secondsToTicks(durationSeconds),
         params,
+        ...(text !== undefined ? { text } : {}),
         seed: `${verbName}/${scene.id}/${effectCounter++}`,
       });
     };
@@ -650,6 +652,61 @@ export function compileWithMarkers(
             },
           );
         });
+      } else if (verb.label) {
+        const l = verb.label;
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, l.target);
+        for (const [target, text] of Object.entries(l.of)) {
+          const ids = entry.groups[target] ?? [target];
+          const points = ids.map((id) => resolveMapPoint(scene.id, instName, entry, id));
+          // A group's nameplate sits at the mean of its member centroids.
+          const cx = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+          const cy = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+          pushEffect(
+            instName,
+            'map-label',
+            startTick,
+            0.4,
+            { x: cx, y: cy, size: l.size ?? 0.34 },
+            text,
+          );
+        }
+      } else if (verb['zoom-to']) {
+        const zt = verb['zoom-to'];
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, zt.target);
+        const region = entry.regions.find((r) => r.id === zt.region);
+        if (!region) {
+          throw new Error(
+            `Scene "${scene.id}": zoom-to region "${zt.region}" is not on map "${instName}"`,
+          );
+        }
+        const placement = scene.place.find((p) => p.as === instName)!;
+        const margin = zt.margin ?? 1.2;
+        const boxW = region.bbox.max.x - region.bbox.min.x + margin * 2;
+        const boxH = region.bbox.max.y - region.bbox.min.y + margin * 2;
+        const worldW = (width / height) * 10;
+        const zoomLevel = Math.max(0.5, Math.min(6, Math.min(10 / boxH, worldW / boxW)));
+        const to = vec2(
+          placement.at[0] + (region.bbox.min.x + region.bbox.max.x) / 2,
+          placement.at[1] + (region.bbox.min.y + region.bbox.max.y) / 2,
+        );
+        const clipTicks = secondsToTicks(zt.duration ?? 1.2);
+        const easing = zt.easing ?? 'cubicInOut';
+        cameraPosClips.push({
+          start: startTick,
+          duration: clipTicks,
+          from: lastCameraPos,
+          to,
+          easing,
+        });
+        lastCameraPos = to;
+        cameraZoomClips.push({
+          start: startTick,
+          duration: clipTicks,
+          from: lastCameraZoom,
+          to: zoomLevel,
+          easing,
+        });
+        lastCameraZoom = zoomLevel;
       } else if (verb.march) {
         const m = verb.march;
         const [instName, entry] = resolveMapTarget(scene.id, placedMaps, m.target);
