@@ -83,12 +83,13 @@ export function gesturePose(kind: GestureKind, t: number): RigPose {
       );
     case 'clap': {
       const beat = Math.abs(Math.sin(t * Math.PI * 2 * 2.5)) * 0.22;
+      // Both hands meet at chest height; the counter-beat sells the claps.
       return scalePose(
         {
-          'arm-r-upper': 1.0 + beat,
-          'arm-r-lower': -0.1,
-          'arm-l-upper': 1.7 - beat,
-          'arm-l-lower': 0.1,
+          'arm-r-upper': 1.2 + beat,
+          'arm-r-lower': 0.15,
+          'arm-l-upper': 1.75 - beat,
+          'arm-l-lower': -0.15,
         },
         e,
       );

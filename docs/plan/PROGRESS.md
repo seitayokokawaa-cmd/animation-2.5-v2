@@ -118,7 +118,7 @@ Legend: ☐ pending · ☑ done
 | ---- | ----------------------------------------------------------- | ---- |
 | M8.1 | Stage presets (backdrops, ground, wings) + enter/exit verbs | ☑    |
 | M8.2 | Gestures: point, wave, salute, facepalm, shrug, clap, …     | ☑    |
-| M8.3 | Postures: sit, kneel, lie-down, stand-up + transitions      | ☐    |
+| M8.3 | Postures: sit, kneel, lie-down, stand-up + transitions      | ☑    |
 | M8.4 | Character lines: voices + pitch-shift, flaps, bubbles       | ☐    |
 | M8.5 | Slapstick-lite: bonk, fling, squash-land, chase loop        | ☐    |
 | M8.6 | `keyframes:` escape hatch on bones/parts/properties         | ☐    |

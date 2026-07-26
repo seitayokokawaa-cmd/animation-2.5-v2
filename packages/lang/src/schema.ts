@@ -373,6 +373,16 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Held body states (M8.3); persists until the next posture. */
+  posture: z
+    .object({
+      target: nameSchema,
+      kind: z.enum(['sit', 'kneel', 'lie-down', 'stand']),
+      /** Transition seconds; default 0.5. */
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Enter from the wings (M8.1): bounce in from offstage. */
   enter: z
     .object({
@@ -571,6 +581,7 @@ export const VERB_NAMES = [
   'enter',
   'exit',
   'gesture',
+  'posture',
   'squash-stretch',
   'hinge',
   'oscillate',

@@ -284,6 +284,15 @@ const defs: VerbDef[] = [
     defaultDurationSeconds: 1.4,
     sample: () => ({}),
   },
+  {
+    name: 'posture',
+    summary:
+      'Held body state (sit, kneel, lie-down, stand): blends in over the ' +
+      'window and persists until the next posture (M8.3).',
+    defaultDurationSeconds: 0.5,
+    holdAfter: true,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

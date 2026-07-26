@@ -18,6 +18,7 @@ import {
   flattenScene,
   formatColor,
   painterSort,
+  rotation,
   sample,
   sceneAtTick,
   scaling,
@@ -42,10 +43,14 @@ import {
   FACE_EXPRESSIONS,
   faceNodes,
   fk,
+  blendPostures,
   GESTURE_KINDS,
   gesturePose,
   HEAD_ANCHOR_Z,
   idlePose,
+  NEUTRAL_POSTURE,
+  POSTURE_KINDS,
+  posturePose,
   REACTION_KINDS,
   reactionFace,
   sampleEffect,
@@ -301,21 +306,54 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             const kind = GESTURE_KINDS[effect.params.kind ?? 0] ?? 'point';
             pose = addPoses(pose, gesturePose(kind, gt));
           }
+          // Postures (M8.3): blend from the previous held state, then hold.
+          const postures = scene.effects
+            .filter((e) => e.verb === 'posture' && e.target === inst.id && localTick >= e.startTick)
+            .sort((a, b) => a.startTick - b.startTick);
+          let posture = NEUTRAL_POSTURE;
+          if (postures.length > 0) {
+            const current = postures[postures.length - 1]!;
+            const previous =
+              postures.length > 1
+                ? posturePose(
+                    POSTURE_KINDS[postures[postures.length - 2]!.params.kind ?? 3] ?? 'stand',
+                  )
+                : NEUTRAL_POSTURE;
+            const targetPosture = posturePose(POSTURE_KINDS[current.params.kind ?? 3] ?? 'stand');
+            const pt =
+              current.durationTicks === 0
+                ? 1
+                : Math.min(1, (localTick - current.startTick) / current.durationTicks);
+            posture = blendPostures(previous, targetPosture, ease('cubicInOut', pt));
+            pose = addPoses(pose, posture.pose);
+          }
+          const rig = characterNodes(template, {
+            idPrefix: inst.id,
+            layerBase: inst.layer,
+            at: vec2(0, 0),
+            facing: inst.character.facing,
+            // Per-character phase offset so a cast never breathes in sync.
+            pose,
+            headNodes: face ? [face, ...dressed.headNodes] : [...dressed.headNodes],
+            handNodes: dressed.handNodes,
+          });
+          // Postures move the whole rig: drop toward the ground and/or tip
+          // about the feet (lying down).
+          const rooted =
+            posture.drop !== 0 || posture.rotate !== 0
+              ? {
+                  id: `${inst.id}/posture-root`,
+                  transform: compose(
+                    translation(0, -posture.drop * inst.character.size),
+                    rotation(posture.rotate),
+                  ),
+                  children: [rig],
+                }
+              : rig;
           return {
             ...base,
             ...(seat ? { transform: withParallax(inst.depth, seat) } : {}),
-            children: [
-              characterNodes(template, {
-                idPrefix: inst.id,
-                layerBase: inst.layer,
-                at: vec2(0, 0),
-                facing: inst.character.facing,
-                // Per-character phase offset so a cast never breathes in sync.
-                pose,
-                headNodes: face ? [face, ...dressed.headNodes] : [...dressed.headNodes],
-                handNodes: dressed.handNodes,
-              }),
-            ],
+            children: [rooted],
           };
         }
         if (!inst.object) {

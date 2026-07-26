@@ -709,6 +709,12 @@ export function compileWithMarkers(
         pushEffect(g.target, 'gesture', startTick, g.duration ?? GESTURE_SECONDS[g.kind] ?? 1.4, {
           kind: GESTURE_CHOICES.indexOf(g.kind),
         });
+      } else if (verb.posture) {
+        const p2 = verb.posture;
+        const POSTURE_KIND_NAMES = ['sit', 'kneel', 'lie-down', 'stand'];
+        pushEffect(p2.target, 'posture', startTick, p2.duration ?? 0.5, {
+          kind: Math.max(0, POSTURE_KIND_NAMES.indexOf(p2.kind)),
+        });
       } else if (verb.enter) {
         const { target, from, duration } = verb.enter;
         const at = lastPos.get(target) ?? vec2(...baseOf(target).at);
