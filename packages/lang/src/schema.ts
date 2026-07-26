@@ -349,9 +349,16 @@ const actionSchema = z
   .strict()
   .refine((v) => oneVerb(v as Record<string, unknown>), ONE_VERB_MESSAGE);
 
+const backdropSchema = z.union([
+  colorSchema,
+  z.object({ top: colorSchema, bottom: colorSchema }).strict(),
+]);
+
 const sceneSchema = z
   .object({
     id: nameSchema,
+    /** Screen-fixed background gradient (or flat color) for this scene. */
+    backdrop: backdropSchema.optional(),
     /**
      * Seconds. Optional when the scene has narration — its duration then
      * derives from the narration audio (plus pauses) at compile time.

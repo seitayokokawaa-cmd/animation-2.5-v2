@@ -100,8 +100,15 @@ export interface FilmCard {
   };
 }
 
+/** Screen-fixed vertical gradient behind the scene (M5.7). */
+export interface FilmBackdrop {
+  readonly top: Color;
+  readonly bottom: Color;
+}
+
 export interface FilmScene {
   readonly id: string;
+  readonly backdrop?: FilmBackdrop;
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;

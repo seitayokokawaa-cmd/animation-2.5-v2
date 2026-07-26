@@ -628,8 +628,16 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       createTrack<number>('camera/zoom', 1, cameraZoomClips, lerp),
     );
 
+    const backdrop =
+      scene.backdrop === undefined
+        ? undefined
+        : typeof scene.backdrop === 'string'
+          ? { top: parseColor(scene.backdrop), bottom: parseColor(scene.backdrop) }
+          : { top: parseColor(scene.backdrop.top), bottom: parseColor(scene.backdrop.bottom) };
+
     const compiled: FilmScene = {
       id: scene.id,
+      backdrop,
       startTick: filmTick,
       durationTicks,
       narration,
