@@ -21,7 +21,7 @@ Legend: ☐ pending · ☑ done
 | M0.6 | Spike: deterministic encode pipeline (60 frames → bitexact MP4 ×2)  | ☑    |
 | M0.7 | Spike: Qwen TTS + forced alignment + freeze-cache byte-stability    | ☐    |
 | M0.8 | Spike: map render (Natural Earth → stylized SVG, recolor, morph)    | ☑    |
-| M0.9 | ADRs incl. narration spine, map engine, motion-graphics grammar     | ☐    |
+| M0.9 | ADRs incl. narration spine, map engine, motion-graphics grammar     | ☑    |
 
 ## M1 — Deterministic kernel
 
