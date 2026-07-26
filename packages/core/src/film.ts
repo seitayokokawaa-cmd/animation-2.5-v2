@@ -148,9 +148,17 @@ export interface FilmBackdrop {
   readonly bottom: Color;
 }
 
+/** A scene's music bed (M9.3): mood name + linear gain. */
+export interface FilmMusic {
+  readonly mood: string;
+  readonly gain: number;
+}
+
 export interface FilmScene {
   readonly id: string;
   readonly backdrop?: FilmBackdrop;
+  /** Music bed under the scene (M9.3), ducked beneath VO (M9.4). */
+  readonly music?: FilmMusic;
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;

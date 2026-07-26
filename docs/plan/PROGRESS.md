@@ -130,7 +130,7 @@ Legend: ☐ pending · ☑ done
 | ---- | ----------------------------------------------------------- | ---- |
 | M9.1 | Audio event bus (cues + verb-default SFX + solver events)   | ☑    |
 | M9.2 | CC0 SFX library + license manifest                          | ☑    |
-| M9.3 | Music beds by mood + tension stingers + clean loop cuts     | ☐    |
+| M9.3 | Music beds by mood + tension stingers + clean loop cuts     | ☑    |
 | M9.4 | Ducking automation + VO leveling                            | ☐    |
 | M9.5 | Offline mixer → WAV determinism test; mux hash test         | ☐    |
 | M9.6 | Re-render `08-skit` fully sounded                           | ☐    |

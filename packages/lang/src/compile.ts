@@ -1218,6 +1218,9 @@ export function compileWithMarkers(
     const compiled: FilmScene = {
       id: scene.id,
       backdrop,
+      music: scene.music
+        ? { mood: scene.music.mood, gain: (scene.music.gain ?? 100) / 100 }
+        : undefined,
       startTick: filmTick,
       durationTicks,
       narration,

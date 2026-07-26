@@ -9,7 +9,12 @@
 
 import { decodeWav, encodeWavPcm16, ticksToSeconds, type Film } from '@motionforge/core';
 
+import { musicBed, MUSIC_MOODS, type MusicMood } from './music.js';
+
 export const MIX_SAMPLE_RATE = 48000;
+
+/** Music bed level relative to narration. */
+export const MUSIC_BASE_GAIN = 0.28;
 
 /** Narration gain under an active character line. */
 export const DUCK_GAIN = 0.35;
@@ -89,6 +94,21 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
   }
 
   for (let i = 0; i < mix.length; i++) mix[i]! += lineTrack[i]!;
+
+  // Music beds (M9.3) under each scene, sample-exact loop tiling.
+  for (const scene of film.scenes) {
+    const music = scene.music;
+    if (!music || !(MUSIC_MOODS as readonly string[]).includes(music.mood)) continue;
+    const offset = Math.round(ticksToSeconds(scene.startTick) * MIX_SAMPLE_RATE);
+    const length = Math.min(
+      totalSamples - offset,
+      Math.round(ticksToSeconds(scene.durationTicks) * MIX_SAMPLE_RATE),
+    );
+    if (length <= 0) continue;
+    const bed = musicBed(music.mood as MusicMood, length);
+    const gain = MUSIC_BASE_GAIN * music.gain;
+    for (let i = 0; i < length; i++) mix[offset + i]! += bed[i]! * gain;
+  }
 
   // Hard safety limiter — clipping must be impossible by construction.
   for (let i = 0; i < mix.length; i++) {

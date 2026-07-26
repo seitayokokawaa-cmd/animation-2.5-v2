@@ -712,6 +712,15 @@ const sceneSchema = z
       .object({ preset: z.enum(STAGE_PRESET_NAMES) })
       .strict()
       .optional(),
+    /** Music bed for this scene (M9.3); ducks under narration (M9.4). */
+    music: z
+      .object({
+        mood: z.enum(['jaunty', 'tense', 'somber', 'triumphant']),
+        /** Percent; 100 = the mood's native level. */
+        gain: z.number().finite().positive().max(200).optional(),
+      })
+      .strict()
+      .optional(),
     /**
      * Seconds. Optional when the scene has narration — its duration then
      * derives from the narration audio (plus pauses) at compile time.
