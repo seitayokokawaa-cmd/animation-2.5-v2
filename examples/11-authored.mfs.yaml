@@ -1,0 +1,192 @@
+motionforge: 2
+meta:
+  title: The War of the Bucket
+  resolution: 1280x720
+  fps: 30
+  seed: 1325
+  style: explainer-paper
+voices:
+  narrator: { engine: mock, voice: warm }
+  modena: { engine: mock, voice: gravel, pitch: -3, rate: 0.94 }
+  bologna: { engine: mock, voice: bright, pitch: 6, rate: 1.08 }
+cast:
+  modena:
+    template: potato-biped
+    size: 0.95
+    palette: { outfit: '#7a3520', 'outfit-dark': '#57250f' }
+    costume: [spiked-helmet, military-uniform]
+    mustache: chevron
+    expression: deadpan
+  bologna:
+    template: potato-biped
+    size: 0.9
+    palette: { outfit: '#274f7d', 'outfit-dark': '#1a3757' }
+    costume: [beret, suit]
+    mustache: handlebar
+    expression: angry
+maps:
+  europe:
+    source: naturalearth/world-50m
+    view: { lon: [-5, 25], lat: [35, 52] }
+    groups:
+      quarrel: [italy]
+scenes:
+  - id: hook
+    music: { mood: jaunty, gain: 85 }
+    transition: { kind: iris, duration: 0.9 }
+    place:
+      - { ref: europe, as: europe, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          In 1325, two Italian cities went to war over a bucket. This is
+          not a metaphor. It was a real bucket.
+        sync:
+          - {
+              on: 'In 1325',
+              do: { card: { style: date, text: '1325', duration: 1.6, at: [-4.6, 2.6] } },
+            }
+          - { on: 'In 1325', do: { sfx: slam } }
+          - { on: 'two Italian cities', do: { zoom-to: { region: italy, duration: 1.4 } } }
+          - {
+              on: 'two Italian cities',
+              offset: 0.4,
+              do: { map: { recolor: { italy: '#c8a35a' }, duration: 0.6 } },
+            }
+          - { on: 'went to war', do: { label: { of: { italy: 'Italy, 1325' } } } }
+          - { on: 'went to war', do: { sfx: pop } }
+          - {
+              on: 'a real bucket',
+              do:
+                {
+                  card:
+                    {
+                      style: title,
+                      text: 'THE WAR OF THE BUCKET',
+                      subtext: 'an actual war that happened',
+                      at: [0, 1.4],
+                      duration: 2.4,
+                    },
+                },
+            }
+          - { on: 'a real bucket', do: { sfx: drumroll } }
+  - id: quarrel
+    stage: { preset: palace-hall }
+    music: { mood: tense }
+    transition: { kind: wipe, duration: 0.6 }
+    place:
+      - { ref: modena, as: modena, at: [-2.4, -2.6] }
+      - { ref: bologna, as: bologna, at: [2.4, -2.6], facing: left }
+    narration:
+      - voice: narrator
+        text: >
+          Soldiers from Modena had strolled into Bologna and stolen the
+          city well bucket. Bologna demanded it back, very politely, in
+          writing.
+        sync:
+          - { on: 'Soldiers from Modena', do: { shot: { kind: medium, of: modena, cut: true } } }
+          - {
+              on: 'Soldiers from Modena',
+              do:
+                {
+                  card:
+                    {
+                      style: lower-third,
+                      text: 'Modena',
+                      subtext: 'has the bucket',
+                      duration: 2.4,
+                    },
+                },
+            }
+          - { on: 'strolled into Bologna', do: { gesture: { target: modena, kind: shrug } } }
+          - {
+              on: 'stolen the city well bucket',
+              do: { shot: { kind: two-shot, of: [modena, bologna], duration: 0.5 } },
+            }
+          - {
+              on: 'well bucket',
+              do: { react: { target: bologna, kind: eye-bulge, duration: 1.6 } },
+            }
+          - {
+              on: 'well bucket',
+              offset: 0.2,
+              do: { camera: { zoom-punch: bologna, punch: 1.55, duration: 0.8 } },
+            }
+          - { on: 'demanded it back', do: { gesture: { target: bologna, kind: point } } }
+          - { on: 'in writing', do: { sfx: quill } }
+          - {
+              on: 'in writing',
+              do:
+                {
+                  card:
+                    {
+                      style: list,
+                      items: ['return the bucket', 'apologize formally', 'the bucket, again'],
+                      at: [3.4, 1.8],
+                      duration: 3,
+                    },
+                },
+            }
+    lines:
+      - { after: 'in writing', speaker: bologna, say: Give it back., react: anger-steam }
+      - { after: 'well bucket', speaker: modena, say: It is our bucket now. }
+  - id: battle
+    stage: { preset: battlefield }
+    music: { mood: tense }
+    grade: dusk
+    transition: { kind: crossfade, duration: 0.7 }
+    place:
+      - { ref: modena, as: modena, at: [-3, -2.6] }
+      - { ref: bologna, as: bologna, at: [3, -2.6], facing: left }
+    narration:
+      - voice: narrator
+        text: >
+          Bologna marched thirty thousand men to retrieve it. Modena
+          showed up with seven thousand and somehow won the whole thing.
+          The bucket stayed in Modena. It is still there.
+        sync:
+          - { on: 'thirty thousand men', do: { enter: { target: bologna, from: right } } }
+          - {
+              on: 'thirty thousand men',
+              do: { card: { style: label, text: '30,000 MEN', at: [3.4, 2.2], duration: 1.8 } },
+            }
+          - { on: 'seven thousand', do: { enter: { target: modena, from: left } } }
+          - {
+              on: 'seven thousand',
+              do: { card: { style: label, text: '7,000 MEN', at: [-3.6, 2.2], duration: 1.6 } },
+            }
+          - { on: 'somehow won', do: { sfx: riser } }
+          - { on: 'somehow won', offset: 0.2, do: { bonk: { target: bologna } } }
+          - { on: 'somehow won', offset: 0.3, do: { camera: { shake: 0.4 } } }
+          - {
+              on: 'the whole thing',
+              do: { fling: { target: bologna, to: [8, -2.6], height: 2.4, spins: 3, duration: 1 } },
+            }
+          - {
+              on: 'the whole thing',
+              offset: 0.1,
+              do: { camera: { track: bologna, duration: 0.9 } },
+            }
+          - { on: 'stayed in Modena', do: { camera: { cut: true, to: [0, -0.5], zoom: 1.1 } } }
+          - {
+              on: 'stayed in Modena',
+              offset: 0.2,
+              do: { gesture: { target: modena, kind: salute } },
+            }
+          - {
+              on: 'still there',
+              do:
+                {
+                  card:
+                    {
+                      style: label,
+                      text: 'CASUALTIES 2,000 — BUCKETS RECOVERED 0',
+                      at: [0, 1.8],
+                      duration: 2.4,
+                      size: 0.42,
+                    },
+                },
+            }
+          - { on: 'still there', do: { sfx: sting } }
+    lines:
+      - { after: 'still there', speaker: modena, say: Ours now., react: deadpan }

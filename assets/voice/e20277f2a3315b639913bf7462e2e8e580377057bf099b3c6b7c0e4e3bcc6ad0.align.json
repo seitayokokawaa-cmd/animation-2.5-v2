@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "It",
+      "start": 0,
+      "end": 0.34
+    },
+    {
+      "word": "is",
+      "start": 0.43,
+      "end": 0.76
+    },
+    {
+      "word": "our",
+      "start": 0.85,
+      "end": 1.19
+    },
+    {
+      "word": "bucket",
+      "start": 1.28,
+      "end": 1.62
+    },
+    {
+      "word": "now",
+      "start": 1.7,
+      "end": 2.04
+    }
+  ]
+}

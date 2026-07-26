@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "segments": {
+    "battle/0": {
+      "hash": "b4c4ec4bb9a403e5e9f5261e7ca7666f5b799893a219ef834e52d2a7f23174e4",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 11.52,
+      "text": "Bologna marched thirty thousand men to retrieve it. Modena showed up with seven thousand and somehow won the whole thing. The bucket stayed in Modena. It is still there.\n"
+    },
+    "battle/line/0": {
+      "hash": "177d12204b2e2366c546644434cca3f2be2e07e73730b8d42976c421691156e5",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.94,
+      "pitch": -3,
+      "durationSeconds": 0.7659375,
+      "text": "Ours now."
+    },
+    "hook/0": {
+      "hash": "47a3961f1a3c0f37fc5948213da6c2df9b6762e69a373b9284fa391b254d6d8e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "In 1325, two Italian cities went to war over a bucket. This is not a metaphor. It was a real bucket.\n"
+    },
+    "quarrel/0": {
+      "hash": "627a4b239265e110aa063e79b39f4c0b8a421bb665558f0f4bd46c78e59957a0",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "Soldiers from Modena had strolled into Bologna and stolen the city well bucket. Bologna demanded it back, very politely, in writing.\n"
+    },
+    "quarrel/line/0": {
+      "hash": "3d3cb4294d57010fc2e48e6d2f38a0977c9207dccc5307a50abdf767746abd09",
+      "engine": "mock",
+      "voice": "bright",
+      "rate": 1.08,
+      "pitch": 6,
+      "durationSeconds": 1.0370416666666666,
+      "text": "Give it back."
+    },
+    "quarrel/line/1": {
+      "hash": "e20277f2a3315b639913bf7462e2e8e580377057bf099b3c6b7c0e4e3bcc6ad0",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.94,
+      "pitch": -3,
+      "durationSeconds": 2.0425,
+      "text": "It is our bucket now."
+    }
+  }
+}

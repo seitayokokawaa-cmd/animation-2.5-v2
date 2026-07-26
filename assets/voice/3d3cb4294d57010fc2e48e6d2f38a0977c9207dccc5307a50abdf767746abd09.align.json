@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Give",
+      "start": 0,
+      "end": 0.29
+    },
+    {
+      "word": "it",
+      "start": 0.37,
+      "end": 0.67
+    },
+    {
+      "word": "back",
+      "start": 0.74,
+      "end": 1.04
+    }
+  ]
+}
