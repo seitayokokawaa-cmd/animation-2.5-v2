@@ -1,0 +1,13 @@
+{
+  "name": "@motionforge/maps",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GeoJSON compiler, region overlays, territory/arrow/march solvers",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@motionforge/core": "workspace:*"
+  }
+}
