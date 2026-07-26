@@ -1,5 +1,6 @@
 export const PACKAGE_NAME = '@motionforge/agent';
 
+export * from './author.js';
 export * from './beats.js';
 export * from './llm.js';
 export * from './anthropic.js';

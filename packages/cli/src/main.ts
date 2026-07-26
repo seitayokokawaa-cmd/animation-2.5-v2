@@ -3,7 +3,7 @@
  * Run via `pnpm mf <command> ...` (tsx).
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -35,6 +35,14 @@ import {
 } from '@motionforge/maps';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 
+import {
+  anthropicAdapter,
+  authorFilm,
+  MockLlmAdapter,
+  type AuthorTools,
+  type LlmAdapter,
+} from '@motionforge/agent';
+
 import { GEODATA_SOURCES, GEODATA_TOLERANCE_DEGREES } from './geodata.js';
 import { buildSpec } from './spec.js';
 import {
@@ -57,6 +65,7 @@ Usage:
   mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
   mf timing <film.mfs.yaml>
   mf spec [-o docs/SPEC.md]
+  mf author "<topic>" [-o out/film.mp4] [--research] [--mock transcript.json]
 
 Exit codes: 0 = clean (warnings allowed), 1 = error findings, 2 = usage/IO failure.
 `;
@@ -240,6 +249,8 @@ async function main(): Promise<void> {
       out: { type: 'string', short: 'o' },
       at: { type: 'string' },
       'cache-dir': { type: 'string', default: 'assets/voice' },
+      research: { type: 'boolean', default: false },
+      mock: { type: 'string' },
     },
   });
   if (command === 'spec') {
@@ -272,6 +283,81 @@ async function main(): Promise<void> {
       writeLock(lockPath, result.lock);
       process.stderr.write(
         `voice sync: ${result.synthesized.length} synthesized, ${result.reused.length} cached → ${lockPath}\n`,
+      );
+      return;
+    }
+    case 'author': {
+      // Two-pass authoring (M13.3): topic → script → direction → voice
+      // sync → check-fix loop → render. Artifacts land beside the output.
+      const topic = file;
+      const out = values.out ?? 'out/authored.mp4';
+      const mfsPath = out.replace(/\.mp4$/, '') + '.mfs.yaml';
+      const artifactsDir = out.replace(/\.mp4$/, '') + '.author';
+      mkdirSync(dirname(out), { recursive: true });
+      mkdirSync(artifactsDir, { recursive: true });
+      const adapter: LlmAdapter = values.mock
+        ? new MockLlmAdapter(JSON.parse(readFileSync(values.mock, 'utf8')) as string[])
+        : anthropicAdapter();
+      const cacheDir = values['cache-dir'];
+      const tools: AuthorTools = {
+        check(yaml) {
+          writeFileSync(mfsPath, yaml);
+          const pre = checkStructure(yaml, mfsPath);
+          const libraries = pre.doc
+            ? loadLibraries(pre.doc.use, {
+                filmDir: dirname(mfsPath),
+                builtinDir: join('assets', 'library'),
+              })
+            : undefined;
+          const result = check(yaml, mfsPath, {
+            cacheProbe: cacheProbeFor(mfsPath, cacheDir),
+            ...(libraries ? { libraries: libraries.objects } : {}),
+            verbClaims: registryClaims(),
+          });
+          return [...(libraries?.findings ?? []), ...result.findings].map((f) => ({
+            code: f.code,
+            severity: f.severity,
+            message: `${f.file}:${f.pos.line}:${f.pos.col} ${f.message}`,
+            ...(f.hint ? { hint: f.hint } : {}),
+          }));
+        },
+        async voiceSync(yaml) {
+          writeFileSync(mfsPath, yaml);
+          const pre = checkStructure(yaml, mfsPath);
+          if (!pre.doc) return; // check() reports the structural findings
+          const cache = new VoiceCache(cacheDir);
+          const result = await syncSegments(
+            segmentRequests(pre.doc),
+            cache,
+            (engine) => adapterFor(engine),
+            energyAligner,
+          );
+          writeLock(lockPathFor(mfsPath), result.lock);
+        },
+        async render(yaml) {
+          writeFileSync(mfsPath, yaml);
+          const doc = loadChecked(mfsPath, values.json, cacheDir);
+          const { film } = compileWithMarkers(
+            doc,
+            voiceDataFor(mfsPath, cacheDir),
+            mapsDataFor(doc),
+          );
+          const cache = new VoiceCache(cacheDir);
+          await renderFilm(film, out, { readVoiceWav: (hash) => cache.readWav(hash) });
+          return out;
+        },
+        save(name, content) {
+          writeFileSync(join(artifactsDir, name), content);
+        },
+      };
+      const result = await authorFilm(adapter, tools, {
+        topic,
+        spec: buildSpec(),
+        styleGuide: readFileSync(join('docs', 'style-guide.md'), 'utf8'),
+        research: values.research,
+      });
+      process.stderr.write(
+        `authored ${result.outPath} (${result.fixAttempts} fix pass(es), screenplay ${mfsPath})\n`,
       );
       return;
     }
