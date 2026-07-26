@@ -27,6 +27,7 @@ jobs:
           pnpm mf render examples/01-shapes.mfs.yaml -o out/01-shapes.mp4
           pnpm mf render examples/03-narrated.mfs.yaml -o out/03-narrated.mp4
           pnpm mf render examples/04-kinetic.mfs.yaml -o out/04-kinetic.mp4
+          pnpm mf render examples/05-props.mfs.yaml -o out/05-props.mp4
 
       - name: Upload rendered films
         uses: actions/upload-artifact@v4

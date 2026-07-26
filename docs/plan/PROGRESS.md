@@ -84,7 +84,7 @@ Legend: ☐ pending · ☑ done
 | M5.5 | Starter library 1: stage/props (12 objects)                 | ☑    |
 | M5.6 | Starter library 2: world (18 objects)                       | ☑    |
 | M5.7 | Depth/parallax model + background layers                    | ☑    |
-| M5.8 | `examples/05-props`: narrated prop showcase                 | ☐    |
+| M5.8 | `examples/05-props`: narrated prop showcase                 | ☑    |
 
 ## M6 — Characters: caricature-first
 

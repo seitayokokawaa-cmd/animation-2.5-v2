@@ -1,0 +1,112 @@
+# examples/05-props — the M5 exit film: library objects staged in depth,
+# articulated on narration cues (wheels roll, blades spin, the cannon
+# fires exactly on "fires").
+#
+#   pnpm mf voice sync examples/05-props.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/05-props.mfs.yaml -o out/05-props.mp4
+motionforge: 2
+meta:
+  title: The Prop Department
+  resolution: 640x360
+  fps: 30
+  seed: 33
+  style: explainer-paper
+
+use: [library/props.yaml, library/world.yaml]
+
+voices:
+  narrator: { engine: mock, voice: warm }
+
+shapes:
+  shell: { kind: circle, r: 0.18, fill: '#3a352c' }
+
+scenes:
+  - id: street
+    backdrop: { top: '#cfe0e8', bottom: '#e9dfc9' }
+    place:
+      - { ref: hills, as: bg-hills, at: [0, -3.4], depth: 0.95, scale: 2.2 }
+      - { ref: house, as: house, at: [-5.2, -3.2], depth: 0.75, scale: 0.9 }
+      - { ref: tree, as: tree, at: [-2.2, -3.2], depth: 0.7 }
+      - { ref: fence, as: fence, at: [3.8, -3.3], depth: 0.6 }
+      - { ref: cart, as: cart, at: [-8.5, -3.6], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          Every studio needs a prop department. Ours ships carts that roll
+          through town on real spinning wheels, past houses with actual doors.
+        sync:
+          - {
+              on: 'carts that roll',
+              do:
+                {
+                  bounce-to: { target: cart, to: [7.5, -3.6], duration: 5, hops: 1, height: 0.02 },
+                },
+            }
+          - {
+              on: 'real spinning wheels',
+              do: { roll: { target: cart.wheel, radius: 0.42, duration: 4 } },
+            }
+          - {
+              on: 'spinning',
+              do: { roll: { target: cart.wheel-front, radius: 0.42, duration: 4 } },
+            }
+          - {
+              on: 'actual doors',
+              do: { card: { style: label, text: 'door: real', at: [-5.2, -0.6], duration: 2 } },
+            }
+
+  - id: windmill-hill
+    backdrop: { top: '#cfe0e8', bottom: '#e9dfc9' }
+    place:
+      - { ref: hills, as: bg-hills, at: [0.5, -3.6], depth: 0.95, scale: 2.4 }
+      - { ref: windmill, as: mill, at: [1.8, -3.4], depth: 0.6, scale: 1.05 }
+      - { ref: pine, as: pine-a, at: [-4.6, -3.3], depth: 0.7 }
+      - { ref: pine, as: pine-b, at: [-6.2, -3.5], depth: 0.8, scale: 0.8 }
+    narration:
+      - voice: narrator
+        text: >
+          The windmill turns when the script says turn. Not before. Not after.
+          Determinism is a lifestyle.
+        sync:
+          - { on: 'says turn', do: { hinge: { target: mill.blades, to: 540, duration: 5.5 } } }
+          - {
+              on: 'a lifestyle',
+              do:
+                {
+                  card:
+                    { style: quote, text: 'same seed, same spin', at: [-3.6, 1.8], duration: 2.6 },
+                },
+            }
+
+  - id: battlefield
+    backdrop: { top: '#d8cfc0', bottom: '#e9dfc9' }
+    place:
+      - { ref: hills, as: bg-hills, at: [-0.5, -3.6], depth: 0.95, scale: 2.2 }
+      - { ref: tent, as: tent, at: [-5.4, -3.4], depth: 0.7 }
+      - { ref: flagpole, as: flag, at: [-3.6, -3.4], depth: 0.65, scale: 0.9 }
+      - { ref: cannon, as: cannon, at: [1.6, -3.4], depth: 0.4, flip: true }
+      - { ref: shell, as: shell, at: [-1.4, -2.4], depth: 0.35 }
+      - { ref: crate, as: ammo, at: [3.4, -3.4], depth: 0.45 }
+    narration:
+      - voice: narrator
+        text: >
+          And when the cannon finally fires, the barrel kicks, the shell
+          explodes, and the flag keeps waving because flags are professionals.
+        sync:
+          - {
+              on: 'finally fires',
+              do: { hinge: { target: cannon.barrel, to: -14, duration: 0.5 } },
+            }
+          - { on: 'shell explodes', do: { explode: { target: shell, radius: 1.6 } } }
+          - {
+              on: 'explodes',
+              do: { slam: { target: ammo, height: 0.6, shake: 0.25, duration: 0.4 } },
+            }
+          - {
+              on: 'keeps waving',
+              do: { oscillate: { target: flag.flag, amplitude: 9, cycles: 4, duration: 3.5 } },
+            }
+          - {
+              on: 'are professionals',
+              do: { card: { style: label, text: 'the flag', at: [-3.6, -0.4], duration: 2 } },
+            }

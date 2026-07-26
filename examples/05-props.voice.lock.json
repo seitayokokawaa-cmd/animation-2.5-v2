@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "segments": {
+    "battlefield/0": {
+      "hash": "80d60dc16e277e9c2c68f03c52152e53eb7cac7ca2de922ed8001e56986cf9cf",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "And when the cannon finally fires, the barrel kicks, the shell explodes, and the flag keeps waving because flags are professionals.\n"
+    },
+    "street/0": {
+      "hash": "6bd971f8ce2991c4f8446d93ca4d1694a93b3edfff4070751d776b5d885448b9",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.72,
+      "text": "Every studio needs a prop department. Ours ships carts that roll through town on real spinning wheels, past houses with actual doors.\n"
+    },
+    "windmill-hill/0": {
+      "hash": "3c353be0780cde152d9ed26a013518e65b2021751bff74874bc195e8688d9893",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.32,
+      "text": "The windmill turns when the script says turn. Not before. Not after. Determinism is a lifestyle.\n"
+    }
+  }
+}
