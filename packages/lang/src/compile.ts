@@ -1403,6 +1403,16 @@ export function compileWithMarkers(
       music: scene.music
         ? { mood: scene.music.mood, gain: (scene.music.gain ?? 100) / 100 }
         : undefined,
+      transition: scene.transition
+        ? {
+            kind: scene.transition.kind,
+            durationTicks: secondsToTicks(
+              scene.transition.duration ?? (scene.transition.kind === 'crossfade' ? 0.6 : 0.5),
+            ),
+            ...(scene.transition.color ? { color: parseColor(scene.transition.color) } : {}),
+          }
+        : undefined,
+      grade: scene.grade,
       startTick: filmTick,
       durationTicks,
       narration,

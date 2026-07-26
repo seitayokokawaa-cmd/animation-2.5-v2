@@ -57,6 +57,10 @@ export const FONT_CHOICES = ['noto-sans', 'noto-bengali', 'noto-arabic', 'noto-s
 /** Framing preset kinds (M10.4) — mirrors core FRAMING_MARGINS. */
 export const SHOT_CHOICES = ['wide', 'medium', 'close-up', 'two-shot', 'region'] as const;
 
+/** Scene transitions and grades (M10.5) — mirror core TRANSITION/GRADE_KINDS. */
+export const TRANSITION_CHOICES = ['fade', 'crossfade', 'wipe', 'iris'] as const;
+export const GRADE_CHOICES = ['day', 'dawn', 'dusk', 'night'] as const;
+
 const strokeSchema = z
   .object({
     color: colorSchema,
@@ -769,6 +773,21 @@ const sceneSchema = z
       })
       .strict()
       .optional(),
+    /** How this scene enters from the previous one (M10.5). The window
+     * straddles the boundary for fade/wipe/iris and opens the scene for
+     * crossfade. */
+    transition: z
+      .object({
+        kind: z.enum(TRANSITION_CHOICES),
+        /** Seconds; default 0.5 (crossfade 0.6). */
+        duration: secondsSchema.optional(),
+        /** Masking color for fade/wipe/iris; default ink. */
+        color: colorSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    /** Light time-of-day grade over the whole frame (M10.5). */
+    grade: z.enum(GRADE_CHOICES).optional(),
     /**
      * Seconds. Optional when the scene has narration — its duration then
      * derives from the narration audio (plus pauses) at compile time.

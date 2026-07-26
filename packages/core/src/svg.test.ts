@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { parseColor } from './color.js';
 import { translation, vec2 } from './math.js';
 import { flattenScene, painterSort, type SceneNode } from './scene.js';
-import { emitSvg, fmtNumber } from './svg.js';
+import { emitSvg, emitSvgLayers, fmtNumber } from './svg.js';
 
 const OPTS = { width: 320, height: 180 };
 
@@ -112,5 +112,15 @@ describe('emitSvg', () => {
     expect(svg).toContain('points="0,0 10,0 5,8.123"');
     expect(svg).toContain('<path d="M0 0L10 10Z" fill="none"/>');
     expect(svg).toContain('<rect fill="#cfdbd5" height="180" width="320"/>');
+  });
+
+  it('emitSvgLayers wraps translucent layers in a composite group (M10.5)', () => {
+    const a = items([{ id: 'a', shape: { kind: 'rect', width: 5, height: 5 } }]);
+    const b = items([{ id: 'b', shape: { kind: 'rect', width: 3, height: 3 } }]);
+    const svg = emitSvgLayers([{ items: a }, { items: b, opacity: 0.25 }], OPTS);
+    expect(svg).toContain('<g opacity="0.25">');
+    expect(svg).toContain('</g>');
+    // Opaque layers get no wrapper, and the single-layer form matches emitSvg.
+    expect(emitSvgLayers([{ items: a }], OPTS)).toBe(emitSvg(a, OPTS));
   });
 });

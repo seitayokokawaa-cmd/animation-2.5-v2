@@ -82,10 +82,24 @@ const gradientKey = (g: LinearGradient, p: number): string =>
   ]);
 
 /**
+ * One paint layer: draw items plus an optional whole-layer group opacity
+ * (composite crossfades, M10.5). Layers paint in order, later above.
+ */
+export interface SvgLayer {
+  readonly items: readonly DrawItem[];
+  /** Wraps the layer in `<g opacity>` when < 1 — a true composite fade. */
+  readonly opacity?: number;
+}
+
+/**
  * Serialize painter-sorted draw items into a complete SVG document.
  * Same items in → same bytes out, always.
  */
-export function emitSvg(items: readonly DrawItem[], options: SvgOptions): string {
+export const emitSvg = (items: readonly DrawItem[], options: SvgOptions): string =>
+  emitSvgLayers([{ items }], options);
+
+/** Multi-layer emit: each layer's items paint above every earlier layer. */
+export function emitSvgLayers(layers: readonly SvgLayer[], options: SvgOptions): string {
   const p = options.precision ?? 3;
   const f = (n: number) => fmtNumber(n, p);
 
@@ -117,7 +131,7 @@ export function emitSvg(items: readonly DrawItem[], options: SvgOptions): string
     return entry.id;
   };
 
-  const body = items.map((item) => {
+  const itemMarkup = (item: DrawItem): string => {
     const attrs: Record<string, string | undefined> = {};
     if (!isIdentity(item.worldTransform)) {
       const m = item.worldTransform;
@@ -132,6 +146,14 @@ export function emitSvg(items: readonly DrawItem[], options: SvgOptions): string
     }
     if (item.opacity < 1) attrs.opacity = fmtNumber(item.opacity, 4);
     return shapeElement(item.shape, attrs, p);
+  };
+
+  const body = layers.flatMap((layer) => {
+    const lines = layer.items.map(itemMarkup);
+    if (layer.opacity !== undefined && layer.opacity < 1) {
+      return [`<g opacity="${fmtNumber(layer.opacity, 4)}">`, ...lines, '</g>'];
+    }
+    return lines;
   });
 
   const defsMarkup = defs.size

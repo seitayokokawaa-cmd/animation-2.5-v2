@@ -154,11 +154,30 @@ export interface FilmMusic {
   readonly gain: number;
 }
 
+export const TRANSITION_KINDS = ['fade', 'crossfade', 'wipe', 'iris'] as const;
+export type TransitionKind = (typeof TRANSITION_KINDS)[number];
+
+/** How a scene enters from the previous one (M10.5). */
+export interface FilmTransition {
+  readonly kind: TransitionKind;
+  readonly durationTicks: Tick;
+  /** Masking color for fade/wipe/iris; render defaults to ink. */
+  readonly color?: Color;
+}
+
+/** Light day/night grading (M10.5): screen-wide tint overlays. */
+export const GRADE_KINDS = ['day', 'dawn', 'dusk', 'night'] as const;
+export type GradeKind = (typeof GRADE_KINDS)[number];
+
 export interface FilmScene {
   readonly id: string;
   readonly backdrop?: FilmBackdrop;
   /** Music bed under the scene (M9.3), ducked beneath VO (M9.4). */
   readonly music?: FilmMusic;
+  /** Entrance transition from the previous scene (M10.5). */
+  readonly transition?: FilmTransition;
+  /** Time-of-day grade over the finished frame (M10.5). */
+  readonly grade?: GradeKind;
   /** Film-global tick where this scene starts. */
   readonly startTick: Tick;
   readonly durationTicks: Tick;

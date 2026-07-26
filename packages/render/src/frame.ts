@@ -13,10 +13,10 @@ import {
   compose,
   dampedTrack,
   ease,
+  emitSvgLayers,
   fnv1a,
   IDENTITY,
   instantiateObject,
-  emitSvg,
   flattenScene,
   formatColor,
   painterSort,
@@ -30,10 +30,14 @@ import {
   whipZoomDip,
   WORLD_UNITS_PER_VIEW_HEIGHT,
   zoomPunchCamera,
+  type Color,
+  type DrawItem,
   type Film,
   type FilmScene,
+  type FilmTransition,
   type Pose,
   type SceneNode,
+  type SvgLayer,
   type Tick,
   type Transform,
   type Vec2,
@@ -168,10 +172,9 @@ function speechBubble(
   };
 }
 
-/** Build the complete SVG frame for a film-global tick. */
-export function buildFrameSvg(film: Film, tick: Tick): string {
-  const scene = sceneAtTick(film, tick);
-  const localTick = Math.min(tick - scene.startTick, scene.durationTicks);
+/** Painter-sorted draw items for one scene at a film-global tick. */
+function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
+  const localTick = Math.max(0, Math.min(tick - scene.startTick, scene.durationTicks));
   const preset = stylePreset(film.style);
 
   /** Combined verb pose for a target at this instant (ADR-0008). */
@@ -757,7 +760,148 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
 
   const root: SceneNode = { id: 'root', children: [overlay, world] };
 
-  return emitSvg(painterSort(flattenScene(root)), {
+  return painterSort(flattenScene(root));
+}
+
+/** Screen-tint stacks per grade (M10.5) — the "light version" of grading. */
+const GRADE_OVERLAYS: Record<string, Array<{ color: Color; opacity: number }>> = {
+  day: [],
+  dawn: [{ color: { r: 0xe9, g: 0xa0, b: 0x5c, a: 1 }, opacity: 0.13 }],
+  dusk: [
+    { color: { r: 0xd9, g: 0x7b, b: 0x3f, a: 1 }, opacity: 0.15 },
+    { color: { r: 0x2b, g: 0x1a, b: 0x3a, a: 1 }, opacity: 0.1 },
+  ],
+  night: [
+    { color: { r: 0x22, g: 0x3a, b: 0x8c, a: 1 }, opacity: 0.38 },
+    { color: { r: 0x05, g: 0x09, b: 0x14, a: 1 }, opacity: 0.08 },
+  ],
+};
+
+/** A scene's grade tints as draw items (screen-space px). */
+function gradeItems(film: Film, grade: string | undefined, idPrefix: string): DrawItem[] {
+  const tints = GRADE_OVERLAYS[grade ?? 'day'] ?? [];
+  if (tints.length === 0) return [];
+  return flattenScene({
+    id: idPrefix,
+    children: tints.map((tint, i) => ({
+      id: `${idPrefix}-${i}`,
+      opacity: tint.opacity,
+      transform: translation(film.width / 2, film.height / 2),
+      shape: { kind: 'rect', width: film.width, height: film.height },
+      fill: { color: tint.color },
+    })),
+  });
+}
+
+/** Default masking ink for fade/wipe/iris. */
+const TRANSITION_INK: Color = { r: 0x1f, g: 0x1a, b: 0x14, a: 1 };
+
+/**
+ * The cover geometry for fade/wipe/iris at whole-window progress T ∈
+ * [0,1] (fully covering at T = 0.5, the scene boundary). Screen-space px.
+ */
+function transitionCoverNodes(film: Film, transition: FilmTransition, T: number): SceneNode[] {
+  const w = film.width;
+  const h = film.height;
+  const fill = { color: transition.color ?? TRANSITION_INK };
+  if (transition.kind === 'fade') {
+    const opacity = 1 - Math.abs(1 - 2 * T);
+    if (opacity <= 0) return [];
+    return [
+      {
+        id: 'transition-fade',
+        opacity,
+        transform: translation(w / 2, h / 2),
+        shape: { kind: 'rect', width: w, height: h },
+        fill,
+      },
+    ];
+  }
+  if (transition.kind === 'wipe') {
+    // One cover sweeping left → right: offscreen, covering at the cut,
+    // offscreen again.
+    const x = (2 * T - 1) * w;
+    if (x <= -w || x >= w) return [];
+    return [
+      {
+        id: 'transition-wipe',
+        transform: translation(x + w / 2, h / 2),
+        shape: { kind: 'rect', width: w, height: h },
+        fill,
+      },
+    ];
+  }
+  // Iris: a ring covering everything outside a shrinking/growing circle.
+  const rMax = Math.hypot(w, h) / 2;
+  const r = rMax * Math.abs(1 - 2 * T);
+  if (r >= rMax) return [];
+  const cx = w / 2;
+  const cy = h / 2;
+  // Outer rect clockwise, inner circle counter-clockwise — nonzero fill
+  // leaves the ring.
+  const d =
+    `M0 0H${film.width}V${film.height}H0Z ` +
+    `M${cx + r} ${cy}A${r} ${r} 0 1 0 ${cx - r} ${cy}A${r} ${r} 0 1 0 ${cx + r} ${cy}Z`;
+  return [{ id: 'transition-iris', shape: { kind: 'path', d }, fill }];
+}
+
+/** Build the complete SVG frame for a film-global tick (M10.5 layers). */
+export function buildFrameSvg(film: Film, tick: Tick): string {
+  const scene = sceneAtTick(film, tick);
+  const sceneIndex = film.scenes.indexOf(scene);
+  const layers: SvgLayer[] = [];
+
+  // Crossfade (M10.5): the previous scene holds its final pose underneath
+  // while this scene dissolves in as one composited group.
+  const cross =
+    scene.transition?.kind === 'crossfade' &&
+    tick - scene.startTick < scene.transition.durationTicks
+      ? scene.transition
+      : undefined;
+  if (cross) {
+    const prev = film.scenes[sceneIndex - 1];
+    if (prev) {
+      // The outgoing scene keeps its own grade while it dissolves away.
+      layers.push({
+        items: [...sceneDrawItems(film, prev, tick), ...gradeItems(film, prev.grade, 'grade-prev')],
+      });
+    }
+    // This scene's grade rides inside its dissolving group.
+    const t = (tick - scene.startTick) / cross.durationTicks;
+    layers.push({
+      items: [...sceneDrawItems(film, scene, tick), ...gradeItems(film, scene.grade, 'grade')],
+      opacity: ease('cubicInOut', t),
+    });
+  } else {
+    // Grading (M10.5): tint the finished frame.
+    layers.push({ items: sceneDrawItems(film, scene, tick) });
+    const grade = gradeItems(film, scene.grade, 'grade');
+    if (grade.length > 0) layers.push({ items: grade });
+  }
+
+  // Masked transitions (fade/wipe/iris) straddle the boundary: the tail
+  // of the outgoing scene covers up, the head of this scene reveals.
+  const coverNodes: SceneNode[] = [];
+  const own = scene.transition;
+  if (own && own.kind !== 'crossfade' && tick - scene.startTick < own.durationTicks / 2) {
+    const T = 0.5 + (tick - scene.startTick) / own.durationTicks;
+    coverNodes.push(...transitionCoverNodes(film, own, T));
+  }
+  const next = film.scenes[sceneIndex + 1];
+  if (next?.transition && next.transition.kind !== 'crossfade') {
+    const d = next.transition.durationTicks;
+    const untilCut = next.startTick - tick;
+    if (untilCut <= d / 2 && untilCut > 0) {
+      const T = 0.5 - untilCut / d;
+      coverNodes.push(...transitionCoverNodes(film, next.transition, T));
+    }
+  }
+  if (coverNodes.length > 0) {
+    layers.push({ items: flattenScene({ id: 'transition', children: coverNodes }) });
+  }
+
+  const preset = stylePreset(film.style);
+  return emitSvgLayers(layers, {
     width: film.width,
     height: film.height,
     background: formatColor(film.background ?? preset.background),
