@@ -171,7 +171,7 @@ Legend: ☐ pending · ☑ done
 
 | Id    | Task                                                       | Done |
 | ----- | ---------------------------------------------------------- | ---- |
-| M13.1 | LLM adapter interface + Anthropic impl + mock adapter      | ☐    |
+| M13.1 | LLM adapter interface + Anthropic impl + mock adapter      | ☑    |
 | M13.2 | `docs/style-guide.md`: pacing rules + beat templates       | ☐    |
 | M13.3 | Two-pass `mf author` + `--research`                        | ☐    |
 | M13.4 | `mf storyboard` contact sheets + `--review`                | ☐    |
