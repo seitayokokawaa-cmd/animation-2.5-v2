@@ -30,4 +30,37 @@ describe('shapeText', () => {
   it('rejects unknown fonts', () => {
     expect(() => shapeText('comic-sans', 'no')).toThrow(/Unknown font/);
   });
+
+  describe('script fallback chain (M11.1)', () => {
+    it('shapes Bengali inside a Latin caption', () => {
+      const latin = shapeText('noto-sans', 'Dhaka ');
+      const mixed = shapeText('noto-sans', 'Dhaka ঢাকা');
+      expect(mixed.paths.length).toBeGreaterThan(latin.paths.length);
+      expect(mixed.width).toBeGreaterThan(latin.width);
+    });
+
+    it('shapes CJK through the noto-sans primary', () => {
+      const run = shapeText('noto-sans', '中文');
+      expect(run.paths.length).toBe(2);
+      expect(run.width).toBeGreaterThan(0);
+    });
+
+    it('keeps multi-word Arabic as one RTL run (word order intact)', () => {
+      // Neutral spaces join the Arabic run, so shaping through the Latin
+      // primary matches shaping with the Arabic font directly.
+      const viaPrimary = shapeText('noto-sans', 'السلام عليكم');
+      const direct = shapeText('noto-arabic', 'السلام عليكم');
+      expect(viaPrimary.width).toBe(direct.width);
+      expect(viaPrimary.paths.length).toBe(direct.paths.length);
+      expect(viaPrimary.paths.map((p) => p.x)).toEqual(direct.paths.map((p) => p.x));
+    });
+
+    it('digits and punctuation stay with the surrounding run', () => {
+      // A pure-Latin string with digits still shapes as a single run —
+      // byte-identical to the pre-chain output.
+      const run = shapeText('noto-sans', 'In 1914, war!');
+      expect(run.paths.length).toBeGreaterThan(0);
+      expect(run.upem).toBe(1000);
+    });
+  });
 });

@@ -22,5 +22,10 @@ obtained as the 400Regular weights of the npm packages
 binaries themselves are OFL-1.1, copyright the Noto Project Authors),
 fetched 2026-07-26.
 
-Additional weights/scripts are added in task M10.1: drop in one OFL font +
-one golden test.
+## Fallback chain (M11.1)
+
+`shapeText` segments every string into script runs (Bengali, Arabic, CJK,
+default) and shapes each run with the covering font above — mixed-script
+captions and subtitles need no author-side font switching. All four fonts
+share upem 1000; a new font must match (the shaper enforces it). To add a
+script: drop in one OFL font, extend the chain table, add one golden test.
