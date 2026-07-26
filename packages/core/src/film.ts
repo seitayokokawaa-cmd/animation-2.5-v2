@@ -33,6 +33,8 @@ export interface FilmCharacter {
   readonly mustache?: string;
   /** Held-item name for the near hand (M6.6). */
   readonly held?: string;
+  /** Instance id of the mount whose seat this character rides (M6.8). */
+  readonly mount?: string;
 }
 
 export interface FilmInstance {

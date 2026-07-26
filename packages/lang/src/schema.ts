@@ -107,6 +107,8 @@ const placeSchema = z
     flip: z.boolean().optional(),
     /** Which way a cast member looks (cast only); default right. */
     facing: z.enum(['left', 'right']).optional(),
+    /** Ride another placed cast member with a seat (horse/dog, M6.8). */
+    on: nameSchema.optional(),
     /** Multiply-tint every fill (objects only). */
     tint: colorSchema.optional(),
     /** Color param overrides (objects only). */
@@ -169,7 +171,7 @@ export const REACTION_CHOICES = [
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
-    template: z.literal('potato-biped'),
+    template: z.enum(['potato-biped', 'horse', 'dog']),
     size: z.number().finite().positive().optional(),
     palette: castPaletteSchema.optional(),
     /** Resting face (M6.5); reactions override it per beat (M6.7). */

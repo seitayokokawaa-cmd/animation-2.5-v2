@@ -29,6 +29,7 @@ import {
   type Color,
   type SceneNode,
   type Transform,
+  type Vec2,
 } from '@motionforge/core';
 
 import { fk, type RigPose, type Skeleton } from './rig.js';
@@ -72,6 +73,12 @@ export interface CharacterTemplate {
   readonly headRadius: number;
   readonly size: number;
   readonly palette: PotatoPalette;
+  /** False for templates that draw their own face (quadrupeds, M6.8). */
+  readonly hasFace?: boolean;
+  /** Rider attach point in a bone's local frame (quadrupeds, M6.8). */
+  readonly seat?: { readonly bone: string; readonly at: Vec2 };
+  /** Template-specific idle; the potato breathing bob is the default. */
+  readonly idle?: (tick: number, seedOffset: number) => RigPose;
 }
 
 export function potatoBiped(options: PotatoOptions = {}): CharacterTemplate {
@@ -288,13 +295,6 @@ export function potatoBiped(options: PotatoOptions = {}): CharacterTemplate {
   };
 }
 
-/** Character template registry — the render tier looks templates up by name. */
-export const CHARACTER_TEMPLATES: Readonly<
-  Record<string, (options: CharacterOptions) => CharacterTemplate>
-> = {
-  'potato-biped': potatoBiped,
-};
-
 const shade = (c: Color, factor = 0.82): Color =>
   parseColor(
     `#${[c.r, c.g, c.b]
@@ -316,6 +316,18 @@ const lighten = (c: Color): Color =>
       )
       .join('')}`,
   );
+
+/** Riding pose: legs forward over the mount's flanks, arms reaching the
+ * reins — combined with a quadruped seat anchor (M6.8). */
+export const SEAT_POSE: RigPose = {
+  'leg-r': 0.95,
+  'leg-l': 0.7,
+  'arm-r-upper': 0.9,
+  'arm-r-lower': 0.35,
+  // The far arm swings the long way round so both hands reach the reins.
+  'arm-l-upper': 1.65,
+  'arm-l-lower': -0.35,
+};
 
 /** Subtle deterministic idle: breathing bob + tiny arm sway. */
 export function idlePose(tick: number, seedOffset = 0): RigPose {

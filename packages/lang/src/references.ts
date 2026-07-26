@@ -70,7 +70,18 @@ export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: stri
     sceneIds.add(scene.id);
 
     const placed = new Set<string>();
+    const allPlaced = new Set(scene.place.map((p) => p.as));
     scene.place.forEach((place, pi) => {
+      if (place.on !== undefined && !allPlaced.has(place.on)) {
+        findings.push({
+          code: 'MF2002',
+          severity: 'error',
+          file,
+          pos: loaded.locate(['scenes', si, 'place', pi, 'on']),
+          message: `Scene "${scene.id}" mounts "${place.as}" on "${place.on}", which is not placed in this scene`,
+          hint: `Place the mount first or fix the name.${suggest(place.on, allPlaced)}`,
+        });
+      }
       if (!shapeNames.includes(place.ref)) {
         findings.push({
           code: 'MF2001',

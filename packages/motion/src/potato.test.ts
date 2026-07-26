@@ -1,13 +1,8 @@
 import { apply, parseColor, vec2, type SceneNode } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
-import {
-  CHARACTER_TEMPLATES,
-  characterNodes,
-  DEFAULT_POTATO_PALETTE,
-  idlePose,
-  potatoBiped,
-} from './potato.js';
+import { CHARACTER_TEMPLATES } from './characters.js';
+import { characterNodes, DEFAULT_POTATO_PALETTE, idlePose, potatoBiped } from './potato.js';
 import { validateSkeleton } from './rig.js';
 
 const origin = vec2(0, 0);

@@ -275,6 +275,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
             costume: castDef.costume ?? [],
             mustache: castDef.mustache,
             held: castDef.held,
+            mount: p.on,
           },
           depth: p.depth ?? 0.5,
           layer: (p.layer ?? 0) * 1000,

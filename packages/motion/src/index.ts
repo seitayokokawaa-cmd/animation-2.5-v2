@@ -8,3 +8,5 @@ export * from './potato.js';
 export * from './face.js';
 export * from './costume.js';
 export * from './reactions.js';
+export * from './quadruped.js';
+export * from './characters.js';

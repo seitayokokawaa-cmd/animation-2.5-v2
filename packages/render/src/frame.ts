@@ -28,9 +28,11 @@ import {
   type Pose,
   type SceneNode,
   type Tick,
+  type Transform,
   type Vec2,
 } from '@motionforge/core';
 import {
+  addPoses,
   applyCostume,
   blinkOpenness,
   CHARACTER_TEMPLATES,
@@ -38,11 +40,13 @@ import {
   emitEffectNodes,
   FACE_EXPRESSIONS,
   faceNodes,
+  fk,
   HEAD_ANCHOR_Z,
   idlePose,
   REACTION_KINDS,
   reactionFace,
   sampleEffect,
+  SEAT_POSE,
 } from '@motionforge/motion';
 
 import { buildCardNodes } from './cards.js';
@@ -149,6 +153,34 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
       ]
     : [];
 
+  /** World transform of a mount's saddle at this tick (M6.8). */
+  const seatTransformFor = (mountId: string): Transform | undefined => {
+    const mount = scene.instances.find((i) => i.id === mountId);
+    const c = mount?.character;
+    if (!mount || !c) return undefined;
+    const template = CHARACTER_TEMPLATES[c.template]?.({ size: c.size, palette: c.palette });
+    if (!template?.seat) return undefined;
+    const pos = sample<Vec2>(scene.timeline, `${mountId}/pos`, localTick);
+    const rot = sample<number>(scene.timeline, `${mountId}/rot`, localTick);
+    const scale = sample<number>(scene.timeline, `${mountId}/scale`, localTick);
+    const pose = poseFor(mountId);
+    const shift = pose.translate ?? vec2(0, 0);
+    const poseScale = pose.scale ?? vec2(1, 1);
+    const root = compose(
+      trs(
+        vec2(pos.x + shift.x, pos.y + shift.y),
+        rot + (pose.rotate ?? 0),
+        vec2(scale * poseScale.x, scale * poseScale.y),
+      ),
+      scaling(c.facing === 'left' ? -1 : 1, 1),
+    );
+    const idleFn = template.idle ?? idlePose;
+    const bones = fk(template.skeleton, idleFn(localTick, fnv1a(mountId) % 240), root);
+    const bone = bones.get(template.seat.bone);
+    if (!bone) return undefined;
+    return compose(bone.transform, translation(template.seat.at.x, template.seat.at.y));
+  };
+
   const world: SceneNode = {
     id: 'world',
     transform: worldTransform,
@@ -212,23 +244,34 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             look = over.look ?? look;
             mouthOpen = over.mouthOpen;
           }
-          const face = faceNodes(
-            {
-              expression,
-              eyesOpen: blinkOpenness(scene.startTick + localTick, film.seed, inst.id),
-              look,
-              mouthOpen,
-            },
-            {
-              idPrefix: `${inst.id}/face`,
-              layerBase: inst.layer + HEAD_ANCHOR_Z,
-              headRadius: template.headRadius,
-              ink: template.palette.outline,
-              lid: template.palette.skin,
-            },
-          );
+          // Quadrupeds draw their own face; bipeds get the face module.
+          const face =
+            template.hasFace === false
+              ? undefined
+              : faceNodes(
+                  {
+                    expression,
+                    eyesOpen: blinkOpenness(scene.startTick + localTick, film.seed, inst.id),
+                    look,
+                    mouthOpen,
+                  },
+                  {
+                    idPrefix: `${inst.id}/face`,
+                    layerBase: inst.layer + HEAD_ANCHOR_Z,
+                    headRadius: template.headRadius,
+                    ink: template.palette.outline,
+                    lid: template.palette.skin,
+                  },
+                );
+          const idleFn = template.idle ?? idlePose;
+          // A mounted rider sits in the mount's seat and rides its idle.
+          const seat = inst.character.mount ? seatTransformFor(inst.character.mount) : undefined;
+          const pose = seat
+            ? addPoses(SEAT_POSE, idlePose(localTick, fnv1a(inst.id) % 240))
+            : idleFn(localTick, fnv1a(inst.id) % 240);
           return {
             ...base,
+            ...(seat ? { transform: withParallax(inst.depth, seat) } : {}),
             children: [
               characterNodes(template, {
                 idPrefix: inst.id,
@@ -236,8 +279,8 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                 at: vec2(0, 0),
                 facing: inst.character.facing,
                 // Per-character phase offset so a cast never breathes in sync.
-                pose: idlePose(localTick, fnv1a(inst.id) % 240),
-                headNodes: [face, ...dressed.headNodes],
+                pose,
+                headNodes: face ? [face, ...dressed.headNodes] : [...dressed.headNodes],
                 handNodes: dressed.handNodes,
               }),
             ],
