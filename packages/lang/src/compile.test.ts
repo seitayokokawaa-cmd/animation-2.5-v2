@@ -146,6 +146,35 @@ describe('cast compilation (M6.4)', () => {
     expect(f1!.object).toBeUndefined();
   });
 
+  it('places maps as object instances via MapsData (M7.2)', () => {
+    const withMap = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30 },
+      maps: {
+        europe: {
+          source: 'naturalearth/europe-110m',
+          groups: { entente: ['france'] },
+        },
+      },
+      scenes: [{ id: 'a', duration: 1, place: [{ ref: 'europe', as: 'map', at: [0, 0] }] }],
+    });
+    const spec = {
+      params: {},
+      parts: [{ id: 'france', z: 1, shape: { kind: 'polygon' as const, points: [] } }],
+    };
+    const film = compile(withMap, undefined, {
+      map: (name) =>
+        name === 'europe'
+          ? { objectSpec: spec, regions: [], groups: { entente: ['france'] } }
+          : undefined,
+    });
+    const [inst] = film.scenes[0]!.instances;
+    expect(inst!.object!.spec).toBe(spec);
+    expect(inst!.object!.options.idPrefix).toBe('map');
+    // Without MapsData the compile fails loudly.
+    expect(() => compile(withMap)).toThrow(/map data/);
+  });
+
   it('react compiles a face effect plus companion particles (M6.7)', () => {
     const withReact = mfsSchema.parse({
       motionforge: 2,

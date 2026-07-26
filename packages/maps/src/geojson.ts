@@ -37,13 +37,23 @@ export interface GeoView {
 
 export const EUROPE_VIEW: GeoView = { lonMin: -12, lonMax: 42, latMin: 34, latMax: 62 };
 
+/** The whole inhabited world (Antarctica cropped — it's dead air). */
+export const WORLD_VIEW: GeoView = { lonMin: -180, lonMax: 180, latMin: -58, latMax: 84 };
+
 export interface CompileMapOptions {
   readonly view?: GeoView;
   /** Map width in world units (height follows the view's aspect). */
   readonly widthUnits?: number;
-  /** Douglas–Peucker tolerance in world units. */
+  /**
+   * Douglas–Peucker tolerance in world units. The default is constant in
+   * *degrees* (≈0.17°), so countries keep their recognizable real shapes
+   * whether the view frames a region or the whole world.
+   */
   readonly simplifyTolerance?: number;
 }
+
+/** Default simplification, degrees of longitude. */
+const TOLERANCE_DEGREES = 0.17;
 
 export interface MapRegion {
   readonly id: string;
@@ -133,7 +143,7 @@ export function compileMap(geo: GeoCollection, options: CompileMapOptions = {}):
   const lonSpan = view.lonMax - view.lonMin;
   const latSpan = view.latMax - view.latMin;
   const height = (latSpan / lonSpan) * width;
-  const tolerance = options.simplifyTolerance ?? 0.05;
+  const tolerance = options.simplifyTolerance ?? (TOLERANCE_DEGREES / lonSpan) * width;
 
   const project = (lon: number, lat: number): Vec2 =>
     vec2(
@@ -141,12 +151,12 @@ export function compileMap(geo: GeoCollection, options: CompileMapOptions = {}):
       ((lat - view.latMin) / latSpan - 0.5) * height,
     );
 
-  // Rings that never touch the viewport (overseas territories, far-east
-  // extents) are dropped — they'd paint distracting blobs off the theater.
-  const marginX = width * 0.3;
-  const marginY = height * 0.3;
+  // Rings with no point inside the viewport (overseas territories, polar
+  // land below the frame) are dropped — they'd paint distracting blobs off
+  // the theater. Rings crossing the edge keep their inside points, so
+  // partial coasts survive.
   const touchesView = (ring: readonly Vec2[]): boolean =>
-    ring.some((p) => Math.abs(p.x) <= width / 2 + marginX && Math.abs(p.y) <= height / 2 + marginY);
+    ring.some((p) => Math.abs(p.x) <= width / 2 && Math.abs(p.y) <= height / 2);
 
   const regions: MapRegion[] = geo.features.map((feature) => {
     const polys =

@@ -11,6 +11,7 @@
     "@motionforge/agent": "workspace:*",
     "@motionforge/core": "workspace:*",
     "@motionforge/lang": "workspace:*",
+    "@motionforge/maps": "workspace:*",
     "@motionforge/motion": "workspace:*",
     "@motionforge/render": "workspace:*",
     "@motionforge/voice": "workspace:*"

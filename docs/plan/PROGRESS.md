@@ -105,7 +105,7 @@ Legend: ☐ pending · ☑ done
 | Id   | Task                                                        | Done |
 | ---- | ----------------------------------------------------------- | ---- |
 | M7.1 | Vendor Natural Earth + GeoJSON→stylized part-tree compiler  | ☑    |
-| M7.2 | Custom/historical region overlays + `groups:`               | ☐    |
+| M7.2 | Custom/historical region overlays + `groups:`               | ☑    |
 | M7.3 | highlight / recolor sweeps / territory-change morphs        | ☐    |
 | M7.4 | Curved growing arrows + multi-arrow offensives              | ☐    |
 | M7.5 | Unit icons marching; battle-burst; plant-flag               | ☐    |

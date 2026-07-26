@@ -18,9 +18,19 @@ import {
   printPretty,
   timingTable,
   type MfsDocument,
+  type MapsData,
   type NarrationCacheProbe,
   type VoiceData,
 } from '@motionforge/lang';
+import {
+  applyCustomRegions,
+  compileMap,
+  EUROPE_VIEW,
+  mapObjectSpec,
+  validateGroups,
+  WORLD_VIEW,
+  type GeoCollection,
+} from '@motionforge/maps';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 import {
   adapterFor,
@@ -95,6 +105,57 @@ function voiceDataFor(file: string, cacheDir: string): VoiceData {
 function fail(message: string): never {
   process.stderr.write(`${message}\n`);
   process.exit(1);
+}
+
+/** Vendored basemap sources (assets/geodata/, public domain). */
+const GEODATA_SOURCES: Record<string, string> = {
+  'naturalearth/world-110m': 'ne_110m_world.json',
+  'naturalearth/europe-110m': 'ne_110m_europe.json',
+};
+
+/** Compile every `maps:` entry once from vendored geodata (M7.2). */
+function mapsDataFor(doc: MfsDocument): MapsData {
+  const compiled = new Map<string, ReturnType<MapsData['map']>>();
+  for (const [name, def] of Object.entries(doc.maps)) {
+    const sourceFile = GEODATA_SOURCES[def.source];
+    if (!sourceFile) fail(`Map "${name}": unknown source "${def.source}"`);
+    const geo = JSON.parse(
+      readFileSync(join('assets', 'geodata', sourceFile), 'utf8'),
+    ) as GeoCollection;
+    // No explicit view → frame the whole source (world map shows the world).
+    const defaultView = def.source === 'naturalearth/world-110m' ? WORLD_VIEW : EUROPE_VIEW;
+    let spec = compileMap(geo, {
+      view: def.view
+        ? {
+            lonMin: def.view.lon[0],
+            lonMax: def.view.lon[1],
+            latMin: def.view.lat[0],
+            latMax: def.view.lat[1],
+          }
+        : defaultView,
+      ...(def.width !== undefined ? { widthUnits: def.width } : {}),
+    });
+    spec = applyCustomRegions(
+      spec,
+      Object.fromEntries(
+        Object.entries(def.regions).map(([id, r]) => [
+          id,
+          { points: r.points, replace: r.replace },
+        ]),
+      ),
+    );
+    try {
+      validateGroups(spec, def.groups);
+    } catch (error) {
+      fail(`Map "${name}": ${(error as Error).message}`);
+    }
+    compiled.set(name, {
+      objectSpec: mapObjectSpec(spec, def.style ?? 'paper'),
+      regions: spec.regions.map(({ id, centroid, bbox }) => ({ id, centroid, bbox })),
+      groups: def.groups,
+    });
+  }
+  return { map: (name) => compiled.get(name) };
 }
 
 /** Validate; print findings; exit(1) on errors. Returns the typed doc. */
@@ -175,7 +236,11 @@ async function main(): Promise<void> {
     }
     case 'render': {
       const doc = loadChecked(file, values.json, values['cache-dir']);
-      const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
+      const { film } = compileWithMarkers(
+        doc,
+        voiceDataFor(file, values['cache-dir']),
+        mapsDataFor(doc),
+      );
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.mp4';
       const started = performance.now();
       const cache = new VoiceCache(values['cache-dir']);
@@ -198,7 +263,11 @@ async function main(): Promise<void> {
       if (values.at === undefined) fail('frame: --at <seconds> is required');
       const seconds = Number(values.at);
       if (!Number.isFinite(seconds) || seconds < 0) fail(`frame: invalid --at ${values.at}`);
-      const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
+      const { film } = compileWithMarkers(
+        doc,
+        voiceDataFor(file, values['cache-dir']),
+        mapsDataFor(doc),
+      );
       const svg = buildFrameSvg(film, secondsToTicks(seconds));
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + `-t${values.at}.png`;
       if (out.endsWith('.svg')) {
@@ -211,7 +280,11 @@ async function main(): Promise<void> {
     }
     case 'timing': {
       const doc = loadChecked(file, values.json, values['cache-dir']);
-      const { markers } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
+      const { markers } = compileWithMarkers(
+        doc,
+        voiceDataFor(file, values['cache-dir']),
+        mapsDataFor(doc),
+      );
       process.stdout.write(timingTable(markers) + '\n');
       return;
     }

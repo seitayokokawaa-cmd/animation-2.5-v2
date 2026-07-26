@@ -168,6 +168,38 @@ export const REACTION_CHOICES = [
   'deadpan',
 ] as const;
 
+/** Maps (M7.2): a vendored basemap + custom regions + alliance groups. */
+const lonLatSchema = z.tuple([z.number().finite(), z.number().finite()]);
+
+const mapRegionDefSchema = z
+  .object({
+    /** Hand-drawn lon/lat ring (blobby on purpose). */
+    points: z.array(lonLatSchema).min(3),
+    /** Base region ids this historical region replaces. */
+    replace: z.array(nameSchema).optional(),
+  })
+  .strict();
+
+const mapDefSchema = z
+  .object({
+    /** Vendored basemap: full world or the denser Europe subset. */
+    source: z.enum(['naturalearth/world-110m', 'naturalearth/europe-110m']),
+    style: z.enum(['paper', 'clean']).optional(),
+    /** Map width in world units; default 16. */
+    width: z.number().finite().positive().optional(),
+    /** Lon/lat window: { lon: [min, max], lat: [min, max] }. */
+    view: z
+      .object({
+        lon: z.tuple([z.number().finite(), z.number().finite()]),
+        lat: z.tuple([z.number().finite(), z.number().finite()]),
+      })
+      .strict()
+      .optional(),
+    groups: z.record(nameSchema, z.array(nameSchema).min(1)).default({}),
+    regions: z.record(nameSchema, mapRegionDefSchema).default({}),
+  })
+  .strict();
+
 /** A cast member (M6.4): a named character built from a rig template. */
 const castMemberSchema = z
   .object({
@@ -486,6 +518,7 @@ export const mfsSchema = z
     shapes: z.record(nameSchema, shapeDefSchema).default({}),
     objects: z.record(nameSchema, objectDefSchema).default({}),
     cast: z.record(nameSchema, castMemberSchema).default({}),
+    maps: z.record(nameSchema, mapDefSchema).default({}),
     /** Library files (project-relative or built-in `library/…`) — M5.4. */
     use: z.array(z.string().min(1)).default([]),
     scenes: z.array(sceneSchema).min(1),
@@ -495,6 +528,7 @@ export const mfsSchema = z
 export type MfsDocument = z.infer<typeof mfsSchema>;
 export type MfsShapeDef = z.infer<typeof shapeDefSchema>;
 export type MfsCastMember = z.infer<typeof castMemberSchema>;
+export type MfsMapDef = z.infer<typeof mapDefSchema>;
 export type MfsScene = z.infer<typeof sceneSchema>;
 export type MfsPlace = z.infer<typeof placeSchema>;
 export type MfsAction = z.infer<typeof actionSchema>;

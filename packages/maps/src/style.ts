@@ -51,7 +51,9 @@ const MAP_STYLES: Record<MapStyleName, MapStyle> = {
  */
 export function mapObjectSpec(spec: MapSpec, styleName: MapStyleName = 'paper'): ObjectSpec {
   const style = MAP_STYLES[styleName];
-  const parts: PartSpec[] = spec.regions.map((region, index): PartSpec => {
+  // Regions that fell entirely outside the view have no geometry to draw.
+  const drawable = spec.regions.filter((region) => region.rings.length > 0);
+  const parts: PartSpec[] = drawable.map((region, index): PartSpec => {
     const tint = style.landTints[(hashNoise(0, 'map/tint', index) * style.landTints.length) | 0]!;
     const rings = region.rings.map((ring, ri): PartSpec => ({
       id: ri === 0 ? `${region.id}-main` : `${region.id}-${ri}`,

@@ -53,6 +53,7 @@ export function checkReferences(doc: MfsDocument, loaded: LoadedYaml, file: stri
     ...Object.keys(doc.shapes),
     ...Object.keys(doc.objects),
     ...Object.keys(doc.cast),
+    ...Object.keys(doc.maps),
   ];
   const sceneIds = new Set<string>();
 

@@ -5,3 +5,4 @@ pnpm-lock.yaml
 # docs are either verbatim documents of record (PLAN.md) or generated (SPEC.md) —
 # prettier must not reflow them
 docs/
+assets/geodata/*.json

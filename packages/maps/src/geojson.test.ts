@@ -5,7 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { instantiateObject, vec2 } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
-import { compileMap, EUROPE_VIEW, regionOf, simplifyRing, type GeoCollection } from './geojson.js';
+import {
+  compileMap,
+  EUROPE_VIEW,
+  regionOf,
+  simplifyRing,
+  WORLD_VIEW,
+  type GeoCollection,
+} from './geojson.js';
 import { mapObjectSpec } from './style.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -20,7 +27,10 @@ describe('geojson compiler (M7.1)', () => {
     expect(map.regions.length).toBeGreaterThanOrEqual(35);
     for (const region of map.regions) {
       expect(region.id).toMatch(/^[a-z][a-z0-9-]*$/);
-      expect(region.rings.length).toBeGreaterThan(0);
+    }
+    // Theater countries keep geometry (off-frame ones may drop all rings).
+    for (const id of ['france', 'germany', 'italy', 'serbia', 'united-kingdom']) {
+      expect(regionOf(map, id).rings.length).toBeGreaterThan(0);
     }
     expect(regionOf(map, 'france').name).toBe('France');
     expect(() => regionOf(map, 'atlantis')).toThrow(/available:/);
@@ -61,7 +71,6 @@ describe('geojson compiler (M7.1)', () => {
     );
     expect(simplified).toBeLessThan(rawPoints * 0.8);
     for (const region of map.regions) {
-      expect(region.rings.length).toBeGreaterThan(0);
       for (const ring of region.rings) expect(ring.length).toBeGreaterThanOrEqual(4);
     }
   });
@@ -80,7 +89,7 @@ describe('geojson compiler (M7.1)', () => {
 
   it('styles into an object part-tree addressable by region id', () => {
     const spec = mapObjectSpec(map, 'paper');
-    expect(spec.parts.length).toBe(map.regions.length);
+    expect(spec.parts.length).toBe(map.regions.filter((r) => r.rings.length > 0).length);
     const france = spec.parts.find((p) => p.id === 'france')!;
     expect(france.children!.length).toBeGreaterThan(0);
     expect(france.children![0]!.shape!.kind).toBe('polygon');
@@ -91,6 +100,29 @@ describe('geojson compiler (M7.1)', () => {
     expect(flat).toContain('map/france');
     // Deterministic tints.
     expect(mapObjectSpec(map, 'paper')).toEqual(spec);
+  });
+
+  it('compiles the full world basemap with recognizable countries', () => {
+    const world: GeoCollection = JSON.parse(
+      readFileSync(join(here, '../../../assets/geodata/ne_110m_world.json'), 'utf8'),
+    ) as GeoCollection;
+    const map = compileMap(world, { view: WORLD_VIEW, widthUnits: 17 });
+    expect(map.regions.length).toBeGreaterThanOrEqual(170);
+    for (const id of ['united-states', 'china', 'brazil', 'india', 'australia', 'japan', 'egypt']) {
+      expect(regionOf(map, id).rings.length).toBeGreaterThan(0);
+    }
+    // Real geography: the US sits left of China, Australia below Egypt.
+    expect(regionOf(map, 'united-states').centroid.x).toBeLessThan(
+      regionOf(map, 'china').centroid.x,
+    );
+    expect(regionOf(map, 'australia').centroid.y).toBeLessThan(regionOf(map, 'egypt').centroid.y);
+    // Recognizable shapes: the degree-constant tolerance keeps detail even
+    // at world scale (a coast as intricate as Norway's keeps its points).
+    expect(regionOf(map, 'norway').rings[0]!.length).toBeGreaterThanOrEqual(15);
+    // Antarctica sits below the world frame and is dropped as dead air.
+    expect(regionOf(map, 'antarctica').rings.length).toBe(0);
+    // Same ids as the europe subset — screenplays can switch sources.
+    expect(regionOf(map, 'france').id).toBe(regionOf(compileMap(europe), 'france').id);
   });
 
   it('respects a custom view window', () => {

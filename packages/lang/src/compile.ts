@@ -72,6 +72,27 @@ export interface VoiceData {
   readonly segment: (key: string) => NarrationSegmentData | undefined;
 }
 
+// ---- map data (structural, supplied by the CLI from @motionforge/maps) -----
+
+export interface MapRegionData {
+  readonly id: string;
+  /** World units, map-local. */
+  readonly centroid: Vec2;
+  readonly bbox: { readonly min: Vec2; readonly max: Vec2 };
+}
+
+/** A compiled, styled map ready to place as an object instance (M7.2). */
+export interface MapData {
+  readonly objectSpec: ObjectSpec;
+  readonly regions: readonly MapRegionData[];
+  readonly groups: Readonly<Record<string, readonly string[]>>;
+}
+
+/** Compiled maps by `maps:` name (the CLI builds these from geodata). */
+export interface MapsData {
+  readonly map: (name: string) => MapData | undefined;
+}
+
 // ---- shape/paint conversion ------------------------------------------------
 
 function toCoreShape(def: MfsShapeDef | NonNullable<MfsPart['shape']>): Shape {
@@ -211,11 +232,15 @@ export interface CompileResult {
   readonly markers: readonly TimingMarker[];
 }
 
-export function compile(doc: MfsDocument, voice?: VoiceData): Film {
-  return compileWithMarkers(doc, voice).film;
+export function compile(doc: MfsDocument, voice?: VoiceData, maps?: MapsData): Film {
+  return compileWithMarkers(doc, voice, maps).film;
 }
 
-export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): CompileResult {
+export function compileWithMarkers(
+  doc: MfsDocument,
+  voice?: VoiceData,
+  maps?: MapsData,
+): CompileResult {
   const [width, height] = doc.meta.resolution.split('x').map(Number) as [number, number];
   const markers: TimingMarker[] = [];
 
@@ -258,6 +283,28 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
 
     // -- instances -------------------------------------------------------------
     const instances: FilmInstance[] = scene.place.map((p) => {
+      if (doc.maps[p.ref]) {
+        const entry = maps?.map(p.ref);
+        if (!entry) {
+          throw new Error(
+            `Scene "${scene.id}": map "${p.ref}" needs compiled map data — the CLI builds it from assets/geodata`,
+          );
+        }
+        return {
+          id: p.as,
+          object: {
+            spec: entry.objectSpec,
+            options: {
+              idPrefix: p.as,
+              layerBase: (p.layer ?? 0) * 1000,
+              flip: p.flip,
+              tint: p.tint ? parseColor(p.tint) : undefined,
+            },
+          },
+          depth: p.depth ?? 0.5,
+          layer: (p.layer ?? 0) * 1000,
+        };
+      }
       const castDef = doc.cast[p.ref];
       if (castDef) {
         const palette: Record<string, Color> = {};
