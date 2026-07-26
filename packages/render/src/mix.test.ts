@@ -48,9 +48,10 @@ describe('mixNarration', () => {
     expect(mixed.sampleRate).toBe(MIX_SAMPLE_RATE);
     expect(mixed.samples.length).toBe(4 * MIX_SAMPLE_RATE);
     const at = (seconds: number) => mixed.samples[Math.floor(seconds * MIX_SAMPLE_RATE) + 10]!;
+    // VO leveling (M9.4) halves these loud constant fixtures (gain clamp 0.5).
     expect(at(0)).toBeCloseTo(0, 3); // silence before scene-a narration
-    expect(at(1)).toBeCloseTo(0.5, 2); // scene a: startTick 120 → 1 s
-    expect(at(2.5)).toBeCloseTo(-0.25, 2); // scene b start (film 2 s) + 0.5
+    expect(at(1)).toBeCloseTo(0.25, 2); // scene a: startTick 120 → 1 s
+    expect(at(2.5)).toBeCloseTo(-0.125, 2); // scene b start (film 2 s) + 0.5
     expect(at(3.5)).toBeCloseTo(0, 3); // tail silence
   });
 
@@ -93,9 +94,49 @@ describe('mixNarration', () => {
     expect(count).toBe(2);
     const out = decodeWav(ducked);
     const at = (seconds: number) => out.samples[Math.floor(seconds * MIX_SAMPLE_RATE)]!;
-    expect(at(0.5)).toBeCloseTo(0.5, 2); // before the line: full narration
-    expect(at(1.25)).toBeCloseTo(0.5 * 0.35 + 0.2, 2); // during: ducked + line
-    expect(at(1.8)).toBeCloseTo(0.5, 2); // after the ramp: recovered
+    // Leveling halves both constant fixtures (0.5 → 0.25, 0.2 → 0.1).
+    expect(at(0.5)).toBeCloseTo(0.25, 2); // before the line: full narration
+    expect(at(1.25)).toBeCloseTo(0.25 * 0.35 + 0.1, 2); // during: ducked + line
+    expect(at(1.8)).toBeCloseTo(0.25, 2); // after the ramp: recovered
+  });
+
+  it('levels VO toward the target loudness and ducks music under it (M9.4)', () => {
+    // A quiet narration segment (RMS 0.02) in a scene with jaunty music.
+    const quiet = encodeWavPcm16(
+      Float32Array.from({ length: MIX_SAMPLE_RATE }, (_, i) =>
+        i % 2 === 0 ? 0.02 * Math.SQRT2 : -0.02 * Math.SQRT2,
+      ),
+      MIX_SAMPLE_RATE,
+    );
+    const withMusic = {
+      ...film,
+      durationTicks: 480,
+      scenes: [
+        {
+          ...film.scenes[0]!,
+          durationTicks: 480,
+          music: { mood: 'jaunty', gain: 1 },
+          narration: [{ key: 'a/0', hash: 'hq', startTick: 120, durationTicks: 120 }],
+        },
+      ],
+    } as unknown as Film;
+    const { wav: mixed2 } = mixNarration(withMusic, () => quiet);
+    const out = decodeWav(mixed2);
+    const rmsOver = (from: number, to: number) => {
+      let sum = 0;
+      const a = Math.floor(from * MIX_SAMPLE_RATE);
+      const b = Math.floor(to * MIX_SAMPLE_RATE);
+      for (let i = a; i < b; i++) sum += out.samples[i]! * out.samples[i]!;
+      return Math.sqrt(sum / (b - a));
+    };
+    // Music alone (before narration) vs music ducked under leveled VO.
+    const musicOnly = rmsOver(0.3, 0.8);
+    const underVo = rmsOver(1.2, 1.8);
+    expect(musicOnly).toBeGreaterThan(0.01);
+    // VO got boosted ×2 (clamp) and dominates the ducked music.
+    expect(underVo).toBeGreaterThan(musicOnly);
+    // After narration ends the music recovers.
+    expect(rmsOver(3.2, 3.8)).toBeCloseTo(musicOnly, 1);
   });
 
   it('limits overlapping audio to [-1, 1]', () => {

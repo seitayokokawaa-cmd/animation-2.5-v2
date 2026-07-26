@@ -21,9 +21,44 @@ export const DUCK_GAIN = 0.35;
 /** Duck ramp length, seconds. */
 export const DUCK_RAMP_SECONDS = 0.1;
 
+/** Music gain under any voice-over. */
+export const MUSIC_DUCK_GAIN = 0.35;
+/** Music duck ramp, seconds. */
+export const MUSIC_DUCK_RAMP_SECONDS = 0.18;
+/** VO leveling target RMS; per-segment gain is clamped to [0.5, 2]. */
+export const VO_TARGET_RMS = 0.09;
+
 export interface MixResult {
   readonly wav: Uint8Array;
   readonly segments: number;
+}
+
+/** Per-sample gain that dips to `floor` inside any window, with ramps. */
+const windowGain =
+  (windows: readonly (readonly [number, number])[], ramp: number, floor: number) =>
+  (i: number): number => {
+    let gain = 1;
+    for (const [start, end] of windows) {
+      if (i < start - ramp || i >= end + ramp) continue;
+      if (i < start) {
+        gain = Math.min(gain, 1 - (1 - floor) * ((i - (start - ramp)) / ramp));
+      } else if (i >= end) {
+        gain = Math.min(gain, floor + (1 - floor) * ((i - end) / ramp));
+      } else {
+        gain = Math.min(gain, floor);
+      }
+    }
+    return gain;
+  };
+
+/** VO leveling (M9.4): bring a segment toward the target RMS, gently. */
+export function levelGain(samples: Float32Array, targetRms = VO_TARGET_RMS): number {
+  if (samples.length === 0) return 1;
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) sum += samples[i]! * samples[i]!;
+  const rms = Math.sqrt(sum / samples.length);
+  if (rms < 1e-6) return 1;
+  return Math.min(2, Math.max(0.5, targetRms / rms));
 }
 
 /** Resample by linear interpolation (only hit when a source isn't 48 kHz). */
@@ -45,57 +80,60 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
   const mix = new Float32Array(totalSamples);
   let segments = 0;
 
-  // Pass 1: character lines at full gain; remember their windows for ducking.
+  // Pass 1: character lines, leveled, at full gain; their windows duck the
+  // narration (M8.4) and, together with narration, duck the music (M9.4).
   const lineTrack = new Float32Array(totalSamples);
-  const windows: Array<[number, number]> = [];
+  const lineWindows: Array<[number, number]> = [];
+  const voWindows: Array<[number, number]> = [];
   for (const scene of film.scenes) {
     for (const line of scene.lines ?? []) {
       const wav = decodeWav(readWav(line.hash));
       const samples = resample(wav.samples, wav.sampleRate, MIX_SAMPLE_RATE);
+      const gain = levelGain(samples);
       const offset = Math.round(ticksToSeconds(scene.startTick + line.startTick) * MIX_SAMPLE_RATE);
       for (let i = 0; i < samples.length && offset + i < totalSamples; i++) {
-        lineTrack[offset + i]! += samples[i]!;
+        lineTrack[offset + i]! += samples[i]! * gain;
       }
-      windows.push([offset, Math.min(totalSamples, offset + samples.length)]);
+      const window: [number, number] = [offset, Math.min(totalSamples, offset + samples.length)];
+      lineWindows.push(window);
+      voWindows.push(window);
       segments++;
     }
   }
 
-  const ramp = Math.round(DUCK_RAMP_SECONDS * MIX_SAMPLE_RATE);
-  const duckAt = (i: number): number => {
-    let gain = 1;
-    for (const [start, end] of windows) {
-      if (i < start - ramp || i >= end + ramp) continue;
-      if (i < start) {
-        gain = Math.min(gain, 1 - (1 - DUCK_GAIN) * ((i - (start - ramp)) / ramp));
-      } else if (i >= end) {
-        gain = Math.min(gain, DUCK_GAIN + (1 - DUCK_GAIN) * ((i - end) / ramp));
-      } else {
-        gain = Math.min(gain, DUCK_GAIN);
-      }
-    }
-    return gain;
-  };
+  const lineDuck = windowGain(
+    lineWindows,
+    Math.round(DUCK_RAMP_SECONDS * MIX_SAMPLE_RATE),
+    DUCK_GAIN,
+  );
 
-  // Pass 2: narration, ducked under any active line.
+  // Pass 2: narration, leveled, ducked under any active line.
   for (const scene of film.scenes) {
     for (const segment of scene.narration) {
       const wav = decodeWav(readWav(segment.hash));
       const samples = resample(wav.samples, wav.sampleRate, MIX_SAMPLE_RATE);
+      const gain = levelGain(samples);
       const offset = Math.round(
         ticksToSeconds(scene.startTick + segment.startTick) * MIX_SAMPLE_RATE,
       );
       for (let i = 0; i < samples.length && offset + i < totalSamples; i++) {
         const at = offset + i;
-        mix[at]! += samples[i]! * (windows.length > 0 ? duckAt(at) : 1);
+        mix[at]! += samples[i]! * gain * (lineWindows.length > 0 ? lineDuck(at) : 1);
       }
+      voWindows.push([offset, Math.min(totalSamples, offset + samples.length)]);
       segments++;
     }
   }
 
   for (let i = 0; i < mix.length; i++) mix[i]! += lineTrack[i]!;
 
-  // Music beds (M9.3) under each scene, sample-exact loop tiling.
+  // Music beds (M9.3) under each scene, sample-exact loop tiling, ducked
+  // beneath every stretch of voice-over (M9.4).
+  const musicDuck = windowGain(
+    voWindows,
+    Math.round(MUSIC_DUCK_RAMP_SECONDS * MIX_SAMPLE_RATE),
+    MUSIC_DUCK_GAIN,
+  );
   for (const scene of film.scenes) {
     const music = scene.music;
     if (!music || !(MUSIC_MOODS as readonly string[]).includes(music.mood)) continue;
@@ -107,7 +145,10 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
     if (length <= 0) continue;
     const bed = musicBed(music.mood as MusicMood, length);
     const gain = MUSIC_BASE_GAIN * music.gain;
-    for (let i = 0; i < length; i++) mix[offset + i]! += bed[i]! * gain;
+    for (let i = 0; i < length; i++) {
+      const at = offset + i;
+      mix[at]! += bed[i]! * gain * (voWindows.length > 0 ? musicDuck(at) : 1);
+    }
   }
 
   // Hard safety limiter — clipping must be impossible by construction.
