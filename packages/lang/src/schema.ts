@@ -301,6 +301,23 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Offensive arrows (M7.4): region name or [x,y] endpoints, curved. */
+  arrow: z
+    .object({
+      /** Placed map instance; optional when the scene has exactly one map. */
+      target: nameSchema.optional(),
+      from: z.union([nameSchema, vec2Schema]),
+      /** One destination or several (a multi-arrow offensive, staggered). */
+      to: z.union([nameSchema, vec2Schema, z.array(z.union([nameSchema, vec2Schema])).min(1)]),
+      color: colorSchema.optional(),
+      /** Body width, world units. */
+      width: z.number().finite().positive().optional(),
+      /** Sideways bow as a fraction of length; sign picks the side. */
+      bow: z.number().finite().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Map region verbs (M7.3): recolor sweeps, highlights, border morphs. */
   map: z
     .object({
@@ -450,6 +467,7 @@ export const VERB_NAMES = [
   'hearts',
   'react',
   'map',
+  'arrow',
   'squash-stretch',
   'hinge',
   'oscillate',

@@ -50,7 +50,13 @@ import {
   SEAT_POSE,
 } from '@motionforge/motion';
 
-import { clipToFront, highlightPulse, morphRings, unpackColor } from '@motionforge/maps';
+import {
+  arrowPolygon,
+  clipToFront,
+  highlightPulse,
+  morphRings,
+  unpackColor,
+} from '@motionforge/maps';
 
 import { buildCardNodes } from './cards.js';
 import { paperTextureNodes, stylePreset, type StylePreset } from './style.js';
@@ -401,6 +407,32 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
                 });
               });
           }
+        }
+        // Offensive arrows (M7.4) target the map instance itself.
+        for (const effect of scene.effects) {
+          if (effect.verb !== 'map-arrow' || effect.target !== inst.id) continue;
+          if (localTick < effect.startTick) continue;
+          const t =
+            effect.durationTicks === 0
+              ? 1
+              : Math.min(1, (localTick - effect.startTick) / effect.durationTicks);
+          const polygon = arrowPolygon(
+            vec2(effect.params.x0 ?? 0, effect.params.y0 ?? 0),
+            vec2(effect.params.x1 ?? 0, effect.params.y1 ?? 0),
+            ease('cubicOut', t),
+            {
+              width: effect.params.width,
+              bow: effect.params.bow,
+            },
+          );
+          if (polygon.length < 3) continue;
+          mapOverlays.push({
+            id: `${inst.id}/${effect.seed}`,
+            layer: inst.layer + 900 + overlayIndex++,
+            shape: { kind: 'polygon', points: polygon },
+            fill: { color: unpackColor(effect.params.color ?? 0xb5453c) },
+            stroke: { color: { r: 0x3a, g: 0x28, b: 0x20, a: 1 }, width: 0.035 },
+          });
         }
         return {
           ...base,

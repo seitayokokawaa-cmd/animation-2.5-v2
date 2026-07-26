@@ -238,6 +238,13 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  {
+    name: 'map-arrow',
+    summary: 'A fat curved offensive arrow grows across the map and stays.',
+    defaultDurationSeconds: 0.9,
+    holdAfter: true,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;

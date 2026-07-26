@@ -225,6 +225,28 @@ export function timingTable(markers: readonly TimingMarker[]): string {
   return ['  seconds   tick   scene           marker', ...rows].join('\n');
 }
 
+/** Resolve which placed map a map/arrow verb addresses. */
+function resolveMapTarget(
+  sceneId: string,
+  placedMaps: ReadonlyMap<string, MapData>,
+  target: string | undefined,
+): [string, MapData] {
+  const name =
+    target ??
+    (placedMaps.size === 1
+      ? [...placedMaps.keys()][0]!
+      : (() => {
+          throw new Error(
+            `Scene "${sceneId}": map verb needs target: — the scene places ${placedMaps.size} maps`,
+          );
+        })());
+  const entry = placedMaps.get(name);
+  if (!entry) {
+    throw new Error(`Scene "${sceneId}": map verb targets "${name}", not a placed map`);
+  }
+  return [name, entry];
+}
+
 // ---- compile -----------------------------------------------------------------
 
 export interface CompileResult {
@@ -570,21 +592,50 @@ export function compileWithMarkers(
         simpleFx('steam', verb.steam, startTick, []);
       } else if (verb.hearts) {
         simpleFx('hearts', verb.hearts, startTick, ['count']);
+      } else if (verb.arrow) {
+        const a = verb.arrow;
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, a.target);
+        const point = (endpoint: string | [number, number]): Vec2 => {
+          if (Array.isArray(endpoint)) return vec2(...endpoint);
+          const region = entry.regions.find((r) => r.id === endpoint);
+          if (!region) {
+            throw new Error(
+              `Scene "${scene.id}": arrow endpoint "${endpoint}" is not a region on "${instName}"`,
+            );
+          }
+          return region.centroid;
+        };
+        const fromPoint = point(a.from);
+        const color = parseColor(a.color ?? '#b5453c');
+        const toList: (string | [number, number])[] =
+          typeof a.to === 'string'
+            ? [a.to]
+            : typeof a.to[0] === 'number'
+              ? [a.to as [number, number]]
+              : (a.to as (string | [number, number])[]);
+        toList.forEach((destination, i) => {
+          const toPoint = point(destination);
+          pushEffect(
+            instName,
+            'map-arrow',
+            // Offensive arrows launch with a small stagger.
+            startTick + secondsToTicks(i * 0.15),
+            a.duration ?? 0.9,
+            {
+              x0: fromPoint.x,
+              y0: fromPoint.y,
+              x1: toPoint.x,
+              y1: toPoint.y,
+              color: (color.r << 16) | (color.g << 8) | color.b,
+              ...(a.width !== undefined ? { width: a.width } : {}),
+              // Alternate bows so a fan of arrows reads organic.
+              bow: a.bow ?? (i % 2 === 0 ? 0.16 : -0.14),
+            },
+          );
+        });
       } else if (verb.map) {
         const m = verb.map;
-        const instName =
-          m.target ??
-          (placedMaps.size === 1
-            ? [...placedMaps.keys()][0]!
-            : (() => {
-                throw new Error(
-                  `Scene "${scene.id}": map verb needs target: — the scene places ${placedMaps.size} maps`,
-                );
-              })());
-        const entry = placedMaps.get(instName);
-        if (!entry) {
-          throw new Error(`Scene "${scene.id}": map verb targets "${instName}", not a placed map`);
-        }
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, m.target);
         const expand = (target: string): readonly string[] => {
           const members = entry.groups[target];
           if (members) return members;

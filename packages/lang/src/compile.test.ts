@@ -241,6 +241,34 @@ describe('cast compilation (M6.4)', () => {
       ],
     };
     expect(() => compile(bad, undefined, mapsData)).toThrow(/narnia/);
+
+    // Multi-arrow offensives (M7.4): region centroids, staggered launches.
+    const withArrows = {
+      ...doc2,
+      scenes: [
+        {
+          ...doc2.scenes[0]!,
+          actions: [
+            {
+              at: 0,
+              arrow: {
+                from: 'germany',
+                to: ['france', [3, 2] as [number, number]],
+                color: '#8a1c1c',
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const arrows = compile(withArrows, undefined, mapsData).scenes[0]!.effects.filter(
+      (e) => e.verb === 'map-arrow',
+    );
+    expect(arrows).toHaveLength(2);
+    expect(arrows[0]!.target).toBe('war-map');
+    expect(arrows[1]!.startTick - arrows[0]!.startTick).toBe(18); // 0.15 s
+    expect(arrows[1]!.params.x1).toBe(3);
+    expect(arrows[0]!.params.color).toBe(0x8a1c1c);
   });
 
   it('react compiles a face effect plus companion particles (M6.7)', () => {
