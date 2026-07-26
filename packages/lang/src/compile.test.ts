@@ -71,8 +71,8 @@ describe('compile', () => {
 
   it('instances carry shape, depth, layer', () => {
     const [inst] = film.scenes[0]!.instances;
-    expect(inst).toMatchObject({ id: 'b', depth: 0.4, layer: 1 });
-    expect(inst!.shape.kind).toBe('rect');
+    expect(inst).toMatchObject({ id: 'b', depth: 0.4, layer: 1000 });
+    expect(inst!.shape!.kind).toBe('rect');
   });
 
   it('sceneAtTick maps film ticks to scenes, inclusive tail', () => {

@@ -33,7 +33,16 @@ import {
   type Vec2,
 } from '@motionforge/core';
 
+import {
+  degToRad as degToRadCore,
+  instantiateObject,
+  type Color,
+  type ObjectSpec,
+  type PartSpec,
+} from '@motionforge/core';
+
 import { findPhrase, type MfsAnchor } from './narration.js';
+import type { MfsObjectDef, MfsPart } from './parts.js';
 import type { MfsDocument, MfsShapeDef, verbSchema } from './schema.js';
 import type { z } from 'zod';
 
@@ -66,7 +75,7 @@ export interface VoiceData {
 
 // ---- shape/paint conversion ------------------------------------------------
 
-function toCoreShape(def: MfsShapeDef): Shape {
+function toCoreShape(def: MfsShapeDef | NonNullable<MfsPart['shape']>): Shape {
   switch (def.kind) {
     case 'rect':
       return { kind: 'rect', width: def.width, height: def.height, rx: def.rx };
@@ -76,6 +85,8 @@ function toCoreShape(def: MfsShapeDef): Shape {
       return { kind: 'ellipse', rx: def.rx, ry: def.ry };
     case 'polygon':
       return { kind: 'polygon', points: def.points.map(([x, y]) => vec2(x, y)) };
+    case 'path':
+      return { kind: 'path', d: def.d };
   }
 }
 
@@ -84,6 +95,45 @@ const toFill = (def: MfsShapeDef): Fill | undefined =>
 
 const toStroke = (def: MfsShapeDef): Stroke | undefined =>
   def.stroke ? { color: parseColor(def.stroke.color), width: def.stroke.width } : undefined;
+
+// ---- object specs ------------------------------------------------------------
+
+function toPartFill(fill: MfsPart['fill']): PartSpec['fill'] {
+  if (fill === undefined) return undefined;
+  if (typeof fill === 'string') {
+    return fill.startsWith('$') ? { param: fill.slice(1) } : { color: parseColor(fill) };
+  }
+  return {
+    gradient: {
+      from: vec2(...fill.from),
+      to: vec2(...fill.to),
+      stops: fill.stops.map((s) => ({ offset: s.offset, color: parseColor(s.color) })),
+    },
+  };
+}
+
+function toPartSpec(part: MfsPart): PartSpec {
+  return {
+    id: part.id,
+    at: part.at ? vec2(...part.at) : undefined,
+    rotate: part.rotate !== undefined ? degToRadCore(part.rotate) : undefined,
+    scale: part.scale,
+    pivot: part.pivot ? vec2(...part.pivot) : undefined,
+    z: part.z,
+    shape: part.shape ? toCoreShape(part.shape as MfsShapeDef) : undefined,
+    fill: toPartFill(part.fill),
+    stroke: part.stroke
+      ? { color: parseColor(part.stroke.color), width: part.stroke.width }
+      : undefined,
+    children: part.parts?.map(toPartSpec),
+  };
+}
+
+export function toObjectSpec(def: MfsObjectDef): ObjectSpec {
+  const params: Record<string, Color> = {};
+  for (const [name, hex] of Object.entries(def.params)) params[name] = parseColor(hex);
+  return { params, parts: def.parts.map(toPartSpec) };
+}
 
 // ---- anchors ----------------------------------------------------------------
 
@@ -198,6 +248,23 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
 
     // -- instances -------------------------------------------------------------
     const instances: FilmInstance[] = scene.place.map((p) => {
+      const objectDef = doc.objects[p.ref];
+      if (objectDef) {
+        const overrides: Record<string, Color> = {};
+        for (const [name, hex] of Object.entries(p.with ?? {})) overrides[name] = parseColor(hex);
+        return {
+          id: p.as,
+          parts: instantiateObject(toObjectSpec(objectDef), {
+            idPrefix: p.as,
+            layerBase: (p.layer ?? 0) * 1000,
+            params: overrides,
+            flip: p.flip,
+            tint: p.tint ? parseColor(p.tint) : undefined,
+          }),
+          depth: p.depth ?? 0.5,
+          layer: (p.layer ?? 0) * 1000,
+        };
+      }
       const def = doc.shapes[p.ref]!;
       return {
         id: p.as,
@@ -205,7 +272,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         fill: toFill(def),
         stroke: toStroke(def),
         depth: p.depth ?? 0.5,
-        layer: p.layer ?? 0,
+        layer: (p.layer ?? 0) * 1000,
       };
     });
 

@@ -101,7 +101,7 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
         const pose = poseFor(inst.id);
         const shift = pose.translate ?? vec2(0, 0);
         const poseScale = pose.scale ?? vec2(1, 1);
-        return {
+        const base = {
           id: inst.id,
           depth: inst.depth,
           layer: inst.layer,
@@ -111,10 +111,10 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             rot + (pose.rotate ?? 0),
             vec2(scale * poseScale.x, scale * poseScale.y),
           ),
-          shape: inst.shape,
-          fill: inst.fill,
-          stroke: inst.stroke,
         };
+        return inst.parts
+          ? { ...base, children: [inst.parts] }
+          : { ...base, shape: inst.shape, fill: inst.fill, stroke: inst.stroke };
       }),
       // Cartoon FX geometry, anchored at the target's current position.
       ...scene.effects.flatMap((effect, ei): SceneNode[] => {
