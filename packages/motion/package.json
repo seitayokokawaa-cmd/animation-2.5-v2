@@ -1,0 +1,13 @@
+{
+  "name": "@motionforge/motion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Rigs, templates, ik, footstep/gait, action registry, interaction, physics",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@motionforge/core": "workspace:*"
+  }
+}

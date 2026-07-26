@@ -1,0 +1,17 @@
+{
+  "name": "@motionforge/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The mf binary: render, check, frame, storyboard, spec, author, init, assets",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@motionforge/agent": "workspace:*",
+    "@motionforge/core": "workspace:*",
+    "@motionforge/lang": "workspace:*",
+    "@motionforge/motion": "workspace:*",
+    "@motionforge/render": "workspace:*"
+  }
+}
