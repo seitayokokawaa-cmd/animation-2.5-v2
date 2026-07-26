@@ -27,7 +27,7 @@ Legend: ☐ pending · ☑ done
 
 | Id   | Task                                                          | Done |
 | ---- | ------------------------------------------------------------- | ---- |
-| M1.1 | Vec2/Transform/Color, world units, tick clock + seconds↔ticks | ☐    |
+| M1.1 | Vec2/Transform/Color, world units, tick clock + seconds↔ticks | ☑    |
 | M1.2 | PCG32 + named streams; lint bans Math.random/Date.now         | ☐    |
 | M1.3 | Easing library + curve sampling                               | ☐    |
 | M1.4 | Scene graph + painter sort (depth band, layer, screen-y)      | ☐    |
