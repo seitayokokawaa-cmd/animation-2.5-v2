@@ -18,6 +18,7 @@ import {
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 import {
   adapterFor,
+  energyAligner,
   syncSegments,
   VoiceCache,
   writeLock,
@@ -102,7 +103,7 @@ async function main(): Promise<void> {
       const doc = loadChecked(file, values.json);
       const requests = segmentRequests(doc);
       const cache = new VoiceCache(values['cache-dir']);
-      const result = await syncSegments(requests, cache, adapterFor);
+      const result = await syncSegments(requests, cache, adapterFor, energyAligner);
       const lockPath = lockPathFor(file);
       writeLock(lockPath, result.lock);
       process.stderr.write(

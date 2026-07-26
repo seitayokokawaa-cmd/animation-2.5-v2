@@ -5,6 +5,7 @@
  * when `duration` is omitted (resolved against the voice cache at compile).
  */
 
+import { canonicalWord, tokenizeWords } from '@motionforge/core';
 import { z } from 'zod';
 
 /** Engines the voice package implements (ADR-0006). */
@@ -77,15 +78,7 @@ export function makeNarrationSchema<V extends z.ZodTypeAny>(verbSchema: V) {
 }
 
 /** Split narration text into the word tokens sync anchors bind against. */
-export function narrationWords(text: string): string[] {
-  return text
-    .split(/\s+/)
-    .map((w) => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''))
-    .filter((w) => w.length > 0);
-}
-
-/** Case-insensitive canonical form used for phrase matching. */
-export const canonicalWord = (word: string): string => word.toLowerCase();
+export const narrationWords = tokenizeWords;
 
 /**
  * Find the word index where the anchor phrase starts.

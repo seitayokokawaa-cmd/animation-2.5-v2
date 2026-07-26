@@ -4,6 +4,7 @@ export * from './adapter.js';
 export * from './wav.js';
 export * from './mock.js';
 export * from './cache.js';
+export * from './align.js';
 export * from './qwen.js';
 
 import type { TtsAdapter } from './adapter.js';

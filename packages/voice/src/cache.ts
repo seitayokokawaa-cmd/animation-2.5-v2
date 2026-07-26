@@ -10,7 +10,10 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { tokenizeWords } from '@motionforge/core';
+
 import type { TtsAdapter, VoiceSpec } from './adapter.js';
+import type { Aligner, Alignment } from './align.js';
 import { decodeWav, wavDurationSeconds } from './wav.js';
 
 export interface SegmentRequest {
@@ -88,6 +91,24 @@ export class VoiceCache {
     mkdirSync(this.dir, { recursive: true });
     writeFileSync(this.wavPath(hash), wav);
   }
+
+  hasAlign(hash: string): boolean {
+    return existsSync(this.alignPath(hash));
+  }
+
+  readAlign(hash: string): Alignment {
+    if (!this.hasAlign(hash)) {
+      throw new Error(
+        `Voice alignment miss: ${this.alignPath(hash)}. Run \`mf voice sync <film>\` and commit the cache.`,
+      );
+    }
+    return JSON.parse(readFileSync(this.alignPath(hash), 'utf8')) as Alignment;
+  }
+
+  writeAlign(hash: string, alignment: Alignment): void {
+    mkdirSync(this.dir, { recursive: true });
+    writeFileSync(this.alignPath(hash), JSON.stringify(alignment, null, 2) + '\n');
+  }
 }
 
 export interface SyncResult {
@@ -105,6 +126,7 @@ export async function syncSegments(
   requests: readonly SegmentRequest[],
   cache: VoiceCache,
   adapterFor: (engine: string) => TtsAdapter,
+  aligner?: Aligner,
 ): Promise<SyncResult> {
   const segments: Record<string, LockEntry> = {};
   const synthesized: string[] = [];
@@ -121,6 +143,9 @@ export async function syncSegments(
       wav = await adapter.synthesize(request.text, request.spec);
       cache.writeWav(hash, wav);
       synthesized.push(request.key);
+    }
+    if (aligner && !cache.hasAlign(hash)) {
+      cache.writeAlign(hash, aligner.align(decodeWav(wav), tokenizeWords(request.text)));
     }
     segments[request.key] = {
       hash,
