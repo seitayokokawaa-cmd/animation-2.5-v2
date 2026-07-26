@@ -8,6 +8,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@motionforge/core": "workspace:*"
+    "@motionforge/core": "workspace:*",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
   }
 }
