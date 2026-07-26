@@ -748,6 +748,66 @@ export function compileWithMarkers(
             },
           );
         });
+      } else if (verb.bonk) {
+        const { target, duration } = verb.bonk;
+        const seconds = duration ?? 0.7;
+        pushEffect(target, 'bonk', startTick, seconds, {});
+        pushEffect(target, 'impact-stars', startTick, 0.6, { count: 6 });
+      } else if (verb.fling) {
+        const { target, to, duration, height, spins } = verb.fling;
+        const from = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const toVec = vec2(...to);
+        const seconds = duration ?? 0.9;
+        (posClips.get(target) ?? posClips.set(target, []).get(target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from,
+          to: toVec,
+          easing: 'linear',
+        });
+        lastPos.set(target, toVec);
+        pushEffect(target, 'fling', startTick, seconds, {
+          ...(height !== undefined ? { height } : {}),
+          ...(spins !== undefined ? { spins } : {}),
+        });
+      } else if (verb['squash-land']) {
+        const { target, duration } = verb['squash-land'];
+        pushEffect(target, 'squash-land', startTick, duration ?? 0.5, {});
+      } else if (verb.chase) {
+        // Two actors ping-pong across the stage in bounce-to legs, the
+        // pursuer trailing by a beat (M8.5).
+        const { targets, duration, span } = verb.chase;
+        const [runner, chaser] = targets;
+        const width2 = (span ?? 9) / 2;
+        const seconds = duration ?? 4.4;
+        const legSeconds = 2.2;
+        const legs = Math.max(2, Math.round(seconds / legSeconds));
+        const chaseTargets: [string, number][] = [
+          [runner, 0],
+          [chaser, 0.35],
+        ];
+        for (const [who, delay] of chaseTargets) {
+          const baseY = (lastPos.get(who) ?? vec2(...baseOf(who).at)).y;
+          let x = (lastPos.get(who) ?? vec2(...baseOf(who).at)).x;
+          for (let leg = 0; leg < legs; leg++) {
+            const gap = who === chaser ? 1.1 : 0;
+            const destination = (leg % 2 === 0 ? width2 : -width2) - gap * (leg % 2 === 0 ? 1 : -1);
+            const legStart = startTick + secondsToTicks(delay + leg * legSeconds);
+            (posClips.get(who) ?? posClips.set(who, []).get(who)!).push({
+              start: legStart,
+              duration: secondsToTicks(legSeconds - 0.05),
+              from: vec2(x, baseY),
+              to: vec2(destination, baseY),
+              easing: 'linear',
+            });
+            pushEffect(who, 'bounce-bob', legStart, legSeconds - 0.05, {
+              hops: Math.max(3, Math.round(Math.abs(destination - x) / 1.4)),
+              height: 0.4,
+            });
+            x = destination;
+          }
+          lastPos.set(who, vec2(x, baseY));
+        }
       } else if (verb.gesture) {
         const g = verb.gesture;
         /** Defaults mirror motion's GESTURE_DEFAULT_SECONDS (M12.5 checks). */

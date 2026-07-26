@@ -364,6 +364,36 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Slapstick (M8.5): impact impulse + stars. */
+  bonk: z.object({ target: nameSchema, duration: secondsSchema.optional() }).strict().optional(),
+  /** Slapstick (M8.5): ballistic yeet with tumble and squash landing. */
+  fling: z
+    .object({
+      target: nameSchema,
+      to: vec2Schema,
+      duration: secondsSchema.optional(),
+      /** Arc height, world units. */
+      height: z.number().finite().positive().optional(),
+      /** Full tumbles in flight. */
+      spins: z.number().finite().optional(),
+    })
+    .strict()
+    .optional(),
+  /** Slapstick (M8.5): hard landing squash without a drop. */
+  'squash-land': z
+    .object({ target: nameSchema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  /** Slapstick (M8.5): two actors ping-pong across the stage. */
+  chase: z
+    .object({
+      targets: z.tuple([nameSchema, nameSchema]),
+      duration: secondsSchema.optional(),
+      /** Stage width covered, world units. */
+      span: z.number().finite().positive().optional(),
+    })
+    .strict()
+    .optional(),
   /** Cast gestures (M8.2). */
   gesture: z
     .object({
@@ -582,6 +612,10 @@ export const VERB_NAMES = [
   'exit',
   'gesture',
   'posture',
+  'bonk',
+  'fling',
+  'squash-land',
+  'chase',
   'squash-stretch',
   'hinge',
   'oscillate',

@@ -324,6 +324,44 @@ describe('cast compilation (M6.4)', () => {
     expect(sceneOut.effects.filter((e) => e.verb === 'bounce-bob')).toHaveLength(2);
   });
 
+  it('slapstick: bonk pairs stars, fling arcs, chase ping-pongs (M8.5)', () => {
+    const skit = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1280x720', fps: 30 },
+      cast: { a: { template: 'potato-biped' }, b: { template: 'potato-biped' } },
+      scenes: [
+        {
+          id: 's',
+          duration: 8,
+          place: [
+            { ref: 'a', as: 'a', at: [-2, -2.6] },
+            { ref: 'b', as: 'b', at: [2, -2.6] },
+          ],
+          actions: [
+            { at: 0.2, bonk: { target: 'a' } },
+            { at: 1, fling: { target: 'a', to: [4, -2.6], spins: 3 } },
+            { at: 2.5, chase: { targets: ['a', 'b'], duration: 4.4 } },
+          ],
+        },
+      ],
+    });
+    const sceneOut = compile(skit).scenes[0]!;
+    const verbs = sceneOut.effects.map((e) => e.verb);
+    expect(verbs).toContain('bonk');
+    expect(verbs).toContain('impact-stars');
+    const fling = sceneOut.effects.find((e) => e.verb === 'fling')!;
+    expect(fling.params.spins).toBe(3);
+    // Fling moved the actor; the chase starts from where it landed.
+    expect(sample<Vec2>(sceneOut.timeline, 'a/pos', secondsToTicks(2.4)).x).toBeCloseTo(4, 6);
+    // Chase: both actors get bounce legs; the chaser trails.
+    const bobs = sceneOut.effects.filter((e) => e.verb === 'bounce-bob');
+    expect(bobs.filter((e) => e.target === 'a').length).toBeGreaterThanOrEqual(2);
+    expect(bobs.filter((e) => e.target === 'b').length).toBeGreaterThanOrEqual(2);
+    const aFirst = bobs.find((e) => e.target === 'a')!.startTick;
+    const bFirst = bobs.find((e) => e.target === 'b')!.startTick;
+    expect(bFirst - aFirst).toBe(secondsToTicks(0.35));
+  });
+
   it('schedules character lines after their anchor phrase (M8.4)', () => {
     const skit = mfsSchema.parse({
       motionforge: 2,

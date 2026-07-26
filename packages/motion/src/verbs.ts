@@ -293,6 +293,55 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  // ---- slapstick-lite (M8.5) --------------------------------------------
+  {
+    name: 'bonk',
+    summary: 'Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars.',
+    defaultDurationSeconds: 0.7,
+    defaultSfx: 'boink',
+    sample(t) {
+      const decay = (1 - t) * (1 - t);
+      const wobble = Math.sin(t * Math.PI * 7) * 0.3 * decay;
+      const squash = t < 0.4 ? Math.sin(Math.PI * (t / 0.4)) * 0.28 : 0;
+      return { rotate: wobble, scale: vec2(1 + squash, 1 - squash) };
+    },
+  },
+  {
+    name: 'fling',
+    summary:
+      'Ballistic arc + tumble on top of a linear slide, squashing on the ' +
+      'landing — the "yeet" (M8.5).',
+    defaultDurationSeconds: 0.9,
+    defaultSfx: 'whoosh',
+    sample(t, effect) {
+      const height = p(effect, 'height', 2.2);
+      const spins = p(effect, 'spins', 2);
+      const arc = 4 * height * t * (1 - t);
+      let sx = 1;
+      let sy = 1;
+      if (t > 0.85) {
+        const u = (t - 0.85) / 0.15;
+        const squash = Math.sin(Math.PI * u) * 0.35;
+        sx = 1 + squash;
+        sy = 1 - squash;
+      }
+      return {
+        translate: vec2(0, arc),
+        rotate: -spins * 2 * Math.PI * t,
+        scale: vec2(sx, sy),
+      };
+    },
+  },
+  {
+    name: 'squash-land',
+    summary: 'A hard landing squash and recover, no drop.',
+    defaultDurationSeconds: 0.5,
+    defaultSfx: 'slam',
+    sample(t) {
+      const squash = Math.sin(Math.PI * t) * 0.35;
+      return { scale: vec2(1 + squash, 1 - squash) };
+    },
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;
