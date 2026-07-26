@@ -12,6 +12,7 @@ import { TICKS_PER_SECOND } from '@motionforge/core';
 import { z } from 'zod';
 
 import { makeNarrationSchema, voiceSpecSchema } from './narration.js';
+import { objectDefSchema } from './parts.js';
 
 const colorSchema = z.string().regex(/^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i, {
   message: 'Expected a hex color like #d94f30 or #d94f3080',
@@ -102,6 +103,12 @@ const placeSchema = z
     scale: z.number().finite().positive().optional(),
     /** Degrees, counter-clockwise. */
     rotate: z.number().finite().optional(),
+    /** Mirror horizontally (objects only). */
+    flip: z.boolean().optional(),
+    /** Multiply-tint every fill (objects only). */
+    tint: colorSchema.optional(),
+    /** Color param overrides (objects only). */
+    with: z.record(nameSchema, colorSchema).optional(),
   })
   .strict();
 
@@ -335,6 +342,9 @@ export const mfsSchema = z
       })
       .strict(),
     shapes: z.record(nameSchema, shapeDefSchema).default({}),
+    objects: z.record(nameSchema, objectDefSchema).default({}),
+    /** Library files (project-relative or built-in `library/…`) — M5.4. */
+    use: z.array(z.string().min(1)).default([]),
     scenes: z.array(sceneSchema).min(1),
   })
   .strict();
