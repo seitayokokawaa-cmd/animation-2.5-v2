@@ -12,6 +12,7 @@
 
 import {
   ease,
+  EASING_NAMES,
   hashNoiseSigned,
   vec2,
   type FilmEffect,
@@ -340,6 +341,48 @@ const defs: VerbDef[] = [
     sample(t) {
       const squash = Math.sin(Math.PI * t) * 0.35;
       return { scale: vec2(1 + squash, 1 - squash) };
+    },
+  },
+  {
+    name: 'keyframes',
+    summary:
+      'Escape hatch (M8.6): hand-authored frames on one property (x, y, ' +
+      'rotate, scale, opacity) of an instance, part, or character bone. ' +
+      'Frames are packed into params (tN normalized, vN engine units, eN ' +
+      'easing index); the final value holds.',
+    defaultDurationSeconds: 1,
+    holdAfter: true,
+    sample(t, effect) {
+      const count = Math.round(p(effect, 'count', 0));
+      if (count < 2) return {};
+      let value = p(effect, 'v0', 0);
+      for (let i = 0; i < count - 1; i++) {
+        const t0 = p(effect, `t${i}`, 0);
+        const t1 = p(effect, `t${i + 1}`, 1);
+        const v0 = p(effect, `v${i}`, 0);
+        const v1 = p(effect, `v${i + 1}`, 0);
+        if (t < t0) break;
+        if (t >= t1) {
+          value = v1;
+          continue;
+        }
+        const local = t1 === t0 ? 1 : (t - t0) / (t1 - t0);
+        const easingName = EASING_NAMES[Math.round(p(effect, `e${i + 1}`, 0))] ?? 'linear';
+        value = v0 + (v1 - v0) * ease(easingName, local);
+        break;
+      }
+      switch (Math.round(p(effect, 'property', 0))) {
+        case 0:
+          return { translate: vec2(value, 0) };
+        case 1:
+          return { translate: vec2(0, value) };
+        case 2:
+          return { rotate: value };
+        case 3:
+          return { scale: vec2(value, value) };
+        default:
+          return { opacity: value };
+      }
     },
   },
 ];

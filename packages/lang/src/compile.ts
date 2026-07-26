@@ -9,6 +9,7 @@ import {
   createTimeline,
   createTrack,
   degToRad,
+  EASING_NAMES,
   lerp,
   lerpVec2,
   parseColor,
@@ -748,6 +749,24 @@ export function compileWithMarkers(
             },
           );
         });
+      } else if (verb.keyframes) {
+        const kf = verb.keyframes;
+        const frames = [...kf.frames].sort((a, b) => a.t - b.t);
+        const total = frames[frames.length - 1]!.t;
+        if (total <= 0) {
+          throw new Error(`Scene "${scene.id}": keyframes need a positive final frame time`);
+        }
+        const PROPERTY_INDEX = { x: 0, y: 1, rotate: 2, scale: 3, opacity: 4 } as const;
+        const params: Record<string, number> = {
+          property: PROPERTY_INDEX[kf.property],
+          count: frames.length,
+        };
+        frames.forEach((frame, i) => {
+          params[`t${i}`] = frame.t / total;
+          params[`v${i}`] = kf.property === 'rotate' ? degToRad(frame.value) : frame.value;
+          params[`e${i}`] = Math.max(0, EASING_NAMES.indexOf(frame.easing ?? 'linear'));
+        });
+        pushEffect(kf.target, 'keyframes', startTick, total, params);
       } else if (verb.bonk) {
         const { target, duration } = verb.bonk;
         const seconds = duration ?? 0.7;

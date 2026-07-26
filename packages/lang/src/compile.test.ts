@@ -324,6 +324,42 @@ describe('cast compilation (M6.4)', () => {
     expect(sceneOut.effects.filter((e) => e.verb === 'bounce-bob')).toHaveLength(2);
   });
 
+  it('keyframes pack frames into a held effect (M8.6)', () => {
+    const doc3 = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '640x360', fps: 30 },
+      shapes: { box: { kind: 'rect', width: 1, height: 1 } },
+      scenes: [
+        {
+          id: 'a',
+          duration: 4,
+          place: [{ ref: 'box', as: 'b', at: [0, 0] }],
+          actions: [
+            {
+              at: 0.5,
+              keyframes: {
+                target: 'b',
+                property: 'rotate',
+                frames: [
+                  { t: 0, value: 0 },
+                  { t: 1, value: -90, easing: 'cubicOut' },
+                  { t: 2, value: 45 },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+    const effect = compile(doc3).scenes[0]!.effects.find((e) => e.verb === 'keyframes')!;
+    expect(effect.startTick).toBe(secondsToTicks(0.5));
+    expect(effect.durationTicks).toBe(secondsToTicks(2));
+    expect(effect.params.count).toBe(3);
+    expect(effect.params.t1).toBeCloseTo(0.5, 9);
+    expect(effect.params.v1).toBeCloseTo(-Math.PI / 2, 9);
+    expect(effect.params.property).toBe(2);
+  });
+
   it('slapstick: bonk pairs stars, fling arcs, chase ping-pongs (M8.5)', () => {
     const skit = mfsSchema.parse({
       motionforge: 2,

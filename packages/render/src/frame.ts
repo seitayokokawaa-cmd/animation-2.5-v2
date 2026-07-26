@@ -402,6 +402,15 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
             posture = blendPostures(previous, targetPosture, ease('cubicInOut', pt));
             pose = addPoses(pose, posture.pose);
           }
+          // Bone keyframes (M8.6): `inst.bone` rotate frames join the pose.
+          for (const effect of scene.effects) {
+            if (effect.verb !== 'keyframes') continue;
+            const dot = effect.target.indexOf('.');
+            if (dot < 0 || effect.target.slice(0, dot) !== inst.id) continue;
+            const boneId = effect.target.slice(dot + 1);
+            const sampled = sampleEffect(effect, localTick, film.seed);
+            if (sampled.rotate) pose = addPoses(pose, { [boneId]: sampled.rotate });
+          }
           const rig = characterNodes(template, {
             idPrefix: inst.id,
             layerBase: inst.layer,

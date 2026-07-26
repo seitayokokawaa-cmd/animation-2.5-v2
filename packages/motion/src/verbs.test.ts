@@ -1,4 +1,4 @@
-import type { FilmEffect } from '@motionforge/core';
+import { EASING_NAMES, type FilmEffect } from '@motionforge/core';
 import { describe, expect, it } from 'vitest';
 
 import { sampleEffect, verb, VERB_REGISTRY } from './verbs.js';
@@ -101,5 +101,45 @@ describe('squash-stretch (M4.4)', () => {
     expect(sampleEffect(e, 0, 7).scale!.x).toBeCloseTo(1, 6);
     const mid = sampleEffect(e, 8, 7).scale!.x;
     expect(Math.abs(mid - 1)).toBeGreaterThan(0.05);
+  });
+});
+
+describe('keyframes escape hatch (M8.6)', () => {
+  const LIN = EASING_NAMES.indexOf('linear');
+  const effect: FilmEffect = {
+    target: 'b',
+    verb: 'keyframes',
+    startTick: 0,
+    durationTicks: 240, // 2 s
+    params: {
+      property: 2, // rotate
+      count: 3,
+      t0: 0,
+      v0: 0,
+      e0: LIN,
+      t1: 0.5,
+      v1: -Math.PI / 2,
+      e1: LIN,
+      t2: 1,
+      v2: Math.PI / 4,
+      e2: LIN,
+    },
+    seed: 'kf/t/0',
+  };
+
+  it('interpolates between frames and holds the final value', () => {
+    expect(sampleEffect(effect, 0, 7).rotate).toBeCloseTo(0, 9);
+    expect(sampleEffect(effect, 60, 7).rotate).toBeCloseTo(-Math.PI / 4, 6); // halfway to frame 1
+    expect(sampleEffect(effect, 120, 7).rotate).toBeCloseTo(-Math.PI / 2, 6);
+    expect(sampleEffect(effect, 239, 7).rotate).toBeCloseTo(Math.PI / 4, 1);
+    // holdAfter: the last value persists beyond the window.
+    expect(sampleEffect(effect, 400, 7).rotate).toBeCloseTo(Math.PI / 4, 9);
+  });
+
+  it('maps properties onto the right pose channels', () => {
+    const asY = { ...effect, params: { ...effect.params, property: 1 } };
+    expect(sampleEffect(asY, 120, 7).translate!.y).toBeCloseTo(-Math.PI / 2, 6);
+    const asScale = { ...effect, params: { ...effect.params, property: 3, v1: 2 } };
+    expect(sampleEffect(asScale, 120, 7).scale!.x).toBeCloseTo(2, 6);
   });
 });

@@ -364,6 +364,29 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Escape hatch (M8.6): hand-keyed frames on one property. */
+  keyframes: z
+    .object({
+      /** Instance, or `instance.part` / `instance.bone` for rigs. */
+      target: z.union([nameSchema, partTargetSchema]),
+      property: z.enum(['x', 'y', 'rotate', 'scale', 'opacity']),
+      /** ≥2 frames; `t` is seconds from the action start. Degrees for
+       * rotate. The easing applies into that frame. */
+      frames: z
+        .array(
+          z
+            .object({
+              t: secondsSchema,
+              value: z.number().finite(),
+              easing: easingSchema.optional(),
+            })
+            .strict(),
+        )
+        .min(2)
+        .max(12),
+    })
+    .strict()
+    .optional(),
   /** Slapstick (M8.5): impact impulse + stars. */
   bonk: z.object({ target: nameSchema, duration: secondsSchema.optional() }).strict().optional(),
   /** Slapstick (M8.5): ballistic yeet with tumble and squash landing. */
@@ -616,6 +639,7 @@ export const VERB_NAMES = [
   'fling',
   'squash-land',
   'chase',
+  'keyframes',
   'squash-stretch',
   'hinge',
   'oscillate',
