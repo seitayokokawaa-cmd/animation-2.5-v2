@@ -64,6 +64,33 @@ export interface FilmEffect {
   readonly seed: string;
 }
 
+export type CardStyle = 'date' | 'chapter' | 'list' | 'quote' | 'note' | 'label';
+export type CardEntrance = 'pop' | 'slam';
+
+/** A card/label/cutaway (M4.5) — timed overlay panels with text or content. */
+export interface FilmCard {
+  readonly style: CardStyle;
+  readonly text?: string;
+  /** List cards: items pop in one by one. */
+  readonly items?: readonly string[];
+  /** World units; default screen center. */
+  readonly at: Vec2;
+  /** Scene-local. */
+  readonly startTick: Tick;
+  readonly durationTicks: Tick;
+  /** Text height in world units. */
+  readonly size: number;
+  readonly entrance: CardEntrance;
+  readonly font: string;
+  /** Framed cutaway content (a shape snippet inside a paper frame). */
+  readonly content?: {
+    readonly shape: Shape;
+    readonly fill?: Fill;
+    readonly stroke?: Stroke;
+    readonly scale: number;
+  };
+}
+
 export interface FilmScene {
   readonly id: string;
   /** Film-global tick where this scene starts. */
@@ -71,6 +98,7 @@ export interface FilmScene {
   readonly durationTicks: Tick;
   readonly narration: readonly FilmNarrationSegment[];
   readonly effects: readonly FilmEffect[];
+  readonly cards: readonly FilmCard[];
   readonly instances: readonly FilmInstance[];
   /**
    * Scene-local tracks: `<instance>/pos` (Vec2), `<instance>/rot` (radians),

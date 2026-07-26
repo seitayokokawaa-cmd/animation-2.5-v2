@@ -29,6 +29,7 @@ import {
 } from '@motionforge/core';
 import { emitEffectNodes, sampleEffect } from '@motionforge/motion';
 
+import { buildCardNodes } from './cards.js';
 import { shapeText } from './text.js';
 
 /** World units visible vertically at zoom 1. */
@@ -128,6 +129,7 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
           },
         ];
       }),
+      ...scene.cards.flatMap((card, i) => buildCardNodes(card, localTick, i)),
       ...captionNodes(scene, localTick),
     ],
   };

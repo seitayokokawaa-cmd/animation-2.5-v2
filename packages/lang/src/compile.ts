@@ -22,6 +22,7 @@ import {
   type Fill,
   type Film,
   type FilmCaption,
+  type FilmCard,
   type FilmEffect,
   type FilmInstance,
   type FilmNarrationSegment,
@@ -254,6 +255,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
     const cameraPosClips: Clip<Vec2>[] = [];
     const cameraZoomClips: Clip<number>[] = [];
     const captions: FilmCaption[] = [];
+    const cards: FilmCard[] = [];
     const effects: FilmEffect[] = [];
     let effectCounter = 0;
 
@@ -453,6 +455,42 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
         pushEffect(target, 'pulse', startTick, duration ?? EFFECT_DEFAULT_SECONDS.pulse!, {
           ...(to !== undefined ? { to } : {}),
         });
+      } else if (verb.card) {
+        const c = verb.card;
+        const big = c.style === 'date' || c.style === 'chapter';
+        cards.push({
+          style: c.style,
+          text: c.text,
+          items: c.items,
+          at: c.at ? vec2(...c.at) : vec2(0, big ? 0 : -2.8),
+          startTick,
+          durationTicks: secondsToTicks(c.duration),
+          size: c.size ?? (big ? 0.9 : 0.5),
+          entrance: c.entrance ?? (big ? 'slam' : 'pop'),
+          font: c.font ?? 'noto-sans',
+        });
+      } else if (verb.cutaway) {
+        const c = verb.cutaway;
+        const def = doc.shapes[c.ref];
+        if (!def) {
+          throw new Error(`Scene "${scene.id}": cutaway references unknown shape "${c.ref}"`);
+        }
+        cards.push({
+          style: 'note',
+          text: undefined,
+          at: c.at ? vec2(...c.at) : vec2(0, 0),
+          startTick,
+          durationTicks: secondsToTicks(c.duration),
+          size: 0.8,
+          entrance: c.entrance ?? 'pop',
+          font: 'noto-sans',
+          content: {
+            shape: toCoreShape(def),
+            fill: toFill(def),
+            stroke: toStroke(def),
+            scale: c.scale ?? 1,
+          },
+        });
       } else if (verb.caption) {
         const c = verb.caption;
         captions.push({
@@ -486,6 +524,7 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       durationTicks,
       narration,
       effects,
+      cards,
       instances,
       timeline: createTimeline(tracks, [], durationTicks),
       captions,

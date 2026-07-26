@@ -198,6 +198,34 @@ const verbFields = {
     .object({ ...tweenBase, to: z.number().finite().positive() })
     .strict()
     .optional(),
+  card: z
+    .object({
+      style: z.enum(['date', 'chapter', 'list', 'quote', 'note', 'label']),
+      text: z.string().min(1).optional(),
+      items: z.array(z.string().min(1)).min(1).optional(),
+      at: vec2Schema.optional(),
+      duration: secondsSchema,
+      /** Text height in world units; defaults per style. */
+      size: z.number().finite().positive().optional(),
+      entrance: z.enum(['pop', 'slam']).optional(),
+      font: z.enum(FONT_CHOICES).optional(),
+    })
+    .strict()
+    .refine((c) => (c.style === 'list' ? c.items !== undefined : c.text !== undefined), {
+      message: 'List cards need items:; every other card style needs text:',
+    })
+    .optional(),
+  cutaway: z
+    .object({
+      /** Shape name shown inside the paper frame. */
+      ref: nameSchema,
+      at: vec2Schema.optional(),
+      duration: secondsSchema,
+      scale: z.number().finite().positive().optional(),
+      entrance: z.enum(['pop', 'slam']).optional(),
+    })
+    .strict()
+    .optional(),
   caption: z
     .object({
       text: z.string().min(1),
@@ -233,6 +261,8 @@ export const VERB_NAMES = [
   'rotate',
   'scale',
   'caption',
+  'card',
+  'cutaway',
   'camera',
   'pop-in',
   'pop-out',
