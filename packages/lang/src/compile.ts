@@ -225,6 +225,31 @@ export function timingTable(markers: readonly TimingMarker[]): string {
   return ['  seconds   tick   scene           marker', ...rows].join('\n');
 }
 
+/** Resolve a map endpoint: region id → centroid, [x,y] → point. */
+function resolveMapPoint(
+  sceneId: string,
+  instName: string,
+  entry: MapData,
+  endpoint: string | readonly [number, number],
+): Vec2 {
+  if (Array.isArray(endpoint)) return vec2(endpoint[0]!, endpoint[1]!);
+  const region = entry.regions.find((r) => r.id === endpoint);
+  if (!region) {
+    throw new Error(
+      `Scene "${sceneId}": map point "${String(endpoint)}" is not a region on "${instName}"`,
+    );
+  }
+  return region.centroid;
+}
+
+/** Unit kinds by index — order matches maps' UNIT_KINDS. */
+const UNIT_KIND_NAMES = ['infantry', 'cavalry', 'ship', 'plane'];
+
+const packHex = (hex: string): number => {
+  const c = parseColor(hex);
+  return (c.r << 16) | (c.g << 8) | c.b;
+};
+
 /** Resolve which placed map a map/arrow verb addresses. */
 function resolveMapTarget(
   sceneId: string,
@@ -595,16 +620,8 @@ export function compileWithMarkers(
       } else if (verb.arrow) {
         const a = verb.arrow;
         const [instName, entry] = resolveMapTarget(scene.id, placedMaps, a.target);
-        const point = (endpoint: string | [number, number]): Vec2 => {
-          if (Array.isArray(endpoint)) return vec2(...endpoint);
-          const region = entry.regions.find((r) => r.id === endpoint);
-          if (!region) {
-            throw new Error(
-              `Scene "${scene.id}": arrow endpoint "${endpoint}" is not a region on "${instName}"`,
-            );
-          }
-          return region.centroid;
-        };
+        const point = (endpoint: string | [number, number]): Vec2 =>
+          resolveMapPoint(scene.id, instName, entry, endpoint);
         const fromPoint = point(a.from);
         const color = parseColor(a.color ?? '#b5453c');
         const toList: (string | [number, number])[] =
@@ -632,6 +649,35 @@ export function compileWithMarkers(
               bow: a.bow ?? (i % 2 === 0 ? 0.16 : -0.14),
             },
           );
+        });
+      } else if (verb.march) {
+        const m = verb.march;
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, m.target);
+        const fromPoint = resolveMapPoint(scene.id, instName, entry, m.from);
+        const toPoint = resolveMapPoint(scene.id, instName, entry, m.to);
+        pushEffect(instName, 'map-march', startTick, m.duration ?? 2.4, {
+          x0: fromPoint.x,
+          y0: fromPoint.y,
+          x1: toPoint.x,
+          y1: toPoint.y,
+          kind: Math.max(0, UNIT_KIND_NAMES.indexOf(m.kind ?? 'infantry')),
+          count: m.count ?? 5,
+          color: packHex(m.color ?? '#4a4136'),
+          bow: m.bow ?? 0.12,
+        });
+      } else if (verb.battle) {
+        const b = verb.battle;
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, b.target);
+        const at = resolveMapPoint(scene.id, instName, entry, b.at);
+        pushEffect(instName, 'map-battle', startTick, b.duration ?? 1.4, { x: at.x, y: at.y });
+      } else if (verb['plant-flag']) {
+        const f = verb['plant-flag'];
+        const [instName, entry] = resolveMapTarget(scene.id, placedMaps, f.target);
+        const at = resolveMapPoint(scene.id, instName, entry, f.at);
+        pushEffect(instName, 'map-flag', startTick, 1.2, {
+          x: at.x,
+          y: at.y,
+          color: packHex(f.color ?? '#b5453c'),
         });
       } else if (verb.map) {
         const m = verb.map;

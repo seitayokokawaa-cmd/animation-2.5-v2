@@ -52,9 +52,13 @@ import {
 
 import {
   arrowPolygon,
+  battleNodes,
   clipToFront,
+  flagNodes,
   highlightPulse,
+  marchNodes,
   morphRings,
+  UNIT_KINDS,
   unpackColor,
 } from '@motionforge/maps';
 
@@ -408,31 +412,76 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
               });
           }
         }
-        // Offensive arrows (M7.4) target the map instance itself.
+        // Arrows, marches, battles, flags (M7.4/M7.5) target the map
+        // instance itself and draw in its local frame.
         for (const effect of scene.effects) {
-          if (effect.verb !== 'map-arrow' || effect.target !== inst.id) continue;
+          if (effect.target !== inst.id || !effect.verb.startsWith('map-')) continue;
           if (localTick < effect.startTick) continue;
-          const t =
-            effect.durationTicks === 0
-              ? 1
-              : Math.min(1, (localTick - effect.startTick) / effect.durationTicks);
-          const polygon = arrowPolygon(
-            vec2(effect.params.x0 ?? 0, effect.params.y0 ?? 0),
-            vec2(effect.params.x1 ?? 0, effect.params.y1 ?? 0),
-            ease('cubicOut', t),
-            {
-              width: effect.params.width,
-              bow: effect.params.bow,
-            },
-          );
-          if (polygon.length < 3) continue;
-          mapOverlays.push({
-            id: `${inst.id}/${effect.seed}`,
-            layer: inst.layer + 900 + overlayIndex++,
-            shape: { kind: 'polygon', points: polygon },
-            fill: { color: unpackColor(effect.params.color ?? 0xb5453c) },
-            stroke: { color: { r: 0x3a, g: 0x28, b: 0x20, a: 1 }, width: 0.035 },
-          });
+          const raw =
+            effect.durationTicks === 0 ? 1 : (localTick - effect.startTick) / effect.durationTicks;
+          const t = Math.min(1, raw);
+          const layer = inst.layer + 900 + overlayIndex++;
+
+          if (effect.verb === 'map-arrow') {
+            const polygon = arrowPolygon(
+              vec2(effect.params.x0 ?? 0, effect.params.y0 ?? 0),
+              vec2(effect.params.x1 ?? 0, effect.params.y1 ?? 0),
+              ease('cubicOut', t),
+              { width: effect.params.width, bow: effect.params.bow },
+            );
+            if (polygon.length < 3) continue;
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}`,
+              layer,
+              shape: { kind: 'polygon', points: polygon },
+              fill: { color: unpackColor(effect.params.color ?? 0xb5453c) },
+              stroke: { color: { r: 0x3a, g: 0x28, b: 0x20, a: 1 }, width: 0.035 },
+            });
+          } else if (effect.verb === 'map-march') {
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}`,
+              layer,
+              children: marchNodes(
+                vec2(effect.params.x0 ?? 0, effect.params.y0 ?? 0),
+                vec2(effect.params.x1 ?? 0, effect.params.y1 ?? 0),
+                t,
+                {
+                  kind: UNIT_KINDS[effect.params.kind ?? 0] ?? 'infantry',
+                  count: effect.params.count ?? 5,
+                  color: unpackColor(effect.params.color ?? 0x4a4136),
+                  bow: effect.params.bow ?? 0.12,
+                  idPrefix: `${inst.id}/${effect.seed}`,
+                  seed: effect.seed,
+                  filmSeed: film.seed,
+                },
+              ),
+            });
+          } else if (effect.verb === 'map-battle') {
+            if (localTick >= effect.startTick + effect.durationTicks) continue;
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}`,
+              layer,
+              children: battleNodes(
+                vec2(effect.params.x ?? 0, effect.params.y ?? 0),
+                t,
+                `${inst.id}/${effect.seed}`,
+                effect.seed,
+                film.seed,
+              ),
+            });
+          } else if (effect.verb === 'map-flag') {
+            // Unclamped time keeps the pennant waving after the pop.
+            mapOverlays.push({
+              id: `${inst.id}/${effect.seed}`,
+              layer,
+              children: flagNodes(
+                vec2(effect.params.x ?? 0, effect.params.y ?? 0),
+                raw,
+                unpackColor(effect.params.color ?? 0xb5453c),
+                `${inst.id}/${effect.seed}`,
+              ),
+            });
+          }
         }
         return {
           ...base,

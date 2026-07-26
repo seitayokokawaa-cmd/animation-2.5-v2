@@ -318,6 +318,38 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Marching unit columns (M7.5). */
+  march: z
+    .object({
+      target: nameSchema.optional(),
+      from: z.union([nameSchema, vec2Schema]),
+      to: z.union([nameSchema, vec2Schema]),
+      kind: z.enum(['infantry', 'cavalry', 'ship', 'plane']).optional(),
+      count: z.number().int().positive().max(12).optional(),
+      color: colorSchema.optional(),
+      bow: z.number().finite().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Clash burst at a point/region (M7.5). */
+  battle: z
+    .object({
+      target: nameSchema.optional(),
+      at: z.union([nameSchema, vec2Schema]),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Plant a waving flag (M7.5). */
+  'plant-flag': z
+    .object({
+      target: nameSchema.optional(),
+      at: z.union([nameSchema, vec2Schema]),
+      color: colorSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Map region verbs (M7.3): recolor sweeps, highlights, border morphs. */
   map: z
     .object({
@@ -468,6 +500,9 @@ export const VERB_NAMES = [
   'react',
   'map',
   'arrow',
+  'march',
+  'battle',
+  'plant-flag',
   'squash-stretch',
   'hinge',
   'oscillate',

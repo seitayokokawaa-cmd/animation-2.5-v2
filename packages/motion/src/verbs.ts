@@ -245,6 +245,29 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  {
+    name: 'map-march',
+    summary: 'A column of unit icons marches a path with dust; holds formation at the end.',
+    defaultDurationSeconds: 2.4,
+    defaultSfx: 'march',
+    holdAfter: true,
+    sample: () => ({}),
+  },
+  {
+    name: 'map-battle',
+    summary: 'Clash stars + smoke at a point for the effect window.',
+    defaultDurationSeconds: 1.4,
+    defaultSfx: 'boom',
+    sample: () => ({}),
+  },
+  {
+    name: 'map-flag',
+    summary: 'Plant a waving flag at a point; it stays.',
+    defaultDurationSeconds: 1.2,
+    defaultSfx: 'pop',
+    holdAfter: true,
+    sample: () => ({}),
+  },
 ];
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;
