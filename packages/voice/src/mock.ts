@@ -9,7 +9,7 @@
 import { fnv1a } from '@motionforge/core';
 
 import type { TtsAdapter, VoiceSpec } from './adapter.js';
-import { encodeWavPcm16 } from './wav.js';
+import { encodeWavPcm16 } from '@motionforge/core';
 
 export const MOCK_SAMPLE_RATE = 48000;
 

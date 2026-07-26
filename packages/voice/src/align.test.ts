@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { energyAligner } from './align.js';
 import { mockAdapter, MOCK_GAP_SECONDS, MOCK_WORD_SECONDS } from './mock.js';
-import { decodeWav, wavDurationSeconds } from './wav.js';
+import { decodeWav, wavDurationSeconds } from '@motionforge/core';
 
 const spec = { engine: 'mock', voice: 'warm' };
 

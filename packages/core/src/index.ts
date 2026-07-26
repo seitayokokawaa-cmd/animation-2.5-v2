@@ -11,3 +11,4 @@ export * from './timeline.js';
 export * from './goldens.js';
 export * from './film.js';
 export * from './words.js';
+export * from './wav.js';

@@ -14,7 +14,7 @@ import { tokenizeWords } from '@motionforge/core';
 
 import type { TtsAdapter, VoiceSpec } from './adapter.js';
 import type { Aligner, Alignment } from './align.js';
-import { decodeWav, wavDurationSeconds } from './wav.js';
+import { decodeWav, wavDurationSeconds } from '@motionforge/core';
 
 export interface SegmentRequest {
   /** Stable segment key, e.g. `setup/0` (sceneId/segmentIndex). */

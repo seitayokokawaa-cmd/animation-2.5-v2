@@ -16,7 +16,7 @@
  * known), which is what makes the interface this small.
  */
 
-import type { WavData } from './wav.js';
+import type { WavData } from '@motionforge/core';
 
 export interface WordTiming {
   readonly word: string;

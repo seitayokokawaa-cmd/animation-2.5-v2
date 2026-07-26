@@ -122,7 +122,12 @@ async function main(): Promise<void> {
       const doc = loadChecked(file, values.json);
       const requests = segmentRequests(doc);
       const cache = new VoiceCache(values['cache-dir']);
-      const result = await syncSegments(requests, cache, adapterFor, energyAligner);
+      const result = await syncSegments(
+        requests,
+        cache,
+        (engine) => adapterFor(engine),
+        energyAligner,
+      );
       const lockPath = lockPathFor(file);
       writeLock(lockPath, result.lock);
       process.stderr.write(
@@ -140,7 +145,9 @@ async function main(): Promise<void> {
       const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.mp4';
       const started = performance.now();
-      const { frames } = await renderFilm(film, out, {
+      const cache = new VoiceCache(values['cache-dir']);
+      const { frames, narrationSegments } = await renderFilm(film, out, {
+        readVoiceWav: (hash) => cache.readWav(hash),
         onFrame: (n, total) => {
           if (n % 30 === 0 || n === total) {
             process.stderr.write(`\rframe ${n}/${total}`);
@@ -148,7 +155,9 @@ async function main(): Promise<void> {
         },
       });
       const seconds = ((performance.now() - started) / 1000).toFixed(1);
-      process.stderr.write(`\rrendered ${frames} frames → ${out} in ${seconds}s\n`);
+      process.stderr.write(
+        `\rrendered ${frames} frames${narrationSegments ? ` + ${narrationSegments} narration segment(s)` : ''} → ${out} in ${seconds}s\n`,
+      );
       return;
     }
     case 'frame': {

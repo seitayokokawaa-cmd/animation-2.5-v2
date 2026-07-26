@@ -14,6 +14,8 @@ export interface EncodeOptions {
   readonly outPath: string;
   /** x264 CRF quality; default 18. */
   readonly crf?: number;
+  /** Optional audio track: path to a WAV muxed as bitexact AAC. */
+  readonly audioWavPath?: string;
 }
 
 export interface Encoder {
@@ -25,6 +27,12 @@ export interface Encoder {
 
 export function createEncoder(options: EncodeOptions): Encoder {
   if (!ffmpegPath) throw new Error('ffmpeg-static did not provide a binary path');
+  const audio = options.audioWavPath
+    ? {
+        inputs: ['-i', options.audioWavPath],
+        codec: ['-c:a', 'aac', '-b:a', '192k', '-flags:a', '+bitexact', '-shortest'],
+      }
+    : { inputs: [], codec: [] };
   const args = [
     '-hide_banner',
     '-loglevel',
@@ -36,6 +44,7 @@ export function createEncoder(options: EncodeOptions): Encoder {
     String(options.fps),
     '-i',
     '-',
+    ...audio.inputs,
     '-c:v',
     'libx264',
     '-preset',
@@ -52,6 +61,7 @@ export function createEncoder(options: EncodeOptions): Encoder {
     '-1',
     '-movflags',
     '+faststart',
+    ...audio.codec,
     options.outPath,
   ];
   const proc = spawn(ffmpegPath, args, { stdio: ['pipe', 'inherit', 'inherit'] });

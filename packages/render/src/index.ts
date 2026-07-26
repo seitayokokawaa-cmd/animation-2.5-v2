@@ -4,4 +4,5 @@ export * from './rasterizer.js';
 export * from './text.js';
 export * from './frame.js';
 export * from './encode.js';
+export * from './mix.js';
 export * from './service.js';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { adapterFor } from './index.js';
 import { MOCK_SAMPLE_RATE, mockAdapter, mockDurationSeconds } from './mock.js';
-import { decodeWav, encodeWavPcm16, wavDurationSeconds } from './wav.js';
+import { decodeWav, encodeWavPcm16, wavDurationSeconds } from '@motionforge/core';
 
 const spec = { engine: 'mock', voice: 'warm' };
 
