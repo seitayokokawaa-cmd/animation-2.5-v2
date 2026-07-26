@@ -9,6 +9,7 @@ export { TICKS_PER_SECOND };
 
 export * from './schema.js';
 export * from './narration.js';
+export * from './narration-validate.js';
 export * from './loader.js';
 export * from './errors.js';
 export * from './validate.js';

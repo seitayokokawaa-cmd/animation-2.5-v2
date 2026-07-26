@@ -15,12 +15,14 @@ import {
   printPretty,
   timingTable,
   type MfsDocument,
+  type NarrationCacheProbe,
   type VoiceData,
 } from '@motionforge/lang';
 import { buildFrameSvg, renderFilm, resvgRasterizer } from '@motionforge/render';
 import {
   adapterFor,
   energyAligner,
+  isStale,
   readLock,
   syncSegments,
   VoiceCache,
@@ -59,6 +61,19 @@ function segmentRequests(doc: MfsDocument): SegmentRequest[] {
   return requests;
 }
 
+/** Stale/missing detection for the validator, from lock + cache. */
+function cacheProbeFor(file: string, cacheDir: string): NarrationCacheProbe {
+  const lock = readLock(lockPathFor(file));
+  const cache = new VoiceCache(cacheDir);
+  return {
+    probe(key, spec, text) {
+      const entry = lock.segments[key];
+      if (!entry || !cache.hasWav(entry.hash)) return 'missing';
+      return isStale(entry, { ...spec, engine: spec.engine }, text) ? 'stale' : 'ok';
+    },
+  };
+}
+
 /** Frozen narration lookup for the compiler, from lock + cache. */
 function voiceDataFor(file: string, cacheDir: string): VoiceData {
   const lock = readLock(lockPathFor(file));
@@ -80,14 +95,16 @@ function fail(message: string): never {
 }
 
 /** Validate; print findings; exit(1) on errors. Returns the typed doc. */
-function loadChecked(file: string, json: boolean) {
+function loadChecked(file: string, json: boolean, cacheDir?: string) {
   let text: string;
   try {
     text = readFileSync(file, 'utf8');
   } catch {
     fail(`Cannot read ${file}`);
   }
-  const result = check(text, file);
+  const result = check(text, file, {
+    ...(cacheDir ? { cacheProbe: cacheProbeFor(file, cacheDir) } : {}),
+  });
   if (result.findings.length > 0) {
     process.stdout.write((json ? printJson(result.findings) : printPretty(result.findings)) + '\n');
   }
@@ -136,12 +153,12 @@ async function main(): Promise<void> {
       return;
     }
     case 'check': {
-      const doc = loadChecked(file, values.json);
+      const doc = loadChecked(file, values.json, values['cache-dir']);
       if (!values.json) process.stdout.write(`OK: ${doc.meta.title}\n`);
       return;
     }
     case 'render': {
-      const doc = loadChecked(file, values.json);
+      const doc = loadChecked(file, values.json, values['cache-dir']);
       const { film } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.mp4';
       const started = performance.now();
@@ -177,7 +194,7 @@ async function main(): Promise<void> {
       return;
     }
     case 'timing': {
-      const doc = loadChecked(file, values.json);
+      const doc = loadChecked(file, values.json, values['cache-dir']);
       const { markers } = compileWithMarkers(doc, voiceDataFor(file, values['cache-dir']));
       process.stdout.write(timingTable(markers) + '\n');
       return;
