@@ -40,7 +40,9 @@ import { buildFrameSvg, FFMPEG_PATH, renderFilm, resvgRasterizer } from '@motion
 import {
   anthropicAdapter,
   authorFilm,
+  cachedAdapter,
   critiqueStoryboard,
+  FileResponseStore,
   MockLlmAdapter,
   storyboardShots,
   type AuthorTools,
@@ -301,9 +303,12 @@ async function main(): Promise<void> {
       const artifactsDir = out.replace(/\.mp4$/, '') + '.author';
       mkdirSync(dirname(out), { recursive: true });
       mkdirSync(artifactsDir, { recursive: true });
-      const adapter: LlmAdapter = values.mock
+      // Responses cache under the artifacts dir (M13.5) — re-running the
+      // same topic resumes finished passes instead of re-asking.
+      const inner: LlmAdapter = values.mock
         ? new MockLlmAdapter(JSON.parse(readFileSync(values.mock, 'utf8')) as string[])
         : anthropicAdapter();
+      const adapter = cachedAdapter(inner, new FileResponseStore(join(artifactsDir, 'llm-cache')));
       const cacheDir = values['cache-dir'];
       const tools: AuthorTools = {
         check(yaml) {
@@ -467,9 +472,13 @@ async function main(): Promise<void> {
       }
       process.stderr.write(`storyboard: ${shots.length} panel(s) → ${out}\n`);
       if (values.review) {
-        const adapter: LlmAdapter = values.mock
+        const reviewInner: LlmAdapter = values.mock
           ? new MockLlmAdapter(JSON.parse(readFileSync(values.mock, 'utf8')) as string[])
           : anthropicAdapter();
+        const adapter = cachedAdapter(
+          reviewInner,
+          new FileResponseStore(out.replace(/\.png$/, '') + '.llm-cache'),
+        );
         const critique = await critiqueStoryboard(adapter, readFileSync(out), {
           title: film.title,
           styleGuide: readFileSync(join('docs', 'style-guide.md'), 'utf8'),

@@ -175,7 +175,7 @@ Legend: ☐ pending · ☑ done
 | M13.2 | `docs/style-guide.md`: pacing rules + beat templates       | ☑    |
 | M13.3 | Two-pass `mf author` + `--research`                        | ☑    |
 | M13.4 | `mf storyboard` contact sheets + `--review`                | ☑    |
-| M13.5 | Response caching + resumable runs                          | ☐    |
+| M13.5 | Response caching + resumable runs                          | ☑    |
 | M13.6 | CI e2e with mocks                                          | ☐    |
 | M13.7 | `examples/11-authored` + committed transcript              | ☐    |
 
