@@ -67,7 +67,7 @@ Legend: ☐ pending · ☑ done
 | ---- | ------------------------------------------------------------- | ---- |
 | M4.1 | Emphasis verbs: pop-in/out, spin-in, slam, wiggle, pulse      | ☑    |
 | M4.2 | `bounce-to` hop locomotion + slide-with-bob                   | ☑    |
-| M4.3 | Cartoon FX: explode, impact stars, speedlines, emitters       | ☐    |
+| M4.3 | Cartoon FX: explode, impact stars, speedlines, emitters       | ☑    |
 | M4.4 | `squash-stretch` modifier on any node                         | ☐    |
 | M4.5 | Cards: date/chapter/list/quote + cutaways + name labels       | ☐    |
 | M4.6 | Style presets: `explainer-paper` + `clean-flat`               | ☐    |

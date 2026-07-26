@@ -10,7 +10,16 @@
  * effect's seed stream — same film seed → same wiggle, every render.
  */
 
-import { ease, hashNoiseSigned, vec2, type FilmEffect, type Pose } from '@motionforge/core';
+import {
+  ease,
+  hashNoiseSigned,
+  vec2,
+  type FilmEffect,
+  type Pose,
+  type SceneNode,
+} from '@motionforge/core';
+
+import { FX_DEFS } from './fx.js';
 
 export interface VerbDef {
   readonly name: string;
@@ -23,7 +32,11 @@ export interface VerbDef {
   readonly hideBefore?: boolean;
   /** Hide the target after the effect ends (exits). */
   readonly hideAfter?: boolean;
+  /** Hide the target from effect start onward (explode). */
+  readonly hideTargetFromStart?: boolean;
   readonly sample: (t: number, effect: FilmEffect, filmSeed: number) => Pose;
+  /** Extra geometry in target-local world units (cartoon FX). */
+  readonly emit?: (t: number, effect: FilmEffect, filmSeed: number) => SceneNode[];
 }
 
 const p = (effect: FilmEffect, key: string, fallback: number): number =>
@@ -142,7 +155,7 @@ const defs: VerbDef[] = [
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;
 
-export const VERB_REGISTRY: VerbRegistry = new Map(defs.map((d) => [d.name, d]));
+export const VERB_REGISTRY: VerbRegistry = new Map([...defs, ...FX_DEFS].map((d) => [d.name, d]));
 
 export function verb(name: string): VerbDef {
   const def = VERB_REGISTRY.get(name);
@@ -160,9 +173,27 @@ export function sampleEffect(effect: FilmEffect, localTick: number, filmSeed: nu
   if (localTick < effect.startTick) {
     return def.hideBefore ? { opacity: 0 } : {};
   }
+  if (def.hideTargetFromStart) return { opacity: 0 };
   if (localTick >= end) {
     return def.hideAfter ? { opacity: 0 } : {};
   }
   const t = effect.durationTicks === 0 ? 1 : (localTick - effect.startTick) / effect.durationTicks;
   return def.sample(t, effect, filmSeed);
+}
+
+/**
+ * Geometry emitted by an effect at a scene-local tick (empty outside its
+ * window or for non-emitting verbs). Pure.
+ */
+export function emitEffectNodes(
+  effect: FilmEffect,
+  localTick: number,
+  filmSeed: number,
+): SceneNode[] {
+  const def = verb(effect.verb);
+  if (!def.emit) return [];
+  const end = effect.startTick + effect.durationTicks;
+  if (localTick < effect.startTick || localTick >= end) return [];
+  const t = effect.durationTicks === 0 ? 1 : (localTick - effect.startTick) / effect.durationTicks;
+  return def.emit(t, effect, filmSeed);
 }

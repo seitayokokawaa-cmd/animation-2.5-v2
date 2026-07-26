@@ -283,6 +283,32 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
       slam: 0.45,
       wiggle: 0.8,
       pulse: 0.5,
+      explode: 0.8,
+      'impact-stars': 0.6,
+      speedlines: 0.6,
+      sweat: 0.9,
+      steam: 1,
+    };
+
+    /** FX verbs share one shape: target + duration + numeric params. */
+    const simpleFx = (
+      verbName: string,
+      payload: { target: string; duration?: number | undefined } & Record<string, unknown>,
+      startTick: Tick,
+      paramKeys: string[],
+    ): void => {
+      const params: Record<string, number> = {};
+      for (const key of paramKeys) {
+        const value = payload[key];
+        if (typeof value === 'number') params[key] = value;
+      }
+      pushEffect(
+        payload.target,
+        verbName,
+        startTick,
+        payload.duration ?? EFFECT_DEFAULT_SECONDS[verbName]!,
+        params,
+      );
     };
 
     const baseOf = (target: string) => scene.place.find((p) => p.as === target)!;
@@ -371,6 +397,16 @@ export function compileWithMarkers(doc: MfsDocument, voice?: VoiceData): Compile
           hops: hopCount,
           ...(height !== undefined ? { height } : {}),
         });
+      } else if (verb.explode) {
+        simpleFx('explode', verb.explode, startTick, ['radius']);
+      } else if (verb['impact-stars']) {
+        simpleFx('impact-stars', verb['impact-stars'], startTick, ['count']);
+      } else if (verb.speedlines) {
+        simpleFx('speedlines', verb.speedlines, startTick, ['angle']);
+      } else if (verb.sweat) {
+        simpleFx('sweat', verb.sweat, startTick, ['count']);
+      } else if (verb.steam) {
+        simpleFx('steam', verb.steam, startTick, []);
       } else if (verb['pop-in']) {
         const { target, duration, to } = verb['pop-in'];
         pushEffect(target, 'pop-in', startTick, duration ?? EFFECT_DEFAULT_SECONDS['pop-in']!, {

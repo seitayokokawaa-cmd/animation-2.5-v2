@@ -149,6 +149,23 @@ const verbFields = {
     .object({ ...effectBase, to: z.number().finite().positive().optional() })
     .strict()
     .optional(),
+  explode: z
+    .object({ ...effectBase, radius: z.number().finite().positive().optional() })
+    .strict()
+    .optional(),
+  'impact-stars': z
+    .object({ ...effectBase, count: z.number().int().positive().optional() })
+    .strict()
+    .optional(),
+  speedlines: z
+    .object({ ...effectBase, angle: z.number().finite().optional() })
+    .strict()
+    .optional(),
+  sweat: z
+    .object({ ...effectBase, count: z.number().int().positive().optional() })
+    .strict()
+    .optional(),
+  steam: z.object(effectBase).strict().optional(),
   'bounce-to': z
     .object({
       target: nameSchema,
@@ -197,6 +214,11 @@ const verbFields = {
 };
 
 export const VERB_NAMES = [
+  'explode',
+  'impact-stars',
+  'speedlines',
+  'sweat',
+  'steam',
   'bounce-to',
   'move',
   'rotate',

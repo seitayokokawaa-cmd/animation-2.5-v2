@@ -27,7 +27,7 @@ import {
   type Tick,
   type Vec2,
 } from '@motionforge/core';
-import { sampleEffect } from '@motionforge/motion';
+import { emitEffectNodes, sampleEffect } from '@motionforge/motion';
 
 import { shapeText } from './text.js';
 
@@ -109,6 +109,24 @@ export function buildFrameSvg(film: Film, tick: Tick): string {
           fill: inst.fill,
           stroke: inst.stroke,
         };
+      }),
+      // Cartoon FX geometry, anchored at the target's current position.
+      ...scene.effects.flatMap((effect, ei): SceneNode[] => {
+        const emitted = emitEffectNodes(effect, localTick, film.seed);
+        if (emitted.length === 0) return [];
+        const inst = scene.instances.find((i) => i.id === effect.target);
+        const anchor = inst
+          ? sample<Vec2>(scene.timeline, `${inst.id}/pos`, localTick)
+          : vec2(0, 0);
+        return [
+          {
+            id: `fx-${ei}`,
+            depth: inst?.depth ?? 0.2,
+            layer: (inst?.layer ?? 0) + 1,
+            transform: translation(anchor.x, anchor.y),
+            children: emitted,
+          },
+        ];
       }),
       ...captionNodes(scene, localTick),
     ],
