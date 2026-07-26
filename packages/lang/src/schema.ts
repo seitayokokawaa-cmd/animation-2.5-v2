@@ -364,6 +364,19 @@ const verbFields = {
     })
     .strict()
     .optional(),
+  /** Explicit sound cue (M9.1): plays the named SFX at this moment. */
+  sfx: z
+    .union([
+      nameSchema,
+      z
+        .object({
+          name: nameSchema,
+          /** Percent; 100 = full. */
+          gain: z.number().finite().positive().max(200).optional(),
+        })
+        .strict(),
+    ])
+    .optional(),
   /** Escape hatch (M8.6): hand-keyed frames on one property. */
   keyframes: z
     .object({
@@ -640,6 +653,7 @@ export const VERB_NAMES = [
   'squash-land',
   'chase',
   'keyframes',
+  'sfx',
   'squash-stretch',
   'hinge',
   'oscillate',

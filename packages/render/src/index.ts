@@ -8,3 +8,4 @@ export * from './mix.js';
 export * from './cards.js';
 export * from './style.js';
 export * from './service.js';
+export * from './audio.js';

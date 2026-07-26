@@ -749,6 +749,16 @@ export function compileWithMarkers(
             },
           );
         });
+      } else if (verb.sfx) {
+        const cue = typeof verb.sfx === 'string' ? { name: verb.sfx } : verb.sfx;
+        pushEffect(
+          'audio',
+          'sfx',
+          startTick,
+          0,
+          cue.gain !== undefined ? { gain: cue.gain } : {},
+          cue.name,
+        );
       } else if (verb.keyframes) {
         const kf = verb.keyframes;
         const frames = [...kf.frames].sort((a, b) => a.t - b.t);

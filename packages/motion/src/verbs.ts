@@ -294,6 +294,14 @@ const defs: VerbDef[] = [
     holdAfter: true,
     sample: () => ({}),
   },
+  {
+    name: 'sfx',
+    summary:
+      'An explicit sound cue (M9.1): plays the named SFX at its tick. ' +
+      'Carried on the audio bus; contributes no pose.',
+    defaultDurationSeconds: 0,
+    sample: () => ({}),
+  },
   // ---- slapstick-lite (M8.5) --------------------------------------------
   {
     name: 'bonk',

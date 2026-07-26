@@ -128,7 +128,7 @@ Legend: ☐ pending · ☑ done
 
 | Id   | Task                                                        | Done |
 | ---- | ----------------------------------------------------------- | ---- |
-| M9.1 | Audio event bus (cues + verb-default SFX + solver events)   | ☐    |
+| M9.1 | Audio event bus (cues + verb-default SFX + solver events)   | ☑    |
 | M9.2 | CC0 SFX library + license manifest                          | ☐    |
 | M9.3 | Music beds by mood + tension stingers + clean loop cuts     | ☐    |
 | M9.4 | Ducking automation + VO leveling                            | ☐    |
