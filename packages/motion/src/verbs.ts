@@ -29,6 +29,9 @@ export interface VerbDef {
   readonly defaultDurationSeconds: number;
   /** SFX cue name emitted by default when the audio bus lands (M9). */
   readonly defaultSfx?: string;
+  /** Exclusivity group for the conflict matrix (M12.1): two overlapping
+   * effects in the same group on one target read as a glitch. */
+  readonly exclusive?: string;
   /** Hide the target before the effect starts (entrances). */
   readonly hideBefore?: boolean;
   /** Hide the target after the effect ends (exits). */
@@ -306,6 +309,7 @@ const defs: VerbDef[] = [
       'Cast gesture (point, wave, salute, …): a rig-pose overlay the frame ' +
       'builder adds on top of the idle pose (M8.2).',
     defaultDurationSeconds: 1.4,
+    exclusive: 'gesture',
     sample: () => ({}),
   },
   {
@@ -314,6 +318,7 @@ const defs: VerbDef[] = [
       'Held body state (sit, kneel, lie-down, stand): blends in over the ' +
       'window and persists until the next posture (M8.3).',
     defaultDurationSeconds: 0.5,
+    exclusive: 'posture',
     holdAfter: true,
     sample: () => ({}),
   },
@@ -330,6 +335,7 @@ const defs: VerbDef[] = [
     name: 'bonk',
     summary: 'Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars.',
     defaultDurationSeconds: 0.7,
+    exclusive: 'travel',
     defaultSfx: 'boink',
     sample(t) {
       const decay = (1 - t) * (1 - t);
@@ -344,6 +350,7 @@ const defs: VerbDef[] = [
       'Ballistic arc + tumble on top of a linear slide, squashing on the ' +
       'landing — the "yeet" (M8.5).',
     defaultDurationSeconds: 0.9,
+    exclusive: 'travel',
     defaultSfx: 'whoosh',
     sample(t, effect) {
       const height = p(effect, 'height', 2.2);
@@ -368,6 +375,7 @@ const defs: VerbDef[] = [
     name: 'squash-land',
     summary: 'A hard landing squash and recover, no drop.',
     defaultDurationSeconds: 0.5,
+    exclusive: 'travel',
     defaultSfx: 'slam',
     sample(t) {
       const squash = Math.sin(Math.PI * t) * 0.35;

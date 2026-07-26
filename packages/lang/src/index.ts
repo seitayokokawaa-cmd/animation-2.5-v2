@@ -13,6 +13,7 @@ export * from './narration-validate.js';
 export * from './parts.js';
 export * from './library.js';
 export * from './loader.js';
+export * from './conflicts.js';
 export * from './errors.js';
 export * from './validate.js';
 export * from './references.js';

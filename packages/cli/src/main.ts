@@ -20,8 +20,10 @@ import {
   type MfsDocument,
   type MapsData,
   type NarrationCacheProbe,
+  type VerbClaims,
   type VoiceData,
 } from '@motionforge/lang';
+import { VERB_REGISTRY } from '@motionforge/motion';
 import {
   applyCustomRegions,
   compileMap,
@@ -183,6 +185,17 @@ function mapsDataFor(doc: MfsDocument): MapsData {
 }
 
 /** Validate; print findings; exit(1) on errors. Returns the typed doc. */
+/** Exclusivity declarations from the motion registry (M12.1). */
+function registryClaims(): VerbClaims {
+  const claims: Record<string, { exclusive: string; defaultSeconds: number }> = {};
+  for (const [name, def] of VERB_REGISTRY) {
+    if (def.exclusive) {
+      claims[name] = { exclusive: def.exclusive, defaultSeconds: def.defaultDurationSeconds };
+    }
+  }
+  return claims;
+}
+
 function loadChecked(file: string, json: boolean, cacheDir?: string) {
   let text: string;
   try {
@@ -199,6 +212,7 @@ function loadChecked(file: string, json: boolean, cacheDir?: string) {
   const result = check(text, file, {
     ...(cacheDir ? { cacheProbe: cacheProbeFor(file, cacheDir) } : {}),
     ...(libraries ? { libraries: libraries.objects } : {}),
+    verbClaims: registryClaims(),
   });
   if (libraries && libraries.findings.length > 0) {
     process.stdout.write(

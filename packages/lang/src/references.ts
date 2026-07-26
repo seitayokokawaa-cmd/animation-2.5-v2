@@ -3,6 +3,7 @@
  * Runs only on structurally valid documents (T1 passed).
  */
 
+import { checkConflicts, type VerbClaims } from './conflicts.js';
 import type { Finding } from './errors.js';
 import type { LoadedYaml } from './loader.js';
 import { checkNarration, type NarrationCacheProbe } from './narration-validate.js';
@@ -130,9 +131,11 @@ export interface CheckOptions {
   readonly cacheProbe?: NarrationCacheProbe;
   /** Objects loaded from `use:` libraries (film-local names win). */
   readonly libraries?: Readonly<Record<string, MfsObjectDef>>;
+  /** Registry exclusivity declarations for the conflict matrix (M12.1). */
+  readonly verbClaims?: VerbClaims;
 }
 
-/** T1 + T2 + narration checks — the `mf check` entry point. */
+/** T1 + T2 + T3 + narration checks — the `mf check` entry point. */
 export function check(text: string, file: string, options: CheckOptions = {}): CheckResult {
   const t1 = checkStructure(text, file);
   if (!t1.doc) return t1;
@@ -142,6 +145,7 @@ export function check(text: string, file: string, options: CheckOptions = {}): C
   const findings = [
     ...t1.findings,
     ...checkReferences(doc, t1.loaded, file),
+    ...checkConflicts(doc, t1.loaded, file, options.verbClaims),
     ...checkNarration(doc, t1.loaded, file, options.cacheProbe),
   ];
   return { ...t1, doc, findings };

@@ -26,6 +26,8 @@ export const MF_CODES = {
   MF2002: 'Unknown action target',
   MF2003: 'Duplicate instance name',
   MF2004: 'Duplicate scene id',
+  MF2005: 'Conflicting actions on one track',
+  MF2006: 'Overlapping exclusive effects',
   MF3001: 'Unknown narration voice',
   MF3002: 'Anchor phrase not found',
   MF3003: 'Ambiguous anchor phrase',
