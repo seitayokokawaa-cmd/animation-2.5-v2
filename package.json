@@ -17,9 +17,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^26.1.1",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.65.0",
