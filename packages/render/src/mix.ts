@@ -9,12 +9,17 @@
 
 import { decodeWav, encodeWavPcm16, ticksToSeconds, type Film } from '@motionforge/core';
 
-import { musicBed, MUSIC_MOODS, type MusicMood } from './music.js';
+import { collectCues } from './audio.js';
+import { musicBed, MUSIC_MOODS, stingerSamples, type MusicMood } from './music.js';
+import { sfxSamples } from './sfx.js';
 
 export const MIX_SAMPLE_RATE = 48000;
 
 /** Music bed level relative to narration. */
 export const MUSIC_BASE_GAIN = 0.28;
+
+/** SFX cue level relative to narration. */
+export const SFX_BASE_GAIN = 0.75;
 
 /** Narration gain under an active character line. */
 export const DUCK_GAIN = 0.35;
@@ -148,6 +153,19 @@ export function mixNarration(film: Film, readWav: (hash: string) => Uint8Array):
     for (let i = 0; i < length; i++) {
       const at = offset + i;
       mix[at]! += bed[i]! * gain * (voWindows.length > 0 ? musicDuck(at) : 1);
+    }
+  }
+
+  // SFX cues off the audio bus (M9.1/M9.2/M9.5): synthesized library
+  // sounds and stingers placed at their ticks. Unknown names are silent
+  // here — naming them is the validator's job (M12).
+  for (const cue of collectCues(film)) {
+    const library = sfxSamples(cue.name);
+    const samples = library.length > 0 ? library : stingerSamples(cue.name);
+    if (samples.length === 0) continue;
+    const offset = Math.round(ticksToSeconds(cue.tick) * MIX_SAMPLE_RATE);
+    for (let i = 0; i < samples.length && offset + i < totalSamples; i++) {
+      mix[offset + i]! += samples[i]! * SFX_BASE_GAIN * cue.gain;
     }
   }
 

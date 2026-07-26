@@ -29,7 +29,7 @@ export interface SfxCue {
 export function collectCues(film: Film): SfxCue[] {
   const cues: SfxCue[] = [];
   for (const scene of film.scenes) {
-    for (const effect of scene.effects) {
+    for (const effect of scene.effects ?? []) {
       const tick = scene.startTick + effect.startTick;
       if (effect.verb === 'sfx') {
         if (effect.text) {

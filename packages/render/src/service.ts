@@ -10,6 +10,7 @@ import { join } from 'node:path';
 
 import { frameCount, tickForFrame, type Film } from '@motionforge/core';
 
+import { collectCues } from './audio.js';
 import { encodeFrames } from './encode.js';
 import { buildFrameSvg } from './frame.js';
 import { mixNarration } from './mix.js';
@@ -30,8 +31,12 @@ export interface RenderResult {
   readonly narrationSegments: number;
 }
 
-const hasNarration = (film: Film): boolean =>
+const hasVoice = (film: Film): boolean =>
   film.scenes.some((s) => s.narration.length > 0 || (s.lines ?? []).length > 0);
+
+/** Any audio at all: VO, music beds, or SFX cues (M9.5). */
+const hasAudio = (film: Film): boolean =>
+  hasVoice(film) || film.scenes.some((s) => s.music) || collectCues(film).length > 0;
 
 /** Render the film to an MP4 at `outPath`. Deterministic end to end. */
 export async function renderFilm(
@@ -45,13 +50,19 @@ export async function renderFilm(
   let audioWavPath: string | undefined;
   let tempDir: string | undefined;
   let narrationSegments = 0;
-  if (hasNarration(film)) {
-    if (!options.readVoiceWav) {
+  if (hasAudio(film)) {
+    if (hasVoice(film) && !options.readVoiceWav) {
       throw new Error(
         'Film has narration but no voice-cache reader was provided — run `mf voice sync` and render via the CLI',
       );
     }
-    const mixed = mixNarration(film, options.readVoiceWav);
+    const mixed = mixNarration(
+      film,
+      options.readVoiceWav ??
+        ((hash) => {
+          throw new Error(`No voice reader for hash ${hash}`);
+        }),
+    );
     narrationSegments = mixed.segments;
     tempDir = mkdtempSync(join(tmpdir(), 'mf-mix-'));
     audioWavPath = join(tempDir, 'narration.wav');
