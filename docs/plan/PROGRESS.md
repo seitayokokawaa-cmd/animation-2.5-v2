@@ -152,7 +152,7 @@ Legend: ☐ pending · ☑ done
 | ----- | ---------------------------------------------------------- | ---- |
 | M11.1 | Bundled Noto set + fallback chain + licenses               | ☑    |
 | M11.2 | Titles/lower-thirds; subtitles from narration + alignment  | ☑    |
-| M11.3 | Multi-script goldens: Bengali, Arabic, CJK, mixed          | ☐    |
+| M11.3 | Multi-script goldens: Bengali, Arabic, CJK, mixed          | ☑    |
 | M11.4 | `examples/10-bangla`: English VO + Bengali subtitles       | ☐    |
 
 ## M12 — Validator T3 + the LLM handbook
