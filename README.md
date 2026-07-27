@@ -23,6 +23,7 @@ rendering every example twice and comparing SHA-256 hashes.
 - [YAML rules for authors](docs/authoring-rules.md) — the conventions `mf author` follows and `mf check` enforces.
 - [`docs/SPEC.md`](docs/SPEC.md) — the exhaustive generated reference (the LLM handbook).
 - [Error catalog](docs/errors/README.md) — every `MF` code with fixes.
+- [The pinned toolchain](docs/toolchain.md) — what byte-determinism rests on, and the platform matrix.
 - [`examples/`](examples) — twelve working films, from moving shapes to a full fable.
 
 ## What's inside

@@ -5,8 +5,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Platform matrix (M15.5): the full verify gate runs on every OS the
+  # toolchain pins support. Renders + artifacts stay on Linux (the
+  # reference platform, docs/toolchain.md) to keep CI time sane.
   verify:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +27,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm verify
+
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
 
       - name: Render example films
         run: |
