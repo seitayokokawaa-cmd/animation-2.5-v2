@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "segments": {
+    "aftermath/0": {
+      "hash": "a0007d55a842864f6e9908f7071f67b07826b3c13e8758854c04cd868429024e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.72,
+      "text": "Mir Jafar got the throne, exactly as promised. The Company got the treasury, also exactly as promised — and then kept collecting.\n"
+    },
+    "aftermath/line/0": {
+      "hash": "76bb7ae06b6cf95a569e37173a4d0cd2c0c550e880fa5a6220b6dce54e9020bb",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.9,
+      "pitch": 4,
+      "durationSeconds": 2.133395833333333,
+      "text": "Wait — all of it?"
+    },
+    "battle/0": {
+      "hash": "6f1a2d4192135b9fec5885ac38cdd8c65e6c48388a69533b364817e101cc9753",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.52,
+      "text": "The scoreboard looked absurd. Fifty thousand soldiers and fifty-three cannon for the Nawab. Three thousand men for the Company.\n"
+    },
+    "battle/1": {
+      "hash": "bf15eb57e0e917765ee7913aeb51e2ab19b07d36ec75475314a836938faf58fd",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "Then, at noon, the monsoon opened. The Nawab's gunners left their powder in the rain. The Company put tarpaulins over theirs.\n"
+    },
+    "battle/2": {
+      "hash": "3214670f402146d66b2d7ca015c3b2f62088da4dd929b40bd893971e77300224",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.92,
+      "text": "When the Nawab's wet cannon went quiet, the Company's dry ones did not. And Mir Jafar's third of the army watched. Very still. Very neutral.\n"
+    },
+    "battle/3": {
+      "hash": "baf8cedd0760d0664194dea209335b65a01e0a832a2aa95448283b4b18ff1493",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 4.32,
+      "text": "By evening the Nawab's army was a rumor. Siraj left early."
+    },
+    "bengal/0": {
+      "hash": "9d6edbba71e923b88c9ea9338ed468bd70f0f2e4b5760c839a996be9c15363e9",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.52,
+      "text": "In 1756, the richest province of the crumbling Mughal Empire was Bengal — silk, saltpetre, and one fifth of all the money in Asia.\n"
+    },
+    "bengal/1": {
+      "hash": "d76e84872cd5ad67c657de74c1c390cf14b646eecb34025e8c3fc903884dc991",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "Everybody wanted a piece. The French had a trading post. The British East India Company had a bigger one, with walls.\n"
+    },
+    "calcutta-falls/0": {
+      "hash": "9b19a34ebc73266ba26e8305c3a1833ac01e57f3db7a6d948d4c8288ed9b1a35",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.72,
+      "text": "In June 1756 the Nawab marched fifty thousand men from Murshidabad and took Calcutta in four days.\n"
+    },
+    "calcutta-falls/1": {
+      "hash": "bf40c16a947148145bd43f0e74241f9902c1ffc515caf6eb5fbac831fec6ff23",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.72,
+      "text": "The Company was not used to losing warehouses. From Madras it sent its most reliable fixer — Robert Clive — with ships.\n"
+    },
+    "calcutta-falls/2": {
+      "hash": "9612ae4511acb41b32fca9425d2dc7b02d28e69e5519bfa2bc9549fbc1aef1bf",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 3.12,
+      "text": "Calcutta changed hands again in January. Nobody apologized."
+    },
+    "conspiracy/0": {
+      "hash": "afbebd63778c4130a45c13ce565eabd9a8bbdac26ac793659505fa6360b18928",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.92,
+      "text": "Fighting fifty thousand men is expensive. Bribing their commander is not. The Company found Mir Jafar, the Nawab's own general, and made him an offer.\n"
+    },
+    "conspiracy/1": {
+      "hash": "fde4af6c2ab01dc3cf59cec2c11f44c2c22f9be88fd444293efd8e5ca5e85aab",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 6.72,
+      "text": "The terms were simple. The army stands still, Jafar becomes Nawab, and the Company gets the treasury.\n"
+    },
+    "conspiracy/line/0": {
+      "hash": "b203463866fa17c414d9680a9c0390fe849f59069374f4ca9cee563e064c70e5",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.9,
+      "pitch": 4,
+      "durationSeconds": 0.3555625,
+      "text": "Deal."
+    },
+    "epilogue/0": {
+      "hash": "8a14bfce7ddfc12e5183b2440b64fc705f630ae3302aa294c3f259509424d978",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.52,
+      "text": "The battle took one afternoon and cost the Company twenty-two men. The receipt — an empire — took two hundred years to pay off.\n"
+    },
+    "nawab/0": {
+      "hash": "4c352f7df2370d4b1744e4419ec6f40472fe609461ff73569ec5cfb9caf7377d",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.12,
+      "text": "Bengal's new ruler was Siraj ud-Daulah — twenty-three years old, freshly crowned, and deeply unimpressed by unauthorized walls.\n"
+    },
+    "nawab/line/0": {
+      "hash": "2d6b9d3f1be25063d814c841f7b7f37c5f42a326289376809c5f6b3381815049",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.95,
+      "pitch": -2,
+      "durationSeconds": 1.1789166666666666,
+      "text": "Tear them down."
+    },
+    "plassey-morning/0": {
+      "hash": "95dd6804a5cc4f6875b567eff6eb5b8a67a3ed1eaf06e744e683856522c6428e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.52,
+      "text": "On the twenty-third of June, 1757, the two armies met in a mango grove by the river at Plassey.\n"
+    }
+  }
+}

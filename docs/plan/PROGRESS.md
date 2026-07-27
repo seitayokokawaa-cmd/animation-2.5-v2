@@ -198,6 +198,6 @@ Legend: ☐ pending · ☑ done
 | M15.1 | Worker-pool rasterization + streaming pipeline             | ☑    |
 | M15.2 | CLI UX: progress, timings, friendly failures               | ☑    |
 | M15.3 | Docs: quickstart, language tour, cookbooks                 | ☑    |
-| M15.4 | Showcase films rendered in CI                              | ☐    |
+| M15.4 | Showcase films rendered in CI                              | ☑    |
 | M15.5 | Platform matrix + pinned-toolchain doc                     | ☐    |
 | M15.6 | Traceability audit → tag `v1.0.0`                          | ☐    |

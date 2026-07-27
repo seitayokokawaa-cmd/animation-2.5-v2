@@ -1,0 +1,184 @@
+# examples/14-coffee — the M15.4 mini: "How Coffee Conquered the World"
+# in about a minute. The goat legend, the Mocha trade, one very
+# unsuccessful ban, and a map that slowly turns coffee-colored. Mock TTS
+# keeps it offline.
+#
+#   pnpm mf voice sync examples/14-coffee.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/14-coffee.mfs.yaml -o out/14-coffee.mp4
+motionforge: 2
+meta:
+  title: How Coffee Conquered the World
+  resolution: 1280x720
+  fps: 30
+  seed: 1650
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+  sultan: { engine: mock, voice: gravel, pitch: -4, rate: 0.9 }
+
+shapes:
+  berry-bush:
+    kind: ellipse
+    rx: 0.55
+    ry: 0.45
+    fill: '#4c7a3d'
+    stroke: { color: '#2f5226', width: 0.035 }
+  coffee-cup:
+    kind: rect
+    width: 0.44
+    height: 0.36
+    rx: 0.05
+    fill: '#f2e8d8'
+    stroke: { color: '#6b4a2b', width: 0.03 }
+
+cast:
+  kaldi:
+    template: potato-biped
+    size: 0.9
+    palette: { outfit: '#b0813c', 'outfit-dark': '#7c5a28', skin: '#8a5a3a' }
+    costume: [peasant-tunic, turban]
+    expression: neutral
+  goat:
+    template: dog
+    size: 1.1
+    palette: { outfit: '#d8d3c8', 'outfit-dark': '#a8a294' }
+  sultan:
+    template: potato-biped
+    size: 1.0
+    palette: { outfit: '#5a3a7c', 'outfit-dark': '#3e2856', skin: '#caa06a' }
+    costume: [robe, turban]
+    mustache: handlebar
+    expression: angry
+
+maps:
+  world:
+    source: naturalearth/world-110m
+    width: 17
+
+scenes:
+  # ── 1. The legend ──────────────────────────────────────────────────
+  - id: goats
+    stage: { preset: meadow }
+    music: { mood: jaunty, gain: 88 }
+    place:
+      - { ref: kaldi, as: kaldi, at: [-2.8, -2.6] }
+      - { ref: goat, as: goat, at: [1.6, -2.6], facing: left }
+      - { ref: berry-bush, as: bush, at: [3.2, -2.5] }
+    narration:
+      - voice: narrator
+        text: >
+          Legend says coffee was discovered in Ethiopia by a goatherd
+          named Kaldi, whose goats ate some red berries and refused to
+          sleep. Ever.
+        sync:
+          - {
+              on: 'Legend says',
+              do:
+                {
+                  card:
+                    {
+                      style: title,
+                      text: HOW COFFEE CONQUERED THE WORLD,
+                      subtext: a caffeinated history,
+                      duration: 2.6,
+                    },
+                },
+            }
+          - { on: 'named Kaldi', do: { walk: { target: kaldi, to: [-0.8, -2.6] } } }
+          - { on: 'red berries', do: { jump: { target: goat, height: 1.1 } } }
+          - { on: 'refused to sleep', do: { jump: { target: goat, to: [0.4, -2.6], height: 1.4 } } }
+          - { on: 'refused to sleep', do: { react: { target: kaldi, kind: jaw-drop } } }
+          - { on: 'Ever', do: { jump: { target: goat, to: [1.2, -2.6], height: 1.2 } } }
+          - { on: 'Ever', do: { sfx: boink } }
+        pause: 0.4
+
+  # ── 2. The trade ───────────────────────────────────────────────────
+  - id: trade
+    music: { mood: tense, gain: 84 }
+    transition: { kind: wipe }
+    place:
+      - { ref: world, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          By the fifteenth century the beans had crossed the Red Sea to
+          Yemen, and the port of Mocha was shipping caffeine to Istanbul
+          and beyond.
+        sync:
+          - { on: 'fifteenth century', do: { card: { style: date, text: '1450', duration: 2 } } }
+          - { on: 'crossed the Red Sea', do: { map: { highlight: ethiopia } } }
+          - { on: 'crossed the Red Sea', do: { arrow: { from: ethiopia, to: yemen, width: 0.22 } } }
+          - { on: 'port of Mocha', do: { map: { recolor: { yemen: '#6b4a2b' }, duration: 0.7 } } }
+          - {
+              on: 'to Istanbul',
+              do: { arrow: { from: yemen, to: turkey, bow: 0.25, width: 0.22 } },
+            }
+          - { on: 'and beyond', do: { map: { recolor: { turkey: '#6b4a2b' }, duration: 0.7 } } }
+        pause: 0.4
+
+  # ── 3. The ban ─────────────────────────────────────────────────────
+  - id: ban
+    stage: { preset: palace-hall }
+    music: { mood: somber, gain: 82 }
+    transition: { kind: iris }
+    place:
+      - { ref: sultan, as: sultan, at: [-1.4, -2.6] }
+      - { ref: coffee-cup, as: cup, at: [1.9, -2.85] }
+    narration:
+      - voice: narrator
+        text: >
+          Rulers kept trying to ban it. Coffeehouses, they said, were
+          where sedition happened. The bans lasted, on average, one
+          sultan.
+        sync:
+          - { on: 'trying to ban it', do: { react: { target: sultan, kind: anger-steam } } }
+          - { on: 'sedition happened', do: { gesture: { target: sultan, kind: point } } }
+          - { on: 'The bans lasted', do: { take: { target: sultan, item: cup, duration: 0.9 } } }
+          - { on: 'one sultan', do: { react: { target: sultan, kind: hearts, duration: 2 } } }
+          - { on: 'one sultan', do: { sfx: ding } }
+        pause: 0.3
+    lines:
+      - { after: 'on average', speaker: sultan, say: One sip. For research., react: sweat }
+
+  # ── 4. World domination ────────────────────────────────────────────
+  - id: conquest
+    music: { mood: triumphant, gain: 86 }
+    transition: { kind: crossfade }
+    place:
+      - { ref: world, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          Venice fell first. Then Paris, then London, then everywhere
+          ships could reach. The most successful conquest in history
+          required no army at all — just breakfast.
+        sync:
+          - {
+              on: 'Venice fell first',
+              do: { map: { recolor: { italy: '#6b4a2b' }, duration: 0.6 } },
+            }
+          - { on: 'Then Paris', do: { map: { recolor: { france: '#6b4a2b' }, duration: 0.6 } } }
+          - {
+              on: 'then London',
+              do: { map: { recolor: { united-kingdom: '#6b4a2b' }, duration: 0.6 } },
+            }
+          - {
+              on: 'ships could reach',
+              do: { map: { recolor: { brazil: '#6b4a2b' }, duration: 0.8 } },
+            }
+          - {
+              on: 'no army at all',
+              do:
+                {
+                  card:
+                    {
+                      style: quote,
+                      text: 'No army. Just breakfast.',
+                      duration: 2.8,
+                      entrance: pop,
+                    },
+                },
+            }
+          - { on: 'just breakfast', do: { sfx: ding } }
+        pause: 0.5

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "One",
+      "start": 0,
+      "end": 0.35000000000000003
+    },
+    {
+      "word": "sip",
+      "start": 0.45,
+      "end": 0.8
+    },
+    {
+      "word": "For",
+      "start": 0.89,
+      "end": 1.24
+    },
+    {
+      "word": "research",
+      "start": 1.34,
+      "end": 1.69
+    }
+  ]
+}

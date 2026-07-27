@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Tear",
+      "start": 0,
+      "end": 0.34
+    },
+    {
+      "word": "them",
+      "start": 0.42,
+      "end": 0.76
+    },
+    {
+      "word": "down",
+      "start": 0.84,
+      "end": 1.18
+    }
+  ]
+}

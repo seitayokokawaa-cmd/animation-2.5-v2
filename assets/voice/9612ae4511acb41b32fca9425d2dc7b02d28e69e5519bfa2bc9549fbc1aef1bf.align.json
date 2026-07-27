@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Calcutta",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "changed",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "hands",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "again",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "in",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "January",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "Nobody",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "apologized",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    }
+  ]
+}

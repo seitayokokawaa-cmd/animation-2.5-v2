@@ -917,18 +917,73 @@ const GRADE_OVERLAYS: Record<string, Array<{ color: Color; opacity: number }>> =
   ],
 };
 
+/** Sutherland–Hodgman: clip a ring to an axis-aligned rectangle. */
+function clipRingToRect(
+  points: readonly Vec2[],
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
+): Vec2[] {
+  const clipHalf = (
+    pts: readonly Vec2[],
+    inside: (p: Vec2) => boolean,
+    intersect: (a: Vec2, b: Vec2) => Vec2,
+  ): Vec2[] => {
+    const out: Vec2[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i]!;
+      const b = pts[(i + 1) % pts.length]!;
+      const ain = inside(a);
+      if (ain) out.push(a);
+      if (ain !== inside(b)) out.push(intersect(a, b));
+    }
+    return out;
+  };
+  const atX = (a: Vec2, b: Vec2, x: number): Vec2 =>
+    vec2(x, a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x));
+  const atY = (a: Vec2, b: Vec2, y: number): Vec2 =>
+    vec2(a.x + ((b.x - a.x) * (y - a.y)) / (b.y - a.y), y);
+  let ring = clipHalf(
+    points,
+    (p) => p.x >= minX,
+    (a, b) => atX(a, b, minX),
+  );
+  ring = clipHalf(
+    ring,
+    (p) => p.x <= maxX,
+    (a, b) => atX(a, b, maxX),
+  );
+  ring = clipHalf(
+    ring,
+    (p) => p.y >= minY,
+    (a, b) => atY(a, b, minY),
+  );
+  ring = clipHalf(
+    ring,
+    (p) => p.y <= maxY,
+    (a, b) => atY(a, b, maxY),
+  );
+  return ring;
+}
+
 /**
- * Drop items that lie fully outside the viewport. Only applied to
+ * Drop items that lie fully outside the viewport, and clip polygons
+ * that spill far past it down to the visible window. Only applied to
  * opacity-wrapped crossfade layers (M10.5): the pinned resvg build
- * panics on offscreen geometry inside a `<g opacity>` layer, and culling
- * there is invisible by definition. Paths are kept (no cheap safe bbox).
+ * panics on out-of-view geometry inside a `<g opacity>` layer — both
+ * fully-offscreen items and (with a translucent sibling in the layer)
+ * partially-visible giants like map continents. Culling and clipping
+ * there are invisible by definition. Paths are kept (no cheap safe
+ * bbox).
  */
 function cullOffscreen(
   items: readonly DrawItem[],
   width: number,
   height: number,
 ): readonly DrawItem[] {
-  return items.filter((item) => {
+  const out: DrawItem[] = [];
+  for (const item of items) {
     const s = item.shape;
     let corners: Vec2[];
     if (s.kind === 'rect') {
@@ -940,10 +995,11 @@ function cullOffscreen(
     } else if (s.kind === 'ellipse') {
       corners = [vec2(-s.rx, -s.ry), vec2(s.rx, -s.ry), vec2(-s.rx, s.ry), vec2(s.rx, s.ry)];
     } else if (s.kind === 'polygon') {
-      if (s.points.length === 0) return false;
+      if (s.points.length === 0) continue;
       corners = [...s.points];
     } else {
-      return true; // path: keep
+      out.push(item); // path: keep
+      continue;
     }
     const m = item.worldTransform;
     let minX = Infinity;
@@ -961,8 +1017,33 @@ function cullOffscreen(
     const pad = item.stroke
       ? item.stroke.width * Math.max(Math.hypot(m.a, m.b), Math.hypot(m.c, m.d))
       : 0;
-    return maxX + pad >= 0 && minX - pad <= width && maxY + pad >= 0 && minY - pad <= height;
-  });
+    if (maxX + pad < 0 || minX - pad > width || maxY + pad < 0 || minY - pad > height) {
+      continue; // fully offscreen
+    }
+    // Partially-visible polygon spilling well past the viewport under an
+    // axis-aligned transform: clip its ring to the screen window.
+    const axisAligned = Math.abs(m.b) < 1e-9 && Math.abs(m.c) < 1e-9 && m.a !== 0 && m.d !== 0;
+    const spill = Math.max(0 - minX, maxX - width, 0 - minY, maxY - height);
+    if (s.kind === 'polygon' && axisAligned && spill > pad + 8) {
+      // Screen window (padded) mapped into the item's local frame.
+      const lx1 = (0 - pad - m.e) / m.a;
+      const lx2 = (width + pad - m.e) / m.a;
+      const ly1 = (0 - pad - m.f) / m.d;
+      const ly2 = (height + pad - m.f) / m.d;
+      const ring = clipRingToRect(
+        s.points,
+        Math.min(lx1, lx2),
+        Math.max(lx1, lx2),
+        Math.min(ly1, ly2),
+        Math.max(ly1, ly2),
+      );
+      if (ring.length < 3) continue;
+      out.push({ ...item, shape: { kind: 'polygon', points: ring } });
+      continue;
+    }
+    out.push(item);
+  }
+  return out;
 }
 
 /**

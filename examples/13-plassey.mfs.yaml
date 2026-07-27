@@ -1,0 +1,510 @@
+# examples/13-plassey — the M15.4 showcase: "The Battle of Plassey",
+# a three-minute narrated history in the house style. English VO with
+# Bengali subtitles throughout, real 50m coastlines under the Bengal
+# zooms, custom historical regions, map offensives, palace skits, a
+# scroll hand-off, ragdoll slapstick, and the ironic quote-card ending.
+# Mock TTS keeps it offline.
+#
+#   pnpm mf voice sync examples/13-plassey.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/13-plassey.mfs.yaml -o out/13-plassey.mp4
+motionforge: 2
+meta:
+  title: The Battle of Plassey
+  resolution: 1280x720
+  fps: 30
+  seed: 1757
+  style: explainer-paper
+  subtitles: { font: noto-bengali, size: 0.34 }
+
+voices:
+  narrator: { engine: mock, voice: warm }
+  siraj: { engine: mock, voice: gravel, pitch: -2, rate: 0.95 }
+  clive: { engine: mock, voice: bright, pitch: 2, rate: 1.05 }
+  jafar: { engine: mock, voice: gravel, pitch: 4, rate: 0.9 }
+
+shapes:
+  scroll-prop:
+    kind: rect
+    width: 0.5
+    height: 0.16
+    rx: 0.07
+    fill: '#e8dcc0'
+    stroke: { color: '#8a6a3f', width: 0.03 }
+  powder-keg:
+    kind: rect
+    width: 0.7
+    height: 0.55
+    rx: 0.06
+    fill: '#6b4a2b'
+    stroke: { color: '#3f2a16', width: 0.035 }
+
+cast:
+  siraj:
+    template: potato-biped
+    size: 0.95
+    palette: { outfit: '#7d2a4e', 'outfit-dark': '#571c36', skin: '#caa06a' }
+    costume: [robe, turban]
+    mustache: chevron
+    expression: angry
+  clive:
+    template: potato-biped
+    size: 0.88
+    palette: { outfit: '#a83232', 'outfit-dark': '#7c2222', skin: '#f0c9a0' }
+    costume: [military-uniform, plumed-hat]
+    expression: deadpan
+  jafar:
+    template: potato-biped
+    size: 0.92
+    palette: { outfit: '#3c6b50', 'outfit-dark': '#284936', skin: '#caa06a' }
+    costume: [robe, turban]
+    mustache: goatee
+    expression: neutral
+  jafar-crowned:
+    template: potato-biped
+    size: 0.92
+    palette: { outfit: '#3c6b50', 'outfit-dark': '#284936', skin: '#caa06a' }
+    costume: [robe, crown]
+    mustache: goatee
+    expression: happy
+  sepoy:
+    template: potato-biped
+    size: 0.78
+    palette: { outfit: '#8a8360', 'outfit-dark': '#615c43', skin: '#caa06a' }
+    costume: [military-uniform]
+    expression: neutral
+
+maps:
+  india:
+    source: naturalearth/world-50m
+    view: { lon: [66, 98], lat: [5, 30] }
+    width: 17
+    groups:
+      company: [calcutta]
+    regions:
+      bengal:
+        # The Bengal subah, traced along the real coast and foothills.
+        points:
+          [
+            [86.9, 21.5],
+            [86.5, 22.3],
+            [86.3, 23.2],
+            [86.5, 24.1],
+            [87.0, 25.0],
+            [87.7, 25.7],
+            [88.1, 26.4],
+            [88.9, 26.6],
+            [89.8, 26.4],
+            [90.9, 26.2],
+            [91.9, 25.8],
+            [92.4, 25.0],
+            [92.3, 23.9],
+            [92.1, 22.8],
+            [91.8, 21.9],
+            [91.2, 21.4],
+            [90.4, 21.8],
+            [89.4, 21.5],
+            [88.4, 21.4],
+            [87.6, 21.6],
+          ]
+      calcutta:
+        points: [[88.2, 22.4], [88.2, 22.75], [88.55, 22.75], [88.55, 22.4]]
+      murshidabad:
+        points: [[88.1, 24.0], [88.1, 24.35], [88.45, 24.35], [88.45, 24.0]]
+      plassey:
+        points: [[88.15, 23.65], [88.15, 23.95], [88.45, 23.95], [88.45, 23.65]]
+      madras:
+        points: [[80.0, 12.9], [80.0, 13.35], [80.45, 13.35], [80.45, 12.9]]
+
+scenes:
+  # ── 1. Bengal, 1756 ────────────────────────────────────────────────
+  - id: bengal
+    music: { mood: jaunty, gain: 86 }
+    place:
+      - { ref: india, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          In 1756, the richest province of the crumbling Mughal Empire
+          was Bengal — silk, saltpetre, and one fifth of all the money
+          in Asia.
+        subtitle: >
+          ১৭৫৬ সালে ভাঙতে থাকা মুঘল সাম্রাজ্যের সবচেয়ে ধনী প্রদেশ ছিল
+          বাংলা — রেশম, সোরা, আর এশিয়ার এক-পঞ্চমাংশ অর্থ।
+        sync:
+          - {
+              on: 'In 1756',
+              do:
+                {
+                  card:
+                    {
+                      style: title,
+                      text: THE BATTLE OF PLASSEY,
+                      subtext: পলাশীর যুদ্ধ,
+                      font: noto-bengali,
+                      duration: 3,
+                    },
+                },
+            }
+          - { on: 'In 1756', do: { sfx: drumroll } }
+          - { on: 'was Bengal', do: { map: { highlight: bengal } } }
+          - { on: 'was Bengal', offset: 0.2, do: { 'zoom-to': { region: bengal, duration: 1.6 } } }
+          - { on: 'money in Asia', do: { map: { recolor: { bengal: '#b08a3c' }, duration: 0.8 } } }
+          - { on: 'money in Asia', do: { sfx: ding } }
+        pause: 0.3
+      - voice: narrator
+        text: >
+          Everybody wanted a piece. The French had a trading post. The
+          British East India Company had a bigger one, with walls.
+        subtitle: >
+          সবাই এক টুকরো চাইত। ফরাসিদের ছিল একটি বাণিজ্যকুঠি। ব্রিটিশ
+          ইস্ট ইন্ডিয়া কোম্পানির ছিল আরও বড় একটি — দেয়ালসহ।
+        sync:
+          - { on: 'a trading post', do: { map: { highlight: calcutta } } }
+          - { on: 'a trading post', do: { label: { of: { calcutta: Calcutta } } } }
+          - { on: 'with walls', do: { 'plant-flag': { at: calcutta, color: '#a83232' } } }
+          - { on: 'with walls', do: { sfx: pop } }
+        pause: 0.4
+
+  # ── 2. The Nawab ───────────────────────────────────────────────────
+  - id: nawab
+    stage: { preset: throne-room }
+    music: { mood: tense, gain: 82 }
+    transition: { kind: wipe }
+    place:
+      - { ref: siraj, as: siraj, at: [-1.6, -2.6] }
+      - { ref: sepoy, as: guard, at: [2.6, -2.6], facing: left }
+    narration:
+      - voice: narrator
+        text: >
+          Bengal's new ruler was Siraj ud-Daulah — twenty-three years
+          old, freshly crowned, and deeply unimpressed by unauthorized
+          walls.
+        subtitle: >
+          বাংলার নতুন শাসক সিরাজউদ্দৌলা — তেইশ বছর বয়স, সদ্য সিংহাসনে,
+          আর অননুমোদিত দেয়াল নিয়ে গভীরভাবে বিরক্ত।
+        sync:
+          - {
+              on: 'Siraj ud-Daulah',
+              do:
+                {
+                  card:
+                    {
+                      style: lower-third,
+                      text: SIRAJ UD-DAULAH,
+                      subtext: Nawab of Bengal,
+                      duration: 3,
+                    },
+                },
+            }
+          - { on: 'twenty-three years', do: { shot: { kind: medium, of: siraj, duration: 1 } } }
+          - { on: 'unauthorized walls', do: { react: { target: siraj, kind: anger-steam } } }
+          - { on: 'unauthorized walls', do: { shot: { kind: wide, duration: 0.5 } } }
+        pause: 0.2
+    lines:
+      - { after: 'unauthorized walls', speaker: siraj, say: Tear them down., react: anger-steam }
+
+  # ── 3. Calcutta falls ──────────────────────────────────────────────
+  - id: calcutta-falls
+    music: { mood: tense, gain: 88 }
+    transition: { kind: fade }
+    place:
+      - { ref: india, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          In June 1756 the Nawab marched fifty thousand men from
+          Murshidabad and took Calcutta in four days.
+        subtitle: >
+          ১৭৫৬ সালের জুনে নবাব মুর্শিদাবাদ থেকে পঞ্চাশ হাজার সৈন্য
+          নিয়ে চার দিনে কলকাতা দখল করলেন।
+        sync:
+          - { on: 'In June 1756', do: { card: { style: date, text: '1756', duration: 2 } } }
+          - {
+              on: 'In June 1756',
+              offset: 0.2,
+              do: { 'zoom-to': { region: bengal, duration: 1.2 } },
+            }
+          - {
+              on: 'marched fifty thousand',
+              do: { march: { from: murshidabad, to: calcutta, kind: infantry, count: 6 } },
+            }
+          - { on: 'In June 1756', offset: 0.4, do: { label: { of: { murshidabad: Murshidabad } } } }
+          - { on: 'took Calcutta', do: { battle: { at: calcutta } } }
+          - { on: 'four days', do: { map: { recolor: { calcutta: '#7d2a4e' }, duration: 0.6 } } }
+        pause: 0.3
+      - voice: narrator
+        text: >
+          The Company was not used to losing warehouses. From Madras it
+          sent its most reliable fixer — Robert Clive — with ships.
+        subtitle: >
+          কোম্পানি গুদাম হারাতে অভ্যস্ত ছিল না। মাদ্রাজ থেকে পাঠানো হলো
+          তাদের সবচেয়ে নির্ভরযোগ্য লোক — রবার্ট ক্লাইভ — জাহাজসহ।
+        sync:
+          - { on: 'From Madras', do: { 'zoom-to': { region: madras, duration: 1.2 } } }
+          - {
+              on: 'Robert Clive',
+              do:
+                {
+                  card:
+                    {
+                      style: lower-third,
+                      text: ROBERT CLIVE,
+                      subtext: East India Company,
+                      duration: 2.6,
+                    },
+                },
+            }
+          - {
+              on: 'with ships',
+              do: { march: { from: madras, to: calcutta, kind: ship, count: 4, duration: 2.2 } },
+            }
+          - { on: 'with ships', offset: 0.4, do: { 'zoom-to': { region: bengal, duration: 1.8 } } }
+        pause: 0.3
+      - voice: narrator
+        text: Calcutta changed hands again in January. Nobody apologized.
+        subtitle: জানুয়ারিতে কলকাতা আবার হাতবদল হলো। কেউ ক্ষমা চাইল না।
+        sync:
+          - { on: 'changed hands', do: { battle: { at: calcutta, duration: 1.2 } } }
+          - {
+              on: 'changed hands',
+              offset: 0.5,
+              do: { map: { recolor: { calcutta: '#a83232' }, duration: 0.6 } },
+            }
+          - { on: 'Nobody apologized', do: { sfx: quill } }
+        pause: 0.4
+
+  # ── 4. The conspiracy ──────────────────────────────────────────────
+  - id: conspiracy
+    stage: { preset: palace-hall }
+    grade: dusk
+    music: { mood: somber, gain: 80 }
+    transition: { kind: iris }
+    place:
+      - { ref: jafar, as: jafar, at: [-2.2, -2.6] }
+      - { ref: clive, as: clive, at: [2.2, -2.6], facing: left }
+      - { ref: scroll-prop, as: treaty, at: [2.9, -2.8] }
+    narration:
+      - voice: narrator
+        text: >
+          Fighting fifty thousand men is expensive. Bribing their
+          commander is not. The Company found Mir Jafar, the Nawab's
+          own general, and made him an offer.
+        subtitle: >
+          পঞ্চাশ হাজার সৈন্যের সঙ্গে যুদ্ধ ব্যয়বহুল। তাদের সেনাপতিকে
+          ঘুষ দেওয়া নয়। কোম্পানি খুঁজে নিল মীরজাফরকে — নবাবের নিজের
+          সেনাপতি — এবং একটি প্রস্তাব দিল।
+        sync:
+          - {
+              on: 'Mir Jafar',
+              do:
+                {
+                  card:
+                    {
+                      style: lower-third,
+                      text: MIR JAFAR,
+                      subtext: 'commander, technically',
+                      duration: 2.8,
+                    },
+                },
+            }
+          - { on: 'own general', do: { react: { target: jafar, kind: sweat } } }
+          - {
+              on: 'made him an offer',
+              do: { take: { target: clive, item: treaty, duration: 0.8 } },
+            }
+        pause: 0.2
+      - voice: narrator
+        text: >
+          The terms were simple. The army stands still, Jafar becomes
+          Nawab, and the Company gets the treasury.
+        subtitle: >
+          শর্ত ছিল সহজ। সেনাবাহিনী স্থির দাঁড়িয়ে থাকবে, জাফর হবেন নবাব,
+          আর কোষাগার পাবে কোম্পানি।
+        sync:
+          - { on: 'terms were simple', do: { shot: { kind: two-shot, of: [jafar, clive] } } }
+          - {
+              on: 'army stands still',
+              do: { give: { target: clive, to: jafar, item: treaty, duration: 1 } },
+            }
+          - { on: 'gets the treasury', do: { react: { target: clive, kind: hearts } } }
+          - { on: 'gets the treasury', do: { sfx: ding } }
+        pause: 0.3
+    lines:
+      - { after: 'gets the treasury', speaker: jafar, say: Deal., react: sweat }
+
+  # ── 5. The morning of Plassey ──────────────────────────────────────
+  - id: plassey-morning
+    music: { mood: tense, gain: 90 }
+    transition: { kind: fade }
+    place:
+      - { ref: india, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          On the twenty-third of June, 1757, the two armies met in a
+          mango grove by the river at Plassey.
+        subtitle: >
+          ১৭৫৭ সালের তেইশে জুন, পলাশীতে নদীর ধারে এক আমবাগানে দুই
+          সেনাবাহিনী মুখোমুখি হলো।
+        sync:
+          - {
+              on: 'twenty-third of June',
+              do: { card: { style: date, text: 23 JUNE 1757, duration: 2.4 } },
+            }
+          - { on: 'twenty-third of June', do: { sfx: drumroll } }
+          - { on: 'mango grove', do: { 'zoom-to': { region: plassey, duration: 1.6 } } }
+          - { on: 'at Plassey', do: { map: { highlight: plassey } } }
+          - { on: 'at Plassey', do: { label: { of: { plassey: Plassey } } } }
+        pause: 0.4
+
+  # ── 6. The battle ──────────────────────────────────────────────────
+  - id: battle
+    stage: { preset: battlefield }
+    music: { mood: tense, gain: 92 }
+    transition: { kind: wipe }
+    place:
+      - { ref: siraj, as: siraj, at: [-3.2, -2.6] }
+      - { ref: sepoy, as: n1, at: [-2.2, -2.6] }
+      - { ref: sepoy, as: n2, at: [-1.5, -2.7], depth: 0.45 }
+      - { ref: clive, as: clive, at: [3, -2.6], facing: left }
+      - { ref: sepoy, as: c1, at: [2.1, -2.6], facing: left }
+      - { ref: powder-keg, as: keg, at: [0.2, -2.85] }
+      - { ref: powder-keg, as: keg2, at: [0.9, -2.85] }
+      - { ref: jafar, as: jafar, at: [-4.2, -2.4], depth: 0.4 }
+    narration:
+      - voice: narrator
+        text: >
+          The scoreboard looked absurd. Fifty thousand soldiers and
+          fifty-three cannon for the Nawab. Three thousand men for the
+          Company.
+        subtitle: >
+          হিসাবটা ছিল অবিশ্বাস্য। নবাবের পক্ষে পঞ্চাশ হাজার সৈন্য আর
+          তিপ্পান্ন কামান। কোম্পানির পক্ষে মাত্র তিন হাজার।
+        sync:
+          - {
+              on: 'scoreboard looked absurd',
+              do:
+                {
+                  card:
+                    {
+                      style: list,
+                      items: ['Nawab — 50,000', 'Company — 3,000'],
+                      at: [0, 1.7],
+                      duration: 4.2,
+                    },
+                },
+            }
+          - { on: 'fifty-three cannon', do: { explode: { target: keg2, radius: 0.9 } } }
+          - { on: 'fifty-three cannon', do: { camera: { shake: 0.5, duration: 0.6 } } }
+        pause: 0.2
+      - voice: narrator
+        text: >
+          Then, at noon, the monsoon opened. The Nawab's gunners left
+          their powder in the rain. The Company put tarpaulins over
+          theirs.
+        subtitle: >
+          তারপর দুপুরে নামল বর্ষা। নবাবের গোলন্দাজরা বারুদ ফেলে রাখল
+          বৃষ্টিতে। কোম্পানি তাদের বারুদ ঢেকে দিল ত্রিপলে।
+        sync:
+          - { on: 'monsoon opened', do: { sfx: whoosh } }
+          - { on: 'powder in the rain', do: { react: { target: siraj, kind: jaw-drop } } }
+          - {
+              on: 'tarpaulins over theirs',
+              do:
+                {
+                  card: { style: note, text: 'military tip: cover your gunpowder', duration: 2.6 },
+                },
+            }
+        pause: 0.2
+      - voice: narrator
+        text: >
+          When the Nawab's wet cannon went quiet, the Company's dry ones
+          did not. And Mir Jafar's third of the army watched. Very
+          still. Very neutral.
+        subtitle: >
+          নবাবের ভেজা কামান যখন নীরব, কোম্পানির শুকনো কামান তখনও গর্জে
+          চলেছে। আর মীরজাফরের এক-তৃতীয়াংশ সেনা দাঁড়িয়ে দেখল। একদম
+          স্থির। একদম নিরপেক্ষ।
+        sync:
+          - { on: 'dry ones did not', do: { explode: { target: keg } } }
+          - { on: 'dry ones did not', do: { camera: { shake: 0.7, duration: 0.8 } } }
+          - {
+              on: 'dry ones did not',
+              offset: 0.2,
+              do: { ragdoll: { target: n2, impulse: [-1.6, 2.6] } },
+            }
+          - { on: "Jafar's third", do: { shot: { kind: medium, of: jafar, duration: 1.1 } } }
+          - { on: 'Very neutral', do: { react: { target: jafar, kind: deadpan, duration: 2.2 } } }
+          - { on: 'Very neutral', offset: 0.8, do: { shot: { kind: wide, duration: 0.6 } } }
+        pause: 0.2
+      - voice: narrator
+        text: By evening the Nawab's army was a rumor. Siraj left early.
+        subtitle: সন্ধ্যা নাগাদ নবাবের সেনাবাহিনী শুধুই গুজব। সিরাজ আগেভাগেই চলে গেলেন।
+        sync:
+          - { on: 'was a rumor', do: { react: { target: siraj, kind: eye-bulge } } }
+          - { on: 'left early', do: { run: { target: siraj, to: [-7.5, -2.6] } } }
+          - { on: 'left early', do: { speedlines: { target: siraj, angle: 0 } } }
+        pause: 0.4
+
+  # ── 7. Aftermath ───────────────────────────────────────────────────
+  - id: aftermath
+    stage: { preset: throne-room }
+    music: { mood: triumphant, gain: 84 }
+    transition: { kind: fade }
+    place:
+      - { ref: jafar-crowned, as: jafar, at: [-1.4, -2.6] }
+      - { ref: clive, as: clive, at: [1.8, -2.6], facing: left }
+    narration:
+      - voice: narrator
+        text: >
+          Mir Jafar got the throne, exactly as promised. The Company
+          got the treasury, also exactly as promised — and then kept
+          collecting.
+        subtitle: >
+          মীরজাফর সিংহাসন পেলেন, কথামতোই। কোম্পানি পেল কোষাগার, সেটাও
+          কথামতোই — তারপর তারা আদায় করতেই থাকল।
+        sync:
+          - { on: 'got the throne', do: { gesture: { target: jafar, kind: bow } } }
+          - { on: 'got the throne', do: { sfx: crowd } }
+          - { on: 'kept collecting', do: { react: { target: clive, kind: hearts, duration: 2 } } }
+          - { on: 'kept collecting', do: { sfx: ding } }
+        pause: 0.3
+    lines:
+      - { after: 'kept collecting', speaker: jafar, say: Wait — all of it?, react: jaw-drop }
+
+  # ── 8. The map turns ───────────────────────────────────────────────
+  - id: epilogue
+    music: { mood: somber, gain: 82 }
+    transition: { kind: crossfade }
+    place:
+      - { ref: india, as: map, at: [0, 0] }
+    narration:
+      - voice: narrator
+        text: >
+          The battle took one afternoon and cost the Company
+          twenty-two men. The receipt — an empire — took two hundred
+          years to pay off.
+        subtitle: >
+          যুদ্ধটা লেগেছিল এক বিকেল, কোম্পানির খরচ বাইশজন সৈনিক। আর
+          রসিদটা — একটি সাম্রাজ্য — শোধ হতে লেগেছিল দুইশো বছর।
+        sync:
+          - { on: 'one afternoon', do: { 'zoom-to': { region: bengal, duration: 1.4 } } }
+          - {
+              on: 'cost the Company',
+              do: { map: { recolor: { bengal: '#a83232' }, duration: 1.2 } },
+            }
+          - { on: 'two hundred years', do: { 'zoom-to': { region: india, duration: 2.2 } } }
+          - {
+              on: 'years to pay off',
+              do:
+                {
+                  card:
+                    {
+                      style: quote,
+                      text: 'One afternoon. Two hundred years.',
+                      duration: 3,
+                      entrance: pop,
+                    },
+                },
+            }
+        pause: 0.6

@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "Legend",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "says",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "coffee",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "was",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "discovered",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "in",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "Ethiopia",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "by",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "a",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "goatherd",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "named",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "Kaldi",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "whose",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "goats",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "ate",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "some",
+      "start": 6,
+      "end": 6.32
+    },
+    {
+      "word": "red",
+      "start": 6.4,
+      "end": 6.72
+    },
+    {
+      "word": "berries",
+      "start": 6.8,
+      "end": 7.12
+    },
+    {
+      "word": "and",
+      "start": 7.2,
+      "end": 7.5200000000000005
+    },
+    {
+      "word": "refused",
+      "start": 7.6000000000000005,
+      "end": 7.92
+    },
+    {
+      "word": "to",
+      "start": 8,
+      "end": 8.32
+    },
+    {
+      "word": "sleep",
+      "start": 8.4,
+      "end": 8.72
+    },
+    {
+      "word": "Ever",
+      "start": 8.8,
+      "end": 9.120000000000001
+    }
+  ]
+}

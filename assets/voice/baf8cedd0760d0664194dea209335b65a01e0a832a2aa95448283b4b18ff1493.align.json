@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "By",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "evening",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "the",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "Nawab's",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "army",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "was",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "a",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "rumor",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "Siraj",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "left",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "early",
+      "start": 4,
+      "end": 4.32
+    }
+  ]
+}

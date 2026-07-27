@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "segments": {
+    "ban/0": {
+      "hash": "e92dea3a2068954ad3dee9b6fad1eb8fe67c5f5cbea86095d760f620b327cb32",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 7.92,
+      "text": "Rulers kept trying to ban it. Coffeehouses, they said, were where sedition happened. The bans lasted, on average, one sultan.\n"
+    },
+    "ban/line/0": {
+      "hash": "bcff732660a240512a005851e97e3fa830b03436086e15e6495926d02bbd1545",
+      "engine": "mock",
+      "voice": "gravel",
+      "rate": 0.9,
+      "pitch": -4,
+      "durationSeconds": 1.6889375,
+      "text": "One sip. For research."
+    },
+    "conquest/0": {
+      "hash": "5e2fe1aded086e5fc1730d54017200d47168f581ea0bf5cda8e9c6758a96fbca",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 10.32,
+      "text": "Venice fell first. Then Paris, then London, then everywhere ships could reach. The most successful conquest in history required no army at all — just breakfast.\n"
+    },
+    "goats/0": {
+      "hash": "77afccf8cf483daef072f2eac8a7e7546ca2b7032dcdca11bd5446403881e1cd",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.12,
+      "text": "Legend says coffee was discovered in Ethiopia by a goatherd named Kaldi, whose goats ate some red berries and refused to sleep. Ever.\n"
+    },
+    "trade/0": {
+      "hash": "725a6aad824a251d8bf2526769c05741b40c98cd7896e851c5cc2d9e52860a99",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 9.92,
+      "text": "By the fifteenth century the beans had crossed the Red Sea to Yemen, and the port of Mocha was shipping caffeine to Istanbul and beyond.\n"
+    }
+  }
+}

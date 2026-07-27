@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "aligner": "energy",
+  "words": [
+    {
+      "word": "The",
+      "start": 0,
+      "end": 0.32
+    },
+    {
+      "word": "scoreboard",
+      "start": 0.4,
+      "end": 0.72
+    },
+    {
+      "word": "looked",
+      "start": 0.8,
+      "end": 1.12
+    },
+    {
+      "word": "absurd",
+      "start": 1.2,
+      "end": 1.52
+    },
+    {
+      "word": "Fifty",
+      "start": 1.6,
+      "end": 1.92
+    },
+    {
+      "word": "thousand",
+      "start": 2,
+      "end": 2.32
+    },
+    {
+      "word": "soldiers",
+      "start": 2.4,
+      "end": 2.72
+    },
+    {
+      "word": "and",
+      "start": 2.8000000000000003,
+      "end": 3.12
+    },
+    {
+      "word": "fifty-three",
+      "start": 3.2,
+      "end": 3.52
+    },
+    {
+      "word": "cannon",
+      "start": 3.6,
+      "end": 3.92
+    },
+    {
+      "word": "for",
+      "start": 4,
+      "end": 4.32
+    },
+    {
+      "word": "the",
+      "start": 4.4,
+      "end": 4.72
+    },
+    {
+      "word": "Nawab",
+      "start": 4.8,
+      "end": 5.12
+    },
+    {
+      "word": "Three",
+      "start": 5.2,
+      "end": 5.5200000000000005
+    },
+    {
+      "word": "thousand",
+      "start": 5.6000000000000005,
+      "end": 5.92
+    },
+    {
+      "word": "men",
+      "start": 6,
+      "end": 6.32
+    },
+    {
+      "word": "for",
+      "start": 6.4,
+      "end": 6.72
+    },
+    {
+      "word": "the",
+      "start": 6.8,
+      "end": 7.12
+    },
+    {
+      "word": "Company",
+      "start": 7.2,
+      "end": 7.5200000000000005
+    }
+  ]
+}
