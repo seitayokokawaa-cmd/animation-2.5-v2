@@ -1,6 +1,6 @@
 {
   "name": "@motionforge/voice",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "TTS adapters (qwen, recorded, mock), freeze-cache, aligner, voice.lock",

@@ -1,6 +1,6 @@
 {
   "name": "@motionforge/core",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Deterministic kernel: ticks, math, rng, easing, scene graph, svg emitter, camera",

@@ -1,6 +1,6 @@
 {
   "name": "@motionforge/maps",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "GeoJSON compiler, region overlays, territory/arrow/march solvers",

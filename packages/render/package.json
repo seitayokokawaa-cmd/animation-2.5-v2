@@ -1,6 +1,6 @@
 {
   "name": "@motionforge/render",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Rasterizer interface + resvg backend, frame pipeline, text, audio mixer, encoder",

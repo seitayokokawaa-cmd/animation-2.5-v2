@@ -1,6 +1,6 @@
 {
   "name": "@motionforge/lang",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "MFS schema, positioned yaml loader, validator T1-T3, compiler to timeline IR, spec-gen",
