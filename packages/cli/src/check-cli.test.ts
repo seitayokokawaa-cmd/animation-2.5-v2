@@ -74,3 +74,36 @@ describe('mf check --json exit codes (M12.6)', () => {
     expect(runCheck(join(dir, 'missing.mfs.yaml'), '--json').status).toBe(2);
   });
 }, 120_000);
+
+describe('cli ux (M15.2)', () => {
+  const run = (...args: string[]): RunResult => {
+    try {
+      const stdout = execFileSync(TSX, [MAIN, ...args], {
+        cwd: REPO,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      return { status: 0, stdout };
+    } catch (error) {
+      const e = error as { status?: number; stdout?: string };
+      return { status: e.status ?? -1, stdout: e.stdout ?? '' };
+    }
+  };
+
+  it('`mf help` prints usage and exits 0; bare `mf` exits 2', () => {
+    const help = run('help');
+    expect(help.status).toBe(0);
+    expect(help.stdout).toContain('Usage:');
+    expect(run().status).toBe(2);
+  });
+
+  it('`mf --version` prints the version', () => {
+    const version = run('--version');
+    expect(version.status).toBe(0);
+    expect(version.stdout).toMatch(/^mf \d+\.\d+\.\d+/);
+  });
+
+  it('unknown commands land on usage with exit 2', () => {
+    expect(run('rendr', 'x.mfs.yaml').status).toBe(2);
+  });
+}, 120_000);

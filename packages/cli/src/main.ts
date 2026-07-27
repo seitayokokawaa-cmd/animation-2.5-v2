@@ -72,15 +72,17 @@ const USAGE = `MotionForge — deterministic 2.5D animation compiler
 
 Usage:
   mf check <film.mfs.yaml> [--json]
-  mf render <film.mfs.yaml> [-o out.mp4]
+  mf render <film.mfs.yaml> [-o out.mp4] [--jobs N]
   mf frame <film.mfs.yaml> --at <seconds> [-o out.png|out.svg]
   mf voice sync <film.mfs.yaml> [--cache-dir assets/voice]
   mf timing <film.mfs.yaml>
   mf spec [-o docs/SPEC.md]
   mf author "<topic>" [-o out/film.mp4] [--research] [--mock transcript.json]
   mf storyboard <film.mfs.yaml> [-o out/board.png] [--review] [--mock transcript.json]
+  mf --version
 
 Exit codes: 0 = clean (warnings allowed), 1 = error findings, 2 = usage/IO failure.
+Set MF_DEBUG=1 for full stack traces on failures.
 `;
 
 /** The film's lock file sits beside it: film.mfs.yaml → film.voice.lock.json */
@@ -251,6 +253,14 @@ async function main(): Promise<void> {
 
   if (!command || command === 'help' || command === '--help') {
     process.stdout.write(USAGE);
+    if (!command) process.exitCode = 2; // bare `mf` is a usage mistake
+    return;
+  }
+  if (command === '--version' || command === 'version') {
+    const pkg = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'),
+    ) as { version: string };
+    process.stdout.write(`mf ${pkg.version}\n`);
     return;
   }
 
@@ -405,14 +415,21 @@ async function main(): Promise<void> {
         readVoiceWav: (hash) => cache.readWav(hash),
         jobs,
         onFrame: (n, total) => {
-          if (n % 30 === 0 || n === total) {
-            process.stderr.write(`\rframe ${n}/${total}`);
-          }
+          if (n % 30 !== 0 && n !== total) return;
+          const elapsed = (performance.now() - started) / 1000;
+          const fps = n / Math.max(elapsed, 0.001);
+          const eta = fps > 0 ? Math.max(0, Math.round((total - n) / fps)) : 0;
+          process.stderr.write(
+            `\rframe ${n}/${total} (${Math.round((100 * n) / total)}%) · ${fps.toFixed(0)} fps · ~${eta}s left `,
+          );
         },
       });
-      const seconds = ((performance.now() - started) / 1000).toFixed(1);
+      const seconds = (performance.now() - started) / 1000;
+      const filmSeconds = frames / film.fps;
+      const speed = filmSeconds / Math.max(seconds, 0.001);
       process.stderr.write(
-        `\rrendered ${frames} frames${narrationSegments ? ` + ${narrationSegments} narration segment(s)` : ''} → ${out} in ${seconds}s\n`,
+        `\rrendered ${frames} frames${narrationSegments ? ` + ${narrationSegments} narration segment(s)` : ''} → ${out}\n` +
+          `  ${seconds.toFixed(1)}s wall · ${(frames / Math.max(seconds, 0.001)).toFixed(0)} fps · ${speed.toFixed(1)}× realtime · ${jobs} worker(s)\n`,
       );
       return;
     }
@@ -518,4 +535,22 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+// Friendly failures (M15.2): expected errors become one clear line +
+// exit 2; `MF_DEBUG=1` restores the full stack for engine debugging.
+try {
+  await main();
+} catch (error) {
+  if (process.env.MF_DEBUG) throw error;
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(`\nerror: ${message}\n`);
+  if (/voice cache|voice sync/i.test(message)) {
+    process.stderr.write('hint: run `mf voice sync <film>` first, then render again.\n');
+  } else if (/ENOENT/.test(message)) {
+    process.stderr.write('hint: a file or directory is missing — check the paths above.\n');
+  } else {
+    process.stderr.write(
+      'hint: `mf check <film>` explains screenplay problems; MF_DEBUG=1 shows the stack.\n',
+    );
+  }
+  process.exit(2);
+}
