@@ -673,6 +673,16 @@ const verbFields = {
     .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
     .strict()
     .optional(),
+  /** Go limp under physics, tumble, settle, recover in place (M14.4). */
+  ragdoll: z
+    .object({
+      target: nameSchema,
+      /** Toss velocity [x, y], units/s; +x is the way the target faces. */
+      impulse: vec2Schema.optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Planted gaits (M14.1): footstep-planned locomotion — no sliding.
    * Duration defaults from the gait's cruise speed and the distance. */
   walk: z
@@ -768,6 +778,7 @@ export const VERB_NAMES = [
   'climb',
   'swim',
   'fly',
+  'ragdoll',
   'bonk',
   'fling',
   'squash-land',

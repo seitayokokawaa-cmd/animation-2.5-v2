@@ -93,6 +93,7 @@ export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
   climb: 2,
   swim: 2.5,
   fly: 2.5,
+  ragdoll: 2.5,
 };
 
 /** Gait cruise speeds in size units/s — mirrors motion's GAITS table
@@ -993,6 +994,14 @@ export function compileWithMarkers(
         }
         pushEffect(j.target, 'jump', startTick, seconds, {
           ...(j.height !== undefined ? { height: j.height } : {}),
+        });
+      } else if (verb.ragdoll) {
+        // Go limp (M14.4): the frame builder simulates the tumble and
+        // blends back in place, so the timeline position is untouched.
+        const r = verb.ragdoll;
+        const seconds = r.duration ?? EFFECT_DEFAULT_SECONDS.ragdoll!;
+        pushEffect(r.target, 'ragdoll', startTick, seconds, {
+          ...(r.impulse ? { ix: r.impulse[0], iy: r.impulse[1] } : {}),
         });
       } else if (verb.climb ?? verb.swim ?? verb.fly) {
         // Locomotion cycles (M14.2): a linear pos clip + a cycle effect;

@@ -218,6 +218,18 @@ const defs: VerbDef[] = [
     sample: () => ({}),
   },
   {
+    name: 'ragdoll',
+    summary:
+      'Go limp and tumble under PBD physics, settle, then blend back to ' +
+      'acting in place (M14.4). `impulse` throws the body first.',
+    defaultDurationSeconds: 2.5,
+    exclusive: 'travel',
+    defaultSfx: 'slam',
+    // The tumble lives in the frame builder (skeleton → particles); the
+    // registry entry carries scheduling metadata only.
+    sample: () => ({}),
+  },
+  {
     name: 'camera-track',
     summary: 'Damped-spring camera follow of an instance (M10.3).',
     defaultDurationSeconds: 2,

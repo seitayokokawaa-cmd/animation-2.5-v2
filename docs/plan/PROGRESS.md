@@ -186,7 +186,7 @@ Legend: ☐ pending · ☑ done
 | M14.1 | Footstep-planned gait + no-slide CI metric                 | ☑    |
 | M14.2 | Jump/climb/swim/fly + bird/fish/creature-builder templates | ☑    |
 | M14.3 | PBD solver + colliders                                     | ☑    |
-| M14.4 | Ragdoll + blend-back recovery                              | ☐    |
+| M14.4 | Ragdoll + blend-back recovery                              | ☑    |
 | M14.5 | Shatter + debris                                           | ☐    |
 | M14.6 | Full interactions: take/put/give, throw & catch, ride, …   | ☐    |
 | M14.7 | `examples/12-fable`: the v1 fox-and-bread film             | ☐    |

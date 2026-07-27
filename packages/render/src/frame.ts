@@ -51,6 +51,8 @@ import {
   gaitSample,
   LOCOMOTION_KINDS,
   locomotionPose,
+  RAGDOLL_IMPULSE,
+  ragdollPose,
   CHARACTER_TEMPLATES,
   characterNodes,
   emitEffectNodes,
@@ -500,6 +502,35 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             const sampled = sampleEffect(effect, localTick, film.seed);
             if (sampled.rotate) pose = addPoses(pose, { [boneId]: sampled.rotate });
           }
+          // Ragdoll (M14.4): a full-body physics takeover — the tumbled
+          // pose replaces the acting pose and the root shift carries the
+          // body to where it fell (blended back during recovery).
+          let ragdollShiftX = 0;
+          let ragdollShiftY = 0;
+          for (const effect of scene.effects) {
+            if (
+              effect.verb !== 'ragdoll' ||
+              effect.target !== inst.id ||
+              localTick < effect.startTick ||
+              localTick >= effect.startTick + effect.durationTicks
+            ) {
+              continue;
+            }
+            const sampled = ragdollPose(
+              template,
+              idleFn(effect.startTick, fnv1a(inst.id) % 240),
+              vec2(effect.params.ix ?? RAGDOLL_IMPULSE.x, effect.params.iy ?? RAGDOLL_IMPULSE.y),
+              localTick - effect.startTick,
+              effect.durationTicks,
+            );
+            pose = sampled.pose;
+            posture = NEUTRAL_POSTURE;
+            gaitDrop = 0;
+            gaitLean = 0;
+            // Rig space is facing-right; the mirror flips world x.
+            ragdollShiftX = sampled.shift.x * (inst.character.facing === 'left' ? -1 : 1);
+            ragdollShiftY = sampled.shift.y;
+          }
           const rig = characterNodes(template, {
             idPrefix: inst.id,
             layerBase: inst.layer,
@@ -515,10 +546,13 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
           const rootDrop = posture.drop * inst.character.size + gaitDrop;
           const rootRotate = posture.rotate + gaitLean;
           const rooted =
-            rootDrop !== 0 || rootRotate !== 0
+            rootDrop !== 0 || rootRotate !== 0 || ragdollShiftX !== 0 || ragdollShiftY !== 0
               ? {
                   id: `${inst.id}/posture-root`,
-                  transform: compose(translation(0, -rootDrop), rotation(rootRotate)),
+                  transform: compose(
+                    translation(ragdollShiftX, ragdollShiftY - rootDrop),
+                    rotation(rootRotate),
+                  ),
                   children: [rig],
                 }
               : rig;

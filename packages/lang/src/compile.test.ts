@@ -758,6 +758,7 @@ describe('cast compilation (M6.4)', () => {
             { at: 2, climb: { target: 'imp', to: [-1, 0.6] } },
             { at: 1, fly: { target: 'finch', to: [4, 1.5] } },
             { at: 1, swim: { target: 'carp', to: [4, -2], duration: 4 } },
+            { at: 8, ragdoll: { target: 'imp', impulse: [2, 3] } },
           ],
         },
       ],
@@ -790,6 +791,15 @@ describe('cast compilation (M6.4)', () => {
       expect(sample<Vec2>(sceneOut.timeline, 'carp/pos', secondsToTicks(5)).x).toBeCloseTo(4, 6);
       // Mid-swim the fish is between banks (the clip is linear).
       expect(sample<Vec2>(sceneOut.timeline, 'carp/pos', secondsToTicks(3)).x).toBeCloseTo(0, 6);
+    });
+
+    it('ragdoll packs its impulse and leaves the timeline alone (M14.4)', () => {
+      const rag = sceneOut.effects.find((e) => e.verb === 'ragdoll')!;
+      expect(rag.target).toBe('imp');
+      expect(rag.params).toMatchObject({ ix: 2, iy: 3 });
+      expect(rag.durationTicks).toBe(secondsToTicks(2.5));
+      // No pos clip: the tumble blends back in place.
+      expect(sample<Vec2>(sceneOut.timeline, 'imp/pos', secondsToTicks(9)).x).toBeCloseTo(-1, 6);
     });
   });
 });
