@@ -18,3 +18,4 @@ export * from './locomotion.js';
 export * from './pbd.js';
 export * from './ragdoll.js';
 export * from './shatter.js';
+export * from './interactions.js';

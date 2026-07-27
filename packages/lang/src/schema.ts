@@ -673,6 +673,71 @@ const verbFields = {
     .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
     .strict()
     .optional(),
+  /** Interactions (M14.6): pick a placed shape up into the near hand. */
+  take: z
+    .object({
+      target: nameSchema,
+      item: nameSchema,
+      /** Reach duration, seconds; the grab lands mid-reach. */
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Set a held item down (default: just ahead of the holder). */
+  put: z
+    .object({
+      target: nameSchema,
+      item: nameSchema,
+      at: vec2Schema.optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Hand a held item to another character (M14.6). */
+  give: z
+    .object({
+      target: nameSchema,
+      to: nameSchema,
+      item: nameSchema,
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Throw a held item — at a spot, or to a catcher who catches it. */
+  throw: z
+    .object({
+      target: nameSchema,
+      item: nameSchema,
+      /** A world point, or a cast member who catches the item. */
+      to: z.union([vec2Schema, nameSchema]),
+      /** Arc apex above the straight line, world units. */
+      height: z.number().finite().positive().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  /** Walk-free sit onto a placed prop (benches, chairs, crates). */
+  'sit-on': z
+    .object({ target: nameSchema, on: nameSchema, duration: secondsSchema.optional() })
+    .strict()
+    .optional(),
+  /** Door/lever sugar over `hinge` (M14.6): swing open / shut. */
+  open: z
+    .object({
+      target: nameSchema.or(z.string().regex(/^[a-z0-9-]+\.[a-z0-9-]+$/)),
+      /** Swing angle, degrees; default 105. */
+      angle: z.number().finite().optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  close: z
+    .object({
+      target: nameSchema.or(z.string().regex(/^[a-z0-9-]+\.[a-z0-9-]+$/)),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Fracture into spinning shards + dust; the target stays gone (M14.5). */
   shatter: z
     .object({
@@ -792,6 +857,13 @@ export const VERB_NAMES = [
   'fly',
   'ragdoll',
   'shatter',
+  'take',
+  'put',
+  'give',
+  'throw',
+  'sit-on',
+  'open',
+  'close',
   'bonk',
   'fling',
   'squash-land',

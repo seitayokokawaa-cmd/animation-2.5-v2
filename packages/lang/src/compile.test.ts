@@ -821,4 +821,80 @@ describe('cast compilation (M6.4)', () => {
       expect(sample<Vec2>(sceneOut.timeline, 'imp/pos', secondsToTicks(9)).x).toBeCloseTo(-1, 6);
     });
   });
+
+  describe('interactions (M14.6)', () => {
+    const staged = mfsSchema.parse({
+      motionforge: 2,
+      meta: { title: 'T', resolution: '1280x720', fps: 30 },
+      shapes: {
+        bread: { kind: 'ellipse', rx: 0.3, ry: 0.18, fill: '#c8963c' },
+        crate: { kind: 'rect', width: 1.2, height: 0.8, fill: '#8a6a3f' },
+      },
+      cast: {
+        fox: { template: 'potato-biped' },
+        crow: { template: 'potato-biped' },
+      },
+      scenes: [
+        {
+          id: 'a',
+          duration: 12,
+          place: [
+            { ref: 'fox', as: 'fox', at: [-2, -2.6] },
+            { ref: 'crow', as: 'crow', at: [3, -2.6] },
+            { ref: 'bread', as: 'bread', at: [-1, -2.8] },
+            { ref: 'crate', as: 'crate', at: [1, -2.9] },
+          ],
+          actions: [
+            { at: 0.5, take: { target: 'fox', item: 'bread', duration: 1 } },
+            { at: 2, throw: { target: 'fox', item: 'bread', to: 'crow', duration: 0.8 } },
+            { at: 4, put: { target: 'crow', item: 'bread', at: [3.5, -2.8] } },
+            { at: 6, 'sit-on': { target: 'fox', on: 'crate' } },
+            { at: 8, open: { target: 'crate' } },
+          ],
+        },
+      ],
+    });
+    const sceneOut = compile(staged).scenes[0]!;
+
+    it('take reaches for the item and attaches it mid-reach', () => {
+      const reach = sceneOut.effects.find((e) => e.verb === 'reach' && e.target === 'fox')!;
+      expect(reach.params.dx).toBeCloseTo(1, 6); // bread at -1, fox at -2
+      expect(reach.params.dy).toBeCloseTo(-0.2, 6);
+      const attach = sceneOut.effects.find((e) => e.verb === 'attach')!;
+      expect(attach.target).toBe('bread');
+      expect(attach.ref).toBe('fox');
+      expect(attach.startTick).toBe(secondsToTicks(0.5) + Math.round(secondsToTicks(1) * 0.5));
+    });
+
+    it('throw detaches, arcs the item, and the catcher catches', () => {
+      const detach = sceneOut.effects.find((e) => e.verb === 'detach')!;
+      expect(detach.target).toBe('bread');
+      const fling = sceneOut.effects.find((e) => e.verb === 'fling' && e.target === 'bread')!;
+      expect(fling.durationTicks).toBe(secondsToTicks(0.8));
+      // The catch re-attaches to the catcher as the arc lands.
+      const catches = sceneOut.effects.filter((e) => e.verb === 'attach');
+      expect(catches[1]!.ref).toBe('crow');
+      expect(catches[1]!.startTick).toBe(detach.startTick + secondsToTicks(0.8));
+      // The item's timeline lands at the catcher's hand height.
+      const landed = sample<Vec2>(sceneOut.timeline, 'bread/pos', catches[1]!.startTick + 1);
+      expect(landed.x).toBeCloseTo(3, 6);
+      expect(landed.y).toBeCloseTo(-2.6 + 0.85, 6);
+    });
+
+    it('sit-on settles onto the prop top and holds a sit', () => {
+      // Crate at -2.9, height 0.8 → top at -2.5.
+      const seat = sample<Vec2>(sceneOut.timeline, 'fox/pos', secondsToTicks(7));
+      expect(seat.x).toBeCloseTo(1, 6);
+      expect(seat.y).toBeCloseTo(-2.5, 6);
+      const sit = sceneOut.effects.find(
+        (e) => e.verb === 'posture' && e.startTick >= secondsToTicks(6),
+      )!;
+      expect(sit.params.kind).toBe(0);
+    });
+
+    it('open compiles to a held hinge swing', () => {
+      const hinge = sceneOut.effects.find((e) => e.verb === 'hinge')!;
+      expect(hinge.params.to).toBeCloseTo((105 * Math.PI) / 180, 6);
+    });
+  });
 });

@@ -95,6 +95,7 @@ export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
   fly: 2.5,
   ragdoll: 2.5,
   shatter: 1.1,
+  reach: 0.9,
 };
 
 /** Gait cruise speeds in size units/s — mirrors motion's GAITS table
@@ -684,6 +685,7 @@ export function compileWithMarkers(
       durationSeconds: number,
       params: Record<string, number>,
       text?: string,
+      ref?: string,
     ): void => {
       effects.push({
         target,
@@ -692,6 +694,7 @@ export function compileWithMarkers(
         durationTicks: secondsToTicks(durationSeconds),
         params,
         ...(text !== undefined ? { text } : {}),
+        ...(ref !== undefined ? { ref } : {}),
         seed: `${verbName}/${scene.id}/${effectCounter++}`,
       });
     };
@@ -1014,6 +1017,130 @@ export function compileWithMarkers(
             ...(fill ? { cr: fill.r, cg: fill.g, cb: fill.b } : {}),
           },
         );
+      } else if (verb.take) {
+        // Interactions (M14.6): reach toward the item; the grab lands
+        // mid-reach and the item starts riding the hand (attach event).
+        const { target, item, duration } = verb.take;
+        const seconds = duration ?? EFFECT_DEFAULT_SECONDS.reach!;
+        const actor = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const itemPos = lastPos.get(item) ?? vec2(...baseOf(item).at);
+        pushEffect(target, 'reach', startTick, seconds, {
+          dx: itemPos.x - actor.x,
+          dy: itemPos.y - actor.y,
+        });
+        const grab = startTick + Math.round(secondsToTicks(seconds) * 0.5);
+        pushEffect(item, 'attach', grab, 0, {}, undefined, target);
+      } else if (verb.put) {
+        const { target, item, at, duration } = verb.put;
+        const seconds = duration ?? 0.5;
+        const actor = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const spot = at ? vec2(...at) : vec2(actor.x + 0.6, actor.y);
+        pushEffect(target, 'reach', startTick, seconds, {
+          dx: spot.x - actor.x,
+          dy: spot.y - actor.y + 0.15,
+        });
+        const release = startTick + Math.round(secondsToTicks(seconds) * 0.5);
+        pushEffect(item, 'detach', release, 0, {});
+        // The item's own timeline takes over at the put spot.
+        (posClips.get(item) ?? posClips.set(item, []).get(item)!).push({
+          start: release,
+          duration: secondsToTicks(0.05),
+          from: spot,
+          to: spot,
+          easing: 'linear',
+        });
+        lastPos.set(item, spot);
+      } else if (verb.give) {
+        // Hand-off: both reach to a midpoint; the item switches hands.
+        const { target, to, item, duration } = verb.give;
+        const seconds = duration ?? 0.8;
+        const giver = lastPos.get(target) ?? vec2(...baseOf(target).at);
+        const receiver = lastPos.get(to) ?? vec2(...baseOf(to).at);
+        const mid = vec2((giver.x + receiver.x) / 2, (giver.y + receiver.y) / 2 + 0.7);
+        pushEffect(target, 'reach', startTick, seconds, {
+          dx: mid.x - giver.x,
+          dy: mid.y - giver.y,
+        });
+        pushEffect(to, 'reach', startTick, seconds, {
+          dx: mid.x - receiver.x,
+          dy: mid.y - receiver.y,
+        });
+        const swap = startTick + Math.round(secondsToTicks(seconds) * 0.5);
+        pushEffect(item, 'attach', swap, 0, {}, undefined, to);
+      } else if (verb.throw) {
+        // Throw & catch: wind-up reach, ballistic arc (linear clip +
+        // fling), and — when `to` names a catcher — a catch that attaches
+        // the item to their hand as it arrives.
+        const t2 = verb.throw;
+        const thrower = lastPos.get(t2.target) ?? vec2(...baseOf(t2.target).at);
+        const catcher = typeof t2.to === 'string' ? t2.to : undefined;
+        const dest = catcher
+          ? (() => {
+              const c = lastPos.get(catcher) ?? vec2(...baseOf(catcher).at);
+              return vec2(c.x, c.y + 0.85);
+            })()
+          : vec2(...(t2.to as readonly [number, number]));
+        const from = vec2(thrower.x + Math.sign(dest.x - thrower.x || 1) * 0.4, thrower.y + 0.9);
+        const dist = Math.hypot(dest.x - from.x, dest.y - from.y);
+        const seconds = t2.duration ?? Math.max(0.45, dist / 7);
+        const flightStart = startTick + secondsToTicks(0.25);
+        pushEffect(t2.target, 'reach', startTick, 0.5, {
+          dx: from.x - thrower.x,
+          dy: from.y - thrower.y,
+        });
+        pushEffect(t2.item, 'detach', flightStart, 0, {});
+        (posClips.get(t2.item) ?? posClips.set(t2.item, []).get(t2.item)!).push({
+          start: flightStart,
+          duration: secondsToTicks(seconds),
+          from,
+          to: dest,
+          easing: 'linear',
+        });
+        pushEffect(t2.item, 'fling', flightStart, seconds, {
+          height: t2.height ?? Math.min(1.2, dist * 0.25),
+          spins: 2,
+        });
+        lastPos.set(t2.item, dest);
+        if (catcher) {
+          const arrive = flightStart + secondsToTicks(seconds);
+          pushEffect(t2.item, 'attach', arrive, 0, {}, undefined, catcher);
+          const c = lastPos.get(catcher) ?? vec2(...baseOf(catcher).at);
+          pushEffect(catcher, 'reach', Math.max(startTick, arrive - secondsToTicks(0.3)), 0.6, {
+            dx: (from.x - c.x) * 0.25,
+            dy: 0.85,
+          });
+        }
+      } else if (verb['sit-on']) {
+        // Sit onto a placed prop: a short settle slide, then the sit
+        // posture on top of it. (Moving mounts keep using `place.on`.)
+        const s2 = verb['sit-on'];
+        const seconds = s2.duration ?? 0.6;
+        const actor = lastPos.get(s2.target) ?? vec2(...baseOf(s2.target).at);
+        const propPos = lastPos.get(s2.on) ?? vec2(...baseOf(s2.on).at);
+        const propShape = doc.shapes[scene.place.find((pl) => pl.as === s2.on)?.ref ?? ''];
+        const topLift =
+          propShape?.kind === 'rect'
+            ? propShape.height / 2
+            : propShape?.kind === 'circle'
+              ? propShape.r
+              : propShape?.kind === 'ellipse'
+                ? propShape.ry
+                : 0.3;
+        const seat = vec2(propPos.x, propPos.y + topLift);
+        (posClips.get(s2.target) ?? posClips.set(s2.target, []).get(s2.target)!).push({
+          start: startTick,
+          duration: secondsToTicks(seconds),
+          from: actor,
+          to: seat,
+          easing: 'cubicInOut',
+        });
+        lastPos.set(s2.target, seat);
+        pushEffect(s2.target, 'posture', startTick + secondsToTicks(seconds), 0.4, { kind: 0 });
+      } else if (verb.open ?? verb.close) {
+        // Door/lever sugar over the M5.3 hinge (holds after the swing).
+        const o = (verb.open ?? verb.close)!;
+        const angle = verb.open ? (verb.open.angle ?? 105) : 0;
+        pushEffect(o.target, 'hinge', startTick, o.duration ?? 0.6, { to: degToRad(angle) });
       } else if (verb.ragdoll) {
         // Go limp (M14.4): the frame builder simulates the tumble and
         // blends back in place, so the timeline position is untouched.

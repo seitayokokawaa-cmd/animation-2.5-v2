@@ -111,6 +111,8 @@ export interface FilmEffect {
   readonly params: Readonly<Record<string, number>>;
   /** Label text for text-bearing verbs (map labels, M7.6). */
   readonly text?: string;
+  /** Companion instance id — the holder for attach events (M14.6). */
+  readonly ref?: string;
   /** Noise stream name, unique per effect. */
   readonly seed: string;
 }

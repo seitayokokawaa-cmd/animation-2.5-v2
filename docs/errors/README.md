@@ -17,6 +17,8 @@ and fix loops can link them.
 | [MF2008](./MF2008.md) | Teleport between scenes | continuity |
 | [MF2009](./MF2009.md) | Line speaker not on stage | continuity |
 | [MF2010](./MF2010.md) | Rider mounted on a seatless instance | continuity |
+| [MF2011](./MF2011.md) | Item interaction without possession | continuity |
+| [MF2012](./MF2012.md) | Item taken while already held | continuity |
 | [MF3001](./MF3001.md) | Unknown narration voice | narration |
 | [MF3002](./MF3002.md) | Anchor phrase not found | narration |
 | [MF3003](./MF3003.md) | Ambiguous anchor phrase | narration |

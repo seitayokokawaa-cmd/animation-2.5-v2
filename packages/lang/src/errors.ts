@@ -32,6 +32,8 @@ export const MF_CODES = {
   MF2008: 'Teleport between scenes',
   MF2009: 'Line speaker not on stage',
   MF2010: 'Rider mounted on a seatless instance',
+  MF2011: 'Item interaction without possession',
+  MF2012: 'Item taken while already held',
   MF3001: 'Unknown narration voice',
   MF3002: 'Anchor phrase not found',
   MF3003: 'Ambiguous anchor phrase',

@@ -21,6 +21,7 @@ import {
 } from '@motionforge/core';
 
 import { FX_DEFS } from './fx.js';
+import { INTERACTION_DEFS } from './interactions.js';
 import { SHATTER_DEFS } from './shatter.js';
 
 export interface VerbDef {
@@ -501,7 +502,7 @@ const defs: VerbDef[] = [
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;
 
 export const VERB_REGISTRY: VerbRegistry = new Map(
-  [...defs, ...FX_DEFS, ...SHATTER_DEFS].map((d) => [d.name, d]),
+  [...defs, ...FX_DEFS, ...SHATTER_DEFS, ...INTERACTION_DEFS].map((d) => [d.name, d]),
 );
 
 export function verb(name: string): VerbDef {

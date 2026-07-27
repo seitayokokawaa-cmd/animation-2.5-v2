@@ -49,10 +49,12 @@ import {
   blinkOpenness,
   GAIT_KINDS,
   gaitSample,
+  holdersAt,
   LOCOMOTION_KINDS,
   locomotionPose,
   RAGDOLL_IMPULSE,
   ragdollPose,
+  twoBoneIk,
   CHARACTER_TEMPLATES,
   characterNodes,
   emitEffectNodes,
@@ -309,6 +311,10 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
     return compose(bone.transform, translation(template.seat.at.x, template.seat.at.y));
   };
 
+  // Interactions (M14.6): who holds which item right now. Held shape
+  // instances hide and ride their holder's hand instead.
+  const heldBy = holdersAt(scene.effects, localTick);
+
   const world: SceneNode = {
     id: 'world',
     transform: worldTransform,
@@ -502,6 +508,38 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             const sampled = sampleEffect(effect, localTick, film.seed);
             if (sampled.rotate) pose = addPoses(pose, { [boneId]: sampled.rotate });
           }
+          // Reach (M14.6): IK the near arm toward a character-relative
+          // point, blending in and back out across the window.
+          for (const effect of scene.effects) {
+            if (
+              effect.verb !== 'reach' ||
+              effect.target !== inst.id ||
+              localTick < effect.startTick ||
+              localTick >= effect.startTick + effect.durationTicks
+            ) {
+              continue;
+            }
+            const rt =
+              effect.durationTicks === 0
+                ? 1
+                : (localTick - effect.startTick) / effect.durationTicks;
+            const blend = Math.sin(Math.PI * rt);
+            const dir = inst.character.facing === 'left' ? -1 : 1;
+            // Rig space is facing-right; mirror the world-x offset.
+            const target = vec2((effect.params.dx ?? 0.6) * dir, effect.params.dy ?? 0.6);
+            const bones = fk(template.skeleton, pose);
+            const upper = bones.get('arm-r-upper');
+            const lower = bones.get('arm-r-lower');
+            if (!upper || !lower) continue;
+            const sol = twoBoneIk(upper.start, target, upper.bone.length, lower.bone.length, -1);
+            const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
+            const dUpper = wrap(sol.upper - upper.angle);
+            const dLower = wrap(sol.lower - lower.angle - dUpper);
+            pose = addPoses(pose, {
+              'arm-r-upper': dUpper * blend,
+              'arm-r-lower': dLower * blend,
+            });
+          }
           // Ragdoll (M14.4): a full-body physics takeover — the tumbled
           // pose replaces the acting pose and the root shift carries the
           // body to where it fell (blended back during recovery).
@@ -531,6 +569,22 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             ragdollShiftX = sampled.shift.x * (inst.character.facing === 'left' ? -1 : 1);
             ragdollShiftY = sampled.shift.y;
           }
+          // Carried items (M14.6): shapes attached to this character draw
+          // in the hand-anchor frame and follow the arm through poses.
+          const carriedNodes = scene.instances
+            .filter((it) => it.shape && heldBy.get(it.id) === inst.id)
+            .map((it): SceneNode => ({
+              id: `${inst.id}/carry/${it.id}`,
+              // The grip frame's +x points world-up at rest; rotate the
+              // item back so it rides upright in the palm.
+              transform: compose(
+                translation(0.06 * inst.character!.size, 0),
+                rotation(-Math.PI / 2),
+              ),
+              shape: it.shape,
+              ...(it.fill ? { fill: it.fill } : {}),
+              ...(it.stroke ? { stroke: it.stroke } : {}),
+            }));
           const rig = characterNodes(template, {
             idPrefix: inst.id,
             layerBase: inst.layer,
@@ -539,7 +593,7 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
             // Per-character phase offset so a cast never breathes in sync.
             pose,
             headNodes: face ? [face, ...dressed.headNodes] : [...dressed.headNodes],
-            handNodes: dressed.handNodes,
+            handNodes: [...dressed.handNodes, ...carriedNodes],
           });
           // Postures move the whole rig: drop toward the ground and/or tip
           // about the feet (lying down).
@@ -573,6 +627,8 @@ function sceneDrawItems(film: Film, scene: FilmScene, tick: Tick): DrawItem[] {
           };
         }
         if (!inst.object) {
+          // A held shape hides here — its holder draws it in-hand (M14.6).
+          if (heldBy.has(inst.id)) return { ...base, opacity: 0 };
           return { ...base, shape: inst.shape, fill: inst.fill, stroke: inst.stroke };
         }
         // Part poses: articulation effects targeting `instance.part`. The

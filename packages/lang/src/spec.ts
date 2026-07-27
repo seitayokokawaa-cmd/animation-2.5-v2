@@ -72,6 +72,14 @@ export const LANG_VERB_SUMMARIES: Readonly<Record<string, string>> = {
   walk: 'Planted walk to a position — feet plant with no sliding (M14.1).',
   run: 'Planted run: long strides, forward lean, flight-phase kick.',
   sneak: 'Planted sneak: short crouched steps.',
+  take: 'Reach for a placed shape and pick it up into the near hand (M14.6).',
+  put: 'Set a held item down — at `at:`, or just ahead of the holder.',
+  give: 'Hand a held item to another character; both reach to meet.',
+  throw: 'Arc a held item to a spot — or `to:` a catcher, who catches it.',
+  'sit-on':
+    'Settle onto a placed prop and hold a sit (static props; ride moving mounts via `place.on`).',
+  open: 'Swing a hinged part open (degrees via `angle:`, default 105) and hold.',
+  close: 'Swing a hinged part back shut and hold.',
   sfx: 'An explicit sound cue by name (see the Audio chapter).',
 };
 

@@ -83,6 +83,13 @@ repeats). Both share the same verb payloads:
 | `fly` | Flight cycle (M14.2): wing flaps with a flap-synced bob. | 2.5s |
 | `ragdoll` | Go limp and tumble under PBD physics, settle, then blend back to acting in place (M14.4). `impulse` throws the body first. | 2.5s, sfx `slam` |
 | `shatter` | The target fractures into spinning shards and dust (M14.5). Seeded radial break pattern; the target stays gone. | 1.1s, sfx `slam` |
+| `take` | Reach for a placed shape and pick it up into the near hand (M14.6). | — |
+| `put` | Set a held item down — at `at:`, or just ahead of the holder. | — |
+| `give` | Hand a held item to another character; both reach to meet. | — |
+| `throw` | Arc a held item to a spot — or `to:` a catcher, who catches it. | — |
+| `sit-on` | Settle onto a placed prop and hold a sit (static props; ride moving mounts via `place.on`). | — |
+| `open` | Swing a hinged part open (degrees via `angle:`, default 105) and hold. | — |
+| `close` | Swing a hinged part back shut and hold. | — |
 | `bonk` | Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars. | 0.7s, sfx `boink` |
 | `fling` | Ballistic arc + tumble on top of a linear slide, squashing on the landing — the "yeet" (M8.5). | 0.9s, sfx `whoosh` |
 | `squash-land` | A hard landing squash and recover, no drop. | 0.5s, sfx `slam` |
@@ -192,6 +199,8 @@ scripts fall back automatically per script run.
 - **MF2008** — Teleport between scenes
 - **MF2009** — Line speaker not on stage
 - **MF2010** — Rider mounted on a seatless instance
+- **MF2011** — Item interaction without possession
+- **MF2012** — Item taken while already held
 - **MF3001** — Unknown narration voice
 - **MF3002** — Anchor phrase not found
 - **MF3003** — Ambiguous anchor phrase
