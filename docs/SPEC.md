@@ -82,6 +82,7 @@ repeats). Both share the same verb payloads:
 | `swim` | Swim cycle (M14.2): stroke + tail wave with a gentle roll. | 2.5s |
 | `fly` | Flight cycle (M14.2): wing flaps with a flap-synced bob. | 2.5s |
 | `ragdoll` | Go limp and tumble under PBD physics, settle, then blend back to acting in place (M14.4). `impulse` throws the body first. | 2.5s, sfx `slam` |
+| `shatter` | The target fractures into spinning shards and dust (M14.5). Seeded radial break pattern; the target stays gone. | 1.1s, sfx `slam` |
 | `bonk` | Impact impulse: squash on the hit, damped wobble after. Pairs with impact-stars. | 0.7s, sfx `boink` |
 | `fling` | Ballistic arc + tumble on top of a linear slide, squashing on the landing — the "yeet" (M8.5). | 0.9s, sfx `whoosh` |
 | `squash-land` | A hard landing squash and recover, no drop. | 0.5s, sfx `slam` |

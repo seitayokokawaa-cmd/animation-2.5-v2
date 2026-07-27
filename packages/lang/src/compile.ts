@@ -94,6 +94,7 @@ export const EFFECT_DEFAULT_SECONDS: Record<string, number> = {
   swim: 2.5,
   fly: 2.5,
   ragdoll: 2.5,
+  shatter: 1.1,
 };
 
 /** Gait cruise speeds in size units/s — mirrors motion's GAITS table
@@ -995,6 +996,24 @@ export function compileWithMarkers(
         pushEffect(j.target, 'jump', startTick, seconds, {
           ...(j.height !== undefined ? { height: j.height } : {}),
         });
+      } else if (verb.shatter) {
+        // Fracture (M14.5): shards pick up the target's fill so pieces
+        // read as pieces of the thing that broke.
+        const sh = verb.shatter;
+        const placement = scene.place.find((pl) => pl.as === sh.target);
+        const fillHex = placement ? doc.shapes[placement.ref]?.fill : undefined;
+        const fill = fillHex ? parseColor(fillHex) : undefined;
+        pushEffect(
+          sh.target,
+          'shatter',
+          startTick,
+          sh.duration ?? EFFECT_DEFAULT_SECONDS.shatter!,
+          {
+            ...(sh.radius !== undefined ? { radius: sh.radius } : {}),
+            ...(sh.count !== undefined ? { count: sh.count } : {}),
+            ...(fill ? { cr: fill.r, cg: fill.g, cb: fill.b } : {}),
+          },
+        );
       } else if (verb.ragdoll) {
         // Go limp (M14.4): the frame builder simulates the tumble and
         // blends back in place, so the timeline position is untouched.

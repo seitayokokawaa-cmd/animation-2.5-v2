@@ -673,6 +673,18 @@ const verbFields = {
     .object({ target: nameSchema, to: vec2Schema, duration: secondsSchema.optional() })
     .strict()
     .optional(),
+  /** Fracture into spinning shards + dust; the target stays gone (M14.5). */
+  shatter: z
+    .object({
+      target: nameSchema,
+      /** Break-pattern radius, world units; default 0.6. */
+      radius: z.number().finite().positive().optional(),
+      /** Shard count; default 8. */
+      count: z.number().int().min(3).max(24).optional(),
+      duration: secondsSchema.optional(),
+    })
+    .strict()
+    .optional(),
   /** Go limp under physics, tumble, settle, recover in place (M14.4). */
   ragdoll: z
     .object({
@@ -779,6 +791,7 @@ export const VERB_NAMES = [
   'swim',
   'fly',
   'ragdoll',
+  'shatter',
   'bonk',
   'fling',
   'squash-land',

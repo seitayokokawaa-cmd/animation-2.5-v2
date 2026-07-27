@@ -793,6 +793,25 @@ describe('cast compilation (M6.4)', () => {
       expect(sample<Vec2>(sceneOut.timeline, 'carp/pos', secondsToTicks(3)).x).toBeCloseTo(0, 6);
     });
 
+    it('shatter picks up the shape fill as shard color (M14.5)', () => {
+      const broken = mfsSchema.parse({
+        motionforge: 2,
+        meta: { title: 'T', resolution: '640x360', fps: 30 },
+        shapes: { vase: { kind: 'circle', r: 0.5, fill: '#2a4c8f' } },
+        scenes: [
+          {
+            id: 'a',
+            duration: 3,
+            place: [{ ref: 'vase', as: 'vase', at: [0, 0] }],
+            actions: [{ at: 1, shatter: { target: 'vase', radius: 0.8, count: 10 } }],
+          },
+        ],
+      });
+      const fx = compile(broken).scenes[0]!.effects.find((e) => e.verb === 'shatter')!;
+      expect(fx.params).toMatchObject({ radius: 0.8, count: 10, cr: 0x2a, cg: 0x4c, cb: 0x8f });
+      expect(fx.durationTicks).toBe(secondsToTicks(1.1));
+    });
+
     it('ragdoll packs its impulse and leaves the timeline alone (M14.4)', () => {
       const rag = sceneOut.effects.find((e) => e.verb === 'ragdoll')!;
       expect(rag.target).toBe('imp');

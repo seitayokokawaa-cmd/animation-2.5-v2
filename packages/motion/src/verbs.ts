@@ -21,6 +21,7 @@ import {
 } from '@motionforge/core';
 
 import { FX_DEFS } from './fx.js';
+import { SHATTER_DEFS } from './shatter.js';
 
 export interface VerbDef {
   readonly name: string;
@@ -499,7 +500,9 @@ const defs: VerbDef[] = [
 
 export type VerbRegistry = ReadonlyMap<string, VerbDef>;
 
-export const VERB_REGISTRY: VerbRegistry = new Map([...defs, ...FX_DEFS].map((d) => [d.name, d]));
+export const VERB_REGISTRY: VerbRegistry = new Map(
+  [...defs, ...FX_DEFS, ...SHATTER_DEFS].map((d) => [d.name, d]),
+);
 
 export function verb(name: string): VerbDef {
   const def = VERB_REGISTRY.get(name);
