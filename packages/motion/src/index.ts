@@ -15,3 +15,4 @@ export * from './postures.js';
 export * from './gait.js';
 export * from './creature.js';
 export * from './locomotion.js';
+export * from './pbd.js';
