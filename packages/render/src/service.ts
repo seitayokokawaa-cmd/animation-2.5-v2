@@ -14,6 +14,7 @@ import { collectCues } from './audio.js';
 import { encodeFrames } from './encode.js';
 import { buildFrameSvg } from './frame.js';
 import { mixNarration } from './mix.js';
+import { pooledFrames } from './parallel.js';
 import { resvgRasterizer, type Rasterizer } from './rasterizer.js';
 
 export interface RenderOptions {
@@ -23,6 +24,12 @@ export interface RenderOptions {
   readonly readVoiceWav?: (hash: string) => Uint8Array;
   /** Called after each frame is rasterized. */
   readonly onFrame?: (frame: number, total: number) => void;
+  /**
+   * Rasterizer worker threads (M15.1). >1 fans frames out over a worker
+   * pool — byte-identical output, encoder fed in order. 1 (or a custom
+   * `rasterizer`) keeps everything on this thread.
+   */
+  readonly jobs?: number;
 }
 
 export interface RenderResult {
@@ -77,8 +84,12 @@ export async function renderFilm(
     }
   }
 
+  // A custom rasterizer can't cross the worker boundary — stay inline.
+  const jobs = options.rasterizer ? 1 : (options.jobs ?? 1);
+  const stream = jobs > 1 ? pooledFrames(film, jobs, options.onFrame) : frames();
+
   try {
-    await encodeFrames(frames(), { fps: film.fps, outPath, crf: options.crf, audioWavPath });
+    await encodeFrames(stream, { fps: film.fps, outPath, crf: options.crf, audioWavPath });
   } finally {
     if (tempDir) rmSync(tempDir, { recursive: true, force: true });
   }

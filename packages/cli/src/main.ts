@@ -35,7 +35,13 @@ import {
   WORLD_VIEW,
   type GeoCollection,
 } from '@motionforge/maps';
-import { buildFrameSvg, FFMPEG_PATH, renderFilm, resvgRasterizer } from '@motionforge/render';
+import {
+  buildFrameSvg,
+  defaultRenderJobs,
+  FFMPEG_PATH,
+  renderFilm,
+  resvgRasterizer,
+} from '@motionforge/render';
 
 import {
   anthropicAdapter,
@@ -259,6 +265,7 @@ async function main(): Promise<void> {
       research: { type: 'boolean', default: false },
       review: { type: 'boolean', default: false },
       mock: { type: 'string' },
+      jobs: { type: 'string', short: 'j' },
     },
   });
   if (command === 'spec') {
@@ -390,8 +397,13 @@ async function main(): Promise<void> {
       const out = values.out ?? file.replace(/\.mfs\.yaml$/, '') + '.mp4';
       const started = performance.now();
       const cache = new VoiceCache(values['cache-dir']);
+      // Worker-pool rasterization (M15.1): default to a pool sized for
+      // the machine; --jobs 1 forces the single-threaded path.
+      const jobs = values.jobs === undefined ? defaultRenderJobs() : Number(values.jobs);
+      if (!Number.isInteger(jobs) || jobs < 1) fail(`render: invalid --jobs ${values.jobs}`);
       const { frames, narrationSegments } = await renderFilm(film, out, {
         readVoiceWav: (hash) => cache.readWav(hash),
+        jobs,
         onFrame: (n, total) => {
           if (n % 30 === 0 || n === total) {
             process.stderr.write(`\rframe ${n}/${total}`);
