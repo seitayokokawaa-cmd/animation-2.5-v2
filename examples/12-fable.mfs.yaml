@@ -1,0 +1,128 @@
+# examples/12-fable — the M14 exit film: the v1 fox-and-bread fable, now
+# trivial. Planted walks (M14.1), a bird on the wing (M14.2), take and
+# throw-and-catch (M14.6), a jump (M14.2), a ragdoll collapse and
+# recovery (M14.3/M14.4), and a defeated sit-on. Mock TTS keeps it
+# offline.
+#
+#   pnpm mf voice sync examples/12-fable.mfs.yaml   # only if narration changed
+#   pnpm mf render examples/12-fable.mfs.yaml -o out/12-fable.mp4
+motionforge: 2
+meta:
+  title: The Fox and the Bread
+  resolution: 1280x720
+  fps: 30
+  seed: 14
+  style: explainer-paper
+
+voices:
+  narrator: { engine: mock, voice: warm }
+  crow: { engine: mock, voice: bright, pitch: 9, rate: 1.2 }
+
+shapes:
+  bread:
+    kind: ellipse
+    rx: 0.3
+    ry: 0.17
+    fill: '#c8963c'
+    stroke: { color: '#7a5a24', width: 0.03 }
+  crate:
+    kind: rect
+    width: 1.15
+    height: 0.72
+    rx: 0.05
+    fill: '#8a6a3f'
+    stroke: { color: '#5c452a', width: 0.035 }
+
+cast:
+  fox:
+    template: potato-biped
+    size: 0.9
+    palette: { outfit: '#a6552e', 'outfit-dark': '#7c3c1e', skin: '#f0c9a0' }
+    costume: [beret]
+    expression: happy
+  crow:
+    template: bird
+    size: 0.8
+    palette: { outfit: '#3a3a4a', 'outfit-dark': '#26262f', skin: '#d8a13c' }
+
+scenes:
+  - id: the-find
+    stage: { preset: meadow }
+    music: { mood: jaunty, gain: 88 }
+    place:
+      - { ref: fox, as: fox, at: [-3.4, -2.6] }
+      - { ref: crow, as: crow, at: [7.2, 1.9], facing: left }
+      - { ref: crate, as: crate, at: [1.1, -2.94] }
+      - { ref: bread, as: bread, at: [1.1, -2.42] }
+    narration:
+      - voice: narrator
+        text: >
+          In a sunny meadow, a fox found a loaf of bread resting on a
+          crate. It was, the fox decided, the finest bread in the world.
+        sync:
+          - {
+              on: 'sunny meadow',
+              do:
+                {
+                  card:
+                    {
+                      style: title,
+                      text: THE FOX AND THE BREAD,
+                      subtext: A cautionary fable,
+                      duration: 2.4,
+                    },
+                },
+            }
+          - { on: 'a fox found', do: { walk: { target: fox, to: [0.1, -2.6] } } }
+          - { on: 'resting on', do: { shot: { kind: medium, of: fox, duration: 0.8 } } }
+          - { on: 'fox decided', do: { take: { target: fox, item: bread, duration: 1 } } }
+          - { on: 'finest bread', do: { gesture: { target: fox, kind: point } } }
+      - voice: narrator
+        text: A passing crow disagreed. Loudly.
+        sync:
+          - { on: 'passing crow', do: { shot: { kind: wide, duration: 0.6 } } }
+          - { on: 'passing crow', do: { fly: { target: crow, to: [2.7, 1.2] } } }
+          - { on: 'disagreed', do: { react: { target: fox, kind: eye-bulge } } }
+        pause: 0.4
+      - voice: narrator
+        text: To prove that bread could fly, the fox threw it. This was a mistake.
+        sync:
+          - { on: 'the fox threw', do: { throw: { target: fox, item: bread, to: crow } } }
+          - { on: 'the fox threw', do: { sfx: whoosh } }
+          - { on: 'was a mistake', do: { fly: { target: crow, to: [8.2, 3.1], duration: 1.4 } } }
+          - { on: 'was a mistake', do: { react: { target: fox, kind: jaw-drop } } }
+    lines:
+      - { after: 'crow disagreed', speaker: crow, say: Caw. }
+
+  - id: the-lesson
+    stage: { preset: meadow }
+    grade: dusk
+    transition: { kind: wipe }
+    music: { mood: somber, gain: 80 }
+    place:
+      - { ref: fox, as: fox, at: [0.1, -2.6] }
+      - { ref: crate, as: crate, at: [1.1, -2.94] }
+    narration:
+      - voice: narrator
+        text: >
+          The fox jumped. The fox fell. And as dusk settled over the
+          meadow, the fox reflected at length on his choices.
+        sync:
+          - { on: 'fox jumped', do: { jump: { target: fox, to: [1.6, -2.6], height: 1.5 } } }
+          - { on: 'fox fell', do: { ragdoll: { target: fox, impulse: [1.2, 2.2], duration: 2.4 } } }
+          - { on: 'dusk settled', do: { shot: { kind: medium, of: fox, duration: 1.2 } } }
+          - { on: 'dusk settled', do: { react: { target: fox, kind: deadpan, duration: 7 } } }
+          - { on: 'reflected at length', do: { 'sit-on': { target: fox, on: crate } } }
+          - {
+              on: 'his choices',
+              do:
+                {
+                  card:
+                    {
+                      style: quote,
+                      text: 'Moral: bread cannot fly.',
+                      duration: 2.6,
+                      entrance: pop,
+                    },
+                },
+            }

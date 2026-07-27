@@ -189,7 +189,7 @@ Legend: ☐ pending · ☑ done
 | M14.4 | Ragdoll + blend-back recovery                              | ☑    |
 | M14.5 | Shatter + debris                                           | ☑    |
 | M14.6 | Full interactions: take/put/give, throw & catch, ride, …   | ☑    |
-| M14.7 | `examples/12-fable`: the v1 fox-and-bread film             | ☐    |
+| M14.7 | `examples/12-fable`: the v1 fox-and-bread film             | ☑    |
 
 ## M15 — Hardening, performance, showcase, v1.0
 

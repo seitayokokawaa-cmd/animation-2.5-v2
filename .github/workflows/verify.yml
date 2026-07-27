@@ -34,6 +34,7 @@ jobs:
           pnpm mf render examples/09-directed.mfs.yaml -o out/09-directed.mp4
           pnpm mf render examples/10-bangla.mfs.yaml -o out/10-bangla.mp4
           pnpm mf author "the war of the bucket" --mock examples/11-authored.transcript.json -o out/11-authored.mp4
+          pnpm mf render examples/12-fable.mfs.yaml -o out/12-fable.mp4
 
       - name: Upload rendered films
         uses: actions/upload-artifact@v4

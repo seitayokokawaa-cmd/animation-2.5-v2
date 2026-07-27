@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "segments": {
+    "the-find/0": {
+      "hash": "6408a29851c4ad78cdcec3eb2985ce956e3b4a1e76c9e655d66cd1bbd395dfdd",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 10.32,
+      "text": "In a sunny meadow, a fox found a loaf of bread resting on a crate. It was, the fox decided, the finest bread in the world.\n"
+    },
+    "the-find/1": {
+      "hash": "6b5cce402aefe73533891f270f64ed7434619ec75bd0a4fea0b4bd337fcf808b",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 1.92,
+      "text": "A passing crow disagreed. Loudly."
+    },
+    "the-find/2": {
+      "hash": "44671e8514ce771469a73b321a31f00a789960ef8dd45814472a0bd006af0982",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 5.52,
+      "text": "To prove that bread could fly, the fox threw it. This was a mistake."
+    },
+    "the-find/line/0": {
+      "hash": "bb9fb4d63a443dd01c6b1418ff6aa7c59221b244253ae9a9a0630f51e28c7c5e",
+      "engine": "mock",
+      "voice": "bright",
+      "rate": 1.2,
+      "pitch": 9,
+      "durationSeconds": 0.26666666666666666,
+      "text": "Caw."
+    },
+    "the-lesson/0": {
+      "hash": "7c7a8df1e7b652c18ed9d64cd27154531157de42a4912ef8ce5e9484edd12d0e",
+      "engine": "mock",
+      "voice": "warm",
+      "durationSeconds": 8.32,
+      "text": "The fox jumped. The fox fell. And as dusk settled over the meadow, the fox reflected at length on his choices.\n"
+    }
+  }
+}
